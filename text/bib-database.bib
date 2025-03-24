@@ -1,3 +1,43 @@
+
+
+@inproceedings{VerificationShapeAnalysis,
+    author="Bernier, T{\'e}o
+and Ziani, Yani
+and Kosmatov, Nikolai
+and Loulergue, Fr{\'e}d{\'e}ric",
+    editor="Beyer, Dirk
+and Cavalcanti, Ana",
+    title="Combining Deductive Verification with Shape Analysis",
+    booktitle="Fundamental Approaches to Software Engineering",
+    year="2024",
+    publisher="Springer Nature Switzerland",
+    address="Cham",
+    pages="280--289",
+    abstract="Deductive verification tools can prove a large range of program properties, but often face issues on recursive data structures. Abstract interpretation tools based on separation logic and shape analysis can efficiently reason about such structures but cannot deal with so large classes of properties. This short paper presents an ongoing work on combining both techniques. We show how a deductive verifier for C programs, Frama-C/Wp, can benefit from a shape analysis tool, MemCAD, where structural and separation properties proved in the latter become assumptions for the former. A case study on selected functions of the tpm2-tss library using linked lists confirms the interest of the approach.",
+    isbn="978-3-031-57259-3"
+}
+
+@inproceedings{LogicAgainstGhostsLists,
+    author = {Blanchard, Allan and Kosmatov, Nikolai and Loulergue, Fr\'{e}d\'{e}ric},
+    title = {Logic against ghosts: comparison of two proof approaches for a list module},
+    year = {2019},
+    isbn = {9781450359337},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/3297280.3297495},
+    doi = {10.1145/3297280.3297495},
+    abstract = {Modern verification projects continue to offer new challenges for formal verification. One of them is the linked list module of Contiki, a popular open-source operating system for the Internet of Things. It has a rich API and uses a particular list representation that make it different from the classical linked list implementations. Being widely used in the OS, the list module is critical for reliability and security. A recent work verified the list module using ghost arrays.This article reports on a new verification effort for this module. Realized in the Frama-C/Wp tool, the new approach relies on logic lists. A logic list provides a convenient high-level view of the linked list. The specifications of all functions are now proved faster and almost all automatically, only a small number of auxiliary lemmas and a couple of assertions being proved interactively in Coq. The proposed specifications are validated by proving a few client functions manipulating lists. During the verification, a more efficient implementation for one function was found and verified. We compare the new approach with the previous effort based on ghost arrays, and discuss the benefits and drawbacks of both techniques.},
+    booktitle = {Proceedings of the 34th ACM/SIGAPP Symposium on Applied Computing},
+    pages = {2186–2195},
+    numpages = {10},
+    keywords = {Frama-C, deductive verification, formal specification, internet of things, linked lists, operating system},
+    location = {Limassol, Cyprus},
+    series = {SAC '19}
+}
+
+
+
+
 @article{Sestakova2018,
   author        = {Eliška Šestáková and Jan Janoušek},
   journal       = {Information},
