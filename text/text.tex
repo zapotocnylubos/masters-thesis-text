@@ -6,6 +6,237 @@
 %---------------------------------------------------------------
 \setcounter{page}{1}
 
+% TODO: prozkoumat? https://en.wikipedia.org/wiki/Natural_deduction#Gentzen-style_propositional_logic
+% TODO: prozkoumat? https://en.wikipedia.org/wiki/Natural_deduction#Substitution_theorem
+
+\section{SAT}
+\subsection{SAT formulace}
+\subsection{SAT řešiče}
+\subsubsection{DPLL}
+\subsubsection{CDCL}
+
+
+\section{SMT}
+
+Satisfiability Modulo Theories (SMT) je rozšíření SAT, které se zabývá rozhodováním o tom,
+zda existuje přiřazení proměnných, které splňuje danou logickou formuli.
+SMT se používá v různých oblastech, jako je verifikace softwaru, analýza programů a automatizované dokazování.
+
+
+
+\subsection{Standard SMT-LIB}
+\subsection{SMT řešiče}
+\subsubsection{Eager přístup}
+\subsubsection{Lazy přístup}
+\subsubsection{Alt-Ergo}
+\subsubsection{CVC}
+\subsubsection{Z3}
+
+
+\chapter{Hoareova logika}
+
+Formální systém označovaný jako Hoareova logika byl navržen a popsán
+britským matematikem a informatikem C. A. R. Hoarem v roce 1969. \cite{Hoare1969}
+Jedná se o formální systém pro popis a analýzu počítačových programů,
+který pro důkaz správnosti programů používá předpoklady (preconditions) a následky (postconditions).
+
+Program popisujeme pomocí Hoareovy trojice
+
+\begin{equation*}
+    \{P\} \  Q \  \{R\}
+\end{equation*}
+
+kde $P$ jsou předpoklady popisující stav systému před provedením programu,
+$Q$ je daný program (příkaz či sekvence příkazů)
+a $R$ jsou následky, které popisují stav systému po provedení tohoto programu.
+Takto popsaný systém čteme následovně:
+``Při splněných předpokladech $P$ budou po provedení programu $Q$ zaručeny následky $R$``.
+
+Hoare v roce 1969 definoval trojici jako $P \ \{ Q \} \  R$,
+ale v současnosti se častěji setkáme se zápisem $\{ P \} \  Q \ \{ R \}$.
+
+Předpoklady a následky jsou vyjádřeny jako logické formule,
+které popisují vlastnosti proměnných programu v určitém okamžiku.
+Následující příklad reprezentuje program, který předpokládá na vstupu nezápornou hodnotu v proměnné $x$
+a po provedení programu $Q$ bude zajištěno, že hodnota proměnné $x$ bude kladná (ostře větší než 0).
+
+\begin{equation*}
+    \{ x \geq 0 \} \  x \coloneqq x + 1 \  \{ x > 0 \}
+\end{equation*}
+
+Předpoklad může být také prázdný, což znamená, že program nevyžaduje žádné předpoklady
+a formálně to lze zapsat jako $\{ true \} \  Q \  \{ R \}$.
+Pokud je předpoklad prázdný, předpokládáme, že program může být spuštěn
+v libovolném stavu systému nebo s libovolnými hodnotami proměnných.
+Takový program může vypadat následovně:
+
+\begin{equation*}
+    \{ true \} \  x \coloneqq 10 \  \{ x > 0 \}
+\end{equation*}
+
+% TODO: zminit, ze toto je validni program, ale casto nam tento vysledek nic nerika a je potreba
+% TODO: jeste pridat podminky na hodnoty promennych v ruznem case atd...
+
+\section{Axiom přiřazení}
+
+Axiom přiřazení je základním pravidlem Hoareovy logiky a nedílnou součástí každého počítačového programu.
+Přiřazení je operace obecně zapsaná ve tvaru
+
+\begin{equation*}
+    x \coloneqq f
+\end{equation*}
+
+kde $x$ je proměnná a $f$ je výraz bez vedlejších efektů (side effect),
+který ale může obsahovat proměnnou $x$, např. $x \coloneqq x + 1$.
+
+Chceme zajistit, že jakékoli tvrzení $T$ platné o $f$
+je také platné o hodnotě proměnné $x$ po provedení přiřazení.
+Označíme si $T[x \rightarrow f]$ tvrzení $T$ ve kterém výskyt proměnné $x$ nahradíme výrazem $f$ (substituce).
+
+Poté můžeme definovat axiom přiřazení jako
+
+\begin{equation*}
+    \{ T[x \rightarrow f] \} \  x \coloneqq f \  \{ T \}
+\end{equation*}
+
+Tento zápis říká, že pokud je pravdivé tvrzení $T$, ve kterém
+je výskyt proměnné $x$ nahrazen výrazem $f$, pak po provedení přiřazení
+je tvrzení $T$ pravdivé také pro proměnnou $x$.
+Jedná se tedy o šablonu (schéma) axiomu,
+kterou lze použít pro libovolné tvrzení $T$, proměnnou $x$ a výraz $f$.
+
+% TODO: The assignment axiom proposed by Hoare does not apply when more than one name may refer to the same stored value. For example,
+% TODO: end of https://en.wikipedia.org/wiki/Hoare_logic#Assignment_axiom_schema
+% TODO: toto ma mozna konsekvence do Frama-C pri volne pametoveho modelu a proc
+% TODO: nektere tvrzeni neprojdou na pointerech a rekurzivnich strukturach
+
+\section{Pravidlo důsledku}
+
+Pravidlo důsledku (rule of consequence) je metoda umožnující
+tvorbu nových logických tvrzení z již existujících a dokázaných tvrzení.
+Základní aplikací této metody je pravidlo \textbf{rozšíření předpokladu}
+a pravidlo \textbf{zůžení následku}.
+Předpokládejme platnosti $\{ P \} \  Q \  \{ R \}$.
+
+Máme-li rozšířený předpoklad $P'$, pro který platí
+
+\begin{equation*}
+    P' \implies P
+\end{equation*}
+
+můžeme říci, že
+
+\begin{equation*}
+    \{ P' \} \  Q \  \{ R \}
+\end{equation*}
+
+je také platné tvrzení.
+
+Máme-li zúžený následek $R'$ následku $R$, pro který platí
+
+\begin{equation*}
+    R \implies R'
+\end{equation*}
+
+můžeme říci, že $\{ P \} \  Q \  \{ R' \}$ je také platné tvrzení.
+
+\section{Pravidlo skládání}
+
+Pravidlo skládání (rule of composition) je pravidlo, které umožňuje
+skládat více příkazů do jednoho složeného příkazu a používat je v Hoareově logice.
+
+Máme-li dva příkazy $Q_1$ a $Q_2$, které splňují následující tvrzení
+
+\begin{equation*}
+    \{ P_1 \} \  Q_1 \  \{ R_1 \}
+\end{equation*}
+
+a
+
+\begin{equation*}
+    \{ R_1 \} \  Q_2 \  \{ R_2 \}
+\end{equation*}
+
+můžeme říci, že složený příkaz $Q_1; Q_2$ splňuje následující tvrzení
+
+\begin{equation*}
+    \{ P_1 \} \  Q_1; Q_2 \  \{ R_2 \}
+\end{equation*}
+
+kde $;$ je operátor sekvence příkazů, který říká, že příkaz $Q_1$ bude proveden před příkazem $Q_2$.
+
+Toto pravidlo umožňuje vytvářet složené příkazy z jednodušších příkazů.
+Zároveň je možné rozmyslet, že na sekvenci příkazů $Q_1, Q_2, \cdots, Q_n$
+lze aplikovat stejné pravidlo skládání, které jsme použili pro dva příkazy
+pomocí asociativity operátoru $;$ a závorek. A tedy platí, že
+
+\begin{equation*}
+    \{ P \} \  Q_1; Q_2; \  \cdots ; Q_n \  \{ R \}
+\end{equation*}
+
+je ekvivalentní s
+
+\begin{equation*}
+    \{ P \} \  (Q_1; (Q_2; \  \cdots (Q_{n-1}; Q_n))) \  \{ R \}
+\end{equation*}
+
+\section{Pravidlo iterace}
+
+Základním stavebním blokem počítačového programu je cyklus.
+V Hoareově logice je cyklus reprezentován pomocí pravidla iterace (rule of iteration)
+a využívá $while$ cyklus, který je v programovacích jazycích běžně dostupný a je definován následovně:
+
+\begin{equation*}
+    while \  B \  do \  Q
+\end{equation*}
+
+kde $Q$ je tělo cyklu, které se v každé iteraci provádí, dokud je podmínka $B$ pravdivá.
+
+Dále definujeme invariant cyklu $I$, který nám pomůže
+při rozhodování o správnost cyklu a bude popisovat následky provedení cyklu.
+Invariant cyklu je logické tvrzení, které musí být pravdivé před vstupem do cyklu,
+po ukončení každé iterace cyklu a také po ukončení cyklu.
+
+Formálně můžeme zapsat podmínky pro invariant cyklu $I$ jako
+
+\begin{equation*}
+    I \land (\{ B \} \  Q \  \{ I \})
+\end{equation*}
+
+První část konjunkce popisuje, že invariant cyklu musí být pravdivý před vstupem do cyklu.
+Druhá část konjunkce popisuje, že invariant cyklu musí být pravdivý po provedení těla cyklu $Q$,
+pokud se cyklus spustil (podmínka $B$ byla pravdivá).
+
+\begin{remark}
+    Invariant cyklu je nezávislý na počtu provedených iterací.
+\end{remark}
+
+Pokud cyklus neprovedl žádnou iteraci a zároveň máme zaručeno,
+že invariant cyklu $I$ byl pravdivý před vstupem do cyklu,
+triviálně platí, že invariant cyklu $I$ je pravdivý i po ukončení cyklu.
+Zároveň platí, že cyklus se neprovedl, protože podmínka $B$ byl nepravdivá,
+
+Pokud cyklus provedl alespoň jednu iteraci a zároveň máme zaručeno,
+že invariant cyklu $I$ je pravdivý po ukončení těla cyklu $Q$,
+znamená to, že invariant cyklu $I$ je pravdivý i po ukončení poslední iterace cyklu.
+Zároven platí, že podmínka $B$ je po ukončení cyklu nepravdivá, jinak by cyklus pokračoval v provádění další iterace.
+
+Formálně lze tedy konstrukci $while$ cyklu pomocí Hoareovy logiky zapsat jako
+
+\begin{equation*}
+    I \land \{ B \} \  Q \  \{ I \} \implies \{ I \} \  while \  B \  do \  Q \  \{ \neg B \land I \}
+\end{equation*}
+
+\chapter{Frama-C}
+\subsection{ACSL (ANSI/ISO C Specification Language)}
+\subsection{WP (Weakest Precondition)}
+\subsection{Paměťové modely}
+
+
+\chapter{Stainless}
+% --genc does not support recursive data types = src/stainless/LinkedList.scala:41:12: Cons and other recursive types are not supported
+
+
 % The following environment can be used as a mini-introduction for a chapter. Use that any way it pleases you (or comment it out). It can contain, for instance, a summary of the chapter. Or, there can be a quotation.
 \begin{chapterabstract}
 	\lipsum[1]
