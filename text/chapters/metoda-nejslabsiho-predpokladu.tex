@@ -1,0 +1,187 @@
+\chapter{Metoda nejslabšího předpokladu}
+\label{ch:metoda-nejslabsiho-predpokladu}
+
+Metoda nejslabšího předpokladu (weakest precondition, WP) je metoda,
+používaná k algoritmickému dokazování správnosti programů pomocí Hoareovy logiky.
+Formálně tuto metodu popsal E. W. Dijkstra v roce 1975 a navazuje na práci Hoareho~\cite{Dijkstra1975}.
+
+Připomeneme, že Hoareova trojice je trojice $ \{ P \} \ Q \ \{ R \} $,
+kde $P$ je předpoklad, $Q$ je příkaz a $R$ je následek.
+Předpoklad $P$ je logický výraz, který musí být pravdivý před provedením příkazu $Q$.
+Metoda nejslabšího předpokladu se snaží najít nejslabší předpoklad $WP$, pro který platí
+
+\begin{equation*}
+    \{ WP \} \ Q \ \{ R \}
+\end{equation*}
+
+a zároveň pro každý jiný předpoklad $P$, pro který by platilo, že
+
+\begin{equation*}
+    \{ P \} \ Q \ \{ R \}
+\end{equation*}
+
+musí také platit, že
+
+\begin{equation*}
+    P \implies WP
+\end{equation*}
+
+Tedy, že $WP$ je nejslabší předpoklad pro příkaz $Q$ a následek $R$.
+
+\begin{remark}
+    Nejslabší předpoklad $WP$ je (logicky) unikátní pro daný příkaz $Q$ a následek $R$.
+\end{remark}
+
+Pokud by existoval jiný kandidát $WP'$ pro nejslabší předpoklad,
+poté z definice platí, že
+
+\begin{equation*}
+    WP' \implies WP
+\end{equation*}
+
+a také, že
+
+\begin{equation*}
+    WP \implies WP'
+\end{equation*}
+
+Tedy musí platit, že $WP$ a $WP'$ jsou (logicky) ekvivalentní.
+
+Nejslabší předpoklad $WP$ definujeme pomocí transformační funkce $wp$
+s parametry $Q$ a $R$ následovně:
+
+\begin{equation*}
+    WP = wp(Q, R)
+\end{equation*}
+
+Následující kapitoly představují základní pravidla pro algoritmický výpočet nejslabšího předpokladu.
+Výpočet začíná vždy od následku $R$ a postupně (od konce k začátku)
+analyzuje příkazy $Q_n, Q_{n-1}, \cdots, Q_1$ a aplikuje na ně specifická pravidla.
+Výsledkem je nejslabší předpoklad $WP$ pro sekvenci příkazů $Q_1; Q_2; \cdots; Q_n$,
+který následně použijeme pro formální důkaz správnosti programu.
+
+\section{Pravidlo přiřazení}
+\label{sec:pravidlo-prirazeni}
+
+Výpočet nejslabšího předpokladu pro přiřazení proměnné $x$ hodnoty $E$ je
+definován následovně:
+
+\begin{equation*}
+    wp(x \coloneqq E, R) = R[x \mapsto E]
+\end{equation*}
+
+kde $R[x \mapsto E]$ je substituce výsktytu proměnné $x$ hodnotou $E$ v $R$.
+
+Například pro příkaz $x \coloneqq x + 3$ a následek $x > 0$ dostáváme:
+
+\begin{align*}
+    wp(x \coloneqq x + 3, x > 0) & = \\
+                                 & = x + 3 > 0 \\
+                                 & = x > -3
+\end{align*}
+
+Nejslabší předpoklad pro příkaz $x \coloneqq x + 3$, který zaručuje, že
+následek $x > 0$ bude pravdivý, je tedy $x > -3$.
+
+\section{Pravidlo sekvence}
+\label{sec:pravidlo-sekvence}
+
+Pravidlo sekvence napomáhá k určení nejslabšího předpokladu pro sekvenci příkazů.
+Máme-li dva příkazy $Q_1$ a $Q_2$, které splňují následující tvrzení
+
+\begin{equation*}
+    \{ P_1 \} \  Q_1 \  \{ R_1 \}
+\end{equation*}
+
+a
+
+\begin{equation*}
+    \{ R_1 \} \  Q_2 \  \{ R_2 \}
+\end{equation*}
+
+můžeme říci, že nejslabší předpoklad pro sekvenci příkazů $Q_1; Q_2$ je
+
+\begin{equation*}
+    wp(Q_1; Q_2, R) = wp(Q_1, wp(Q_2, R))
+\end{equation*}
+
+Podobně jako v pravidle skládání u Hoareovy logiky z kapitoly~\ref{sec:hoare-pravidlo-skladani}
+můžeme rozmyslet výpočet nejslabšího předpokladu pro sekvenci příkazů $Q_1, Q_2, \cdots, Q_n$
+pomocí asociativity operátoru $;$ a rekurzivního výpočtu nejslabšího předpokladu.
+
+Například pro příkaz $x \coloneqq x + 3; y \coloneqq x + 2$ a následek $y > 0$ dostáváme:
+
+\begin{align*}
+    wp(x \coloneqq x + 3; y \coloneqq x + 2, y > 0) & = \\
+                                                     & = wp(x \coloneqq x + 3, wp(y \coloneqq x + 2, y > 0)) \\
+                                                     & = wp(x \coloneqq x + 3, x + 2 > 0) \\
+                                                     & = x + 3 + 2 > 0 \\
+                                                     & = x > -5
+\end{align*}
+
+Nejslabší předpoklad pro příkaz $x \coloneqq x + 3; y \coloneqq x + 2$, který zaručuje, že
+následek $y > 0$ bude pravdivý, je tedy $x > -5$.
+
+\section{Pravidlo podmínky}
+\label{sec:pravidlo-podminky}
+
+Pravidlo podmínky popisuje výpočet nejslabšího předpokladu pro podmínkový příkaz ve tvaru:
+
+\begin{equation*}
+    \textbf{if} \ B \ \textbf{then} \ Q_T \ \textbf{else} \ Q_F
+\end{equation*}
+
+kde $B$ je podmínka, $Q_T$ je příkaz, který se provede, pokud je podmínka $B$ pravdivá,
+a $Q_F$ je příkaz, který se provede, pokud je podmínka $B$ nepravdivá.
+
+Pravidlo podmínky je definováno následovně:
+
+\begin{align*}
+    wp(\textbf{if} & \ B \ \textbf{then} \ Q_T \ \textbf{else} \ Q_F, R) = \\
+                   & = (B \implies wp(Q_T, R)) \land (\neg B \implies wp(Q_F, R))
+\end{align*}
+
+Tedy nejslabší předpoklad pro podmínkový příkaz je logická konjunkce dvou implikací.
+Nejslabší předpoklad totiž musí zahrnout oba možné stavy podmínky $B$, případ, kdy je $B$ pravdivá ale také případ, kdy je $B$ nepravdivá.
+
+Pokud je podmínka $B$ pravdivá, použijeme nejslabší předpoklad pro příkaz $Q_T$, tedy $wp(Q_T, R)$.
+Pokud není pravdivá ($\neg B$), použijeme nejslabší předpoklad pro příkaz $Q_F$, tedy $wp(Q_F, R)$.
+
+Například pro příkaz $if \ x > 0 \ then \ y \coloneqq x + 3 \ else \ y \coloneqq x - 3$
+a následek $y > 0$ dostáváme:
+
+\begin{align*}
+    wp(if & \ x > 0 \ then \ y \coloneqq x + 3 \ else \ y \coloneqq x - 3, y > 0) = \\
+          & = (x > 0 \implies wp(y \coloneqq x + 3, y > 0)) \land (\neg (x > 0) \implies wp(y \coloneqq x - 3, y > 0)) \\
+          & = (x > 0 \implies x + 3 > 0) \land (\neg (x > 0) \implies x - 3 > 0) \\
+          & = (x > 0 \implies x > -3) \land (\neg (x > 0) \implies x > 3)
+\end{align*}
+
+Použitím pravidla implikace
+
+\begin{align*}
+    (P \implies A) \land (\neg P \implies B) & \iff (P \land A) \lor (\neg P \land B)
+\end{align*}
+
+můžeme původní výraz zjednodušit následovně:
+
+\begin{align*}
+    (x > 0 & \implies x > -3) \land (\neg (x > 0) \implies x > 3) = \\
+           & = (x > 0 \land x > -3) \lor (\neg (x > 0) \land x > 3) \\
+           & = (x > 0 \land x > -3) \lor (x \leq 0 \land x > 3) \\
+           & = (x > 0 \land x > -3) \lor (false) \\
+           & = x > 0 \land x > -3 \\
+           & = x > -3
+\end{align*}
+
+Výpočet nejslabšího předpokladu pro příkaz $if \ x > 0 \ then \ y \coloneqq x + 3 \ else \ y \coloneqq x - 3$,
+který zaručuje, že následek $y > 0$ bude pravdivý, je tedy $x > -3$.
+Poslední zjednodušení je možné provést, protože $x > 0$ je silnější předpoklad než $x > -3$,
+platí že $x > 0 \implies x > -3$.
+
+Zároveň jsme při výpočtu zjistili, že negativní část ($else$) podmínky nemá vliv na výpočet nejslabšího předpokladu,
+protože neexistuje žádný předpoklad, který by v případě, že $x \leq 0$ a $y \coloneqq x - 3$, zaručoval, že $y > 0$.
+
+% TODO: navazat treba na Frama-c, ze pokud dokazeme takovyto priklad, tak vsechny
+% TODO: i nelogicke priklady po tom jsou podminene pravdive, nehlede na to, ze
+% TODO: ze nemaji treba splnitelnost = assert \false

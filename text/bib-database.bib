@@ -18,143 +18,17 @@
     keywords = {theory of programming' proofs of programs, programming language design, program documentation, machine-independent programming, formal language definition, axiomatic method}
 }
 
-@inproceedings{VerificationShapeAnalysis,
-    author="Bernier, T{\'e}o
-and Ziani, Yani
-and Kosmatov, Nikolai
-and Loulergue, Fr{\'e}d{\'e}ric",
-    editor="Beyer, Dirk
-and Cavalcanti, Ana",
-    title="Combining Deductive Verification with Shape Analysis",
-    booktitle="Fundamental Approaches to Software Engineering",
-    year="2024",
-    publisher="Springer Nature Switzerland",
-    address="Cham",
-    pages="280--289",
-    abstract="Deductive verification tools can prove a large range of program properties, but often face issues on recursive data structures. Abstract interpretation tools based on separation logic and shape analysis can efficiently reason about such structures but cannot deal with so large classes of properties. This short paper presents an ongoing work on combining both techniques. We show how a deductive verifier for C programs, Frama-C/Wp, can benefit from a shape analysis tool, MemCAD, where structural and separation properties proved in the latter become assumptions for the former. A case study on selected functions of the tpm2-tss library using linked lists confirms the interest of the approach.",
-    isbn="978-3-031-57259-3"
-}
-
-@inproceedings{LogicAgainstGhostsLists,
-    author = {Blanchard, Allan and Kosmatov, Nikolai and Loulergue, Fr\'{e}d\'{e}ric},
-    title = {Logic against ghosts: comparison of two proof approaches for a list module},
-    year = {2019},
-    isbn = {9781450359337},
-    publisher = {Association for Computing Machinery},
-    address = {New York, NY, USA},
-    url = {https://doi.org/10.1145/3297280.3297495},
-    doi = {10.1145/3297280.3297495},
-    abstract = {Modern verification projects continue to offer new challenges for formal verification. One of them is the linked list module of Contiki, a popular open-source operating system for the Internet of Things. It has a rich API and uses a particular list representation that make it different from the classical linked list implementations. Being widely used in the OS, the list module is critical for reliability and security. A recent work verified the list module using ghost arrays.This article reports on a new verification effort for this module. Realized in the Frama-C/Wp tool, the new approach relies on logic lists. A logic list provides a convenient high-level view of the linked list. The specifications of all functions are now proved faster and almost all automatically, only a small number of auxiliary lemmas and a couple of assertions being proved interactively in Coq. The proposed specifications are validated by proving a few client functions manipulating lists. During the verification, a more efficient implementation for one function was found and verified. We compare the new approach with the previous effort based on ghost arrays, and discuss the benefits and drawbacks of both techniques.},
-    booktitle = {Proceedings of the 34th ACM/SIGAPP Symposium on Applied Computing},
-    pages = {2186–2195},
-    numpages = {10},
-    keywords = {Frama-C, deductive verification, formal specification, internet of things, linked lists, operating system},
-    location = {Limassol, Cyprus},
-    series = {SAC '19}
-}
-
-
-
-
-@article{Sestakova2018,
-  author        = {Eliška Šestáková and Jan Janoušek},
-  journal       = {Information},
-  title         = {Automata Approach to XML Data Indexing},
-  year          = {2018},
-  volume        = {9},
-  number        = {1},
-  issn          = {2078-2489},
-  medium        = {online},
-  accessed      = {2019-03-26},
-  doi           = {10.3390/info9010012},
-  url           = {http://www.mdpi.com/2078-2489/9/1/12},
-}
-
-@book{Crochemore2002,
-  author        = {Maxime Crochemore and Wojciech Rytter},
-  title         = {Jewels of stringology},
-  publisher     = {World Scientific},
-  address       = {River Edge, NJ},
-  year          = {2002},
-  isbn          = {978-9810247829},
-}
-
-@book{Motwani2014,
-  author        = {Rajeev Motwani and Jeffrey D. Ullman and John E. Hopcroft},
-  title         = {Introduction to automata theory, languages, and computation},
-  publisher     = {Pearson},
-  address       = {Harlow},
-  year          = {2014},
-  edition       = {Third},
-  ISBN          = {9781292039053},
-}
-
-@book{Kopka2004,
-  author        = {Helmut Kopka and Patrick W. Daly},
-  title         = {LATEX},
-  subtitle      = {podrobný průvodce},
-  publisher     = {Computer Press},
-  address       = {Brno},
-  year          = {2004},
-  ISBN          = {80-7226-973-9},
-}
-
-@inproceedings{exponential:queries,
-  author        = {Mandhani, Bhushan and Suciu, Dan},
-  title         = {Query Caching and View Selection for XML Databases},
-  booktitle     = {Proceedings of the 31st International Conference on Very Large Data Bases},
-  series        = {VLDB '05},
-  year          = {2005},
-  isbn          = {1-59593-154-6},
-  location      = {Trondheim, Norway},
-  pages         = {469--480},
-  numpages      = {12},
-  url           = {http://dl.acm.org/citation.cfm?id=1083592.1083648},
-  acmid         = {1083648},
-  publisher     = {VLDB Endowment}
-}
-
-@inproceedings{def:2,
-	author       = {Leonid Libkin},
-	year         = {2005},
-	isbn         = {978-3-540-27580-0},
-	booktitle    = {Automata, Languages and Programming},
-	volume       = {3580},
-	series       = {Lecture Notes in Computer Science},
-	editor       = {Caires, Luís and Italiano, Giuseppe and Monteiro, Luís and Palamidessi, Catuscia and Yung, Moti},
-	title        = {Logics for Unranked Trees: An Overview},
-	publisher    = {Springer Berlin Heidelberg},
-	pages        = {35--50},
-}
-
-@inproceedings{def:1,
-	author       = {Frank Neven},
-	year         = {2002},
-	isbn         = {978-3-540-44240-0},
-	booktitle    = {Computer Science Logic},
-	volume       = {2471},
-	series       = {Lecture Notes in Computer Science},
-	editor       = {Bradfield, Julian},
-	title        = {Automata, Logic, and XML},
-	publisher    = {Springer Berlin Heidelberg},
-	pages        = {2--26},
-}
-
-@misc{jakZiskatAcko,
-  author        = {Rick Astley},
-  title         = {Never Gonna Give You Up (Official Music Video) -- YouTube},
-  url           = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&ab_channel=RickAstley",
-  month         = {10},
-  year          = {2009},
-  howpublished  = {online},
-  note          = "[Citováno 7. 1. 2025]"
-}
-
-@misc{darkMode,
-	author = {TopDevelopers.co},
-  title = {Light Mode Vs. Dark Mode -- What\'s Your Choice For UX? | by TopDevelopers.co | Medium},
-  url = "https://medium.com/@topdevelopers-co/light-mode-vs-dark-mode-whats-your-choice-for-ux-5bce3ad4a368",
-	month = {8},
-	year = {2024},
-  note = "[Citováno 27. 2. 2025]"
+@article{Dijkstra1975,
+    title = "Guarded commands, nondeterminancy and formal derivation of programs",
+    abstract = "So-called guarded commands are introduced as a building block for alternative and repetitive constructs that allow nondeterministic program components for which at least the activity evoked, but possibly even the final state, is not necessarily uniquely determined by the initial state. For the formal derivation of programs expressed in terms of these constructs, a calculus will be be shown.",
+    author = "E.W. Dijkstra",
+    year = "1975",
+    doi = "10.1145/360933.360975",
+    language = "English",
+    volume = "18",
+    pages = "453--457",
+    journal = "Communications of the ACM",
+    issn = "0001-0782",
+    publisher = "Association for Computing Machinery, Inc",
+    number = "8",
 }
