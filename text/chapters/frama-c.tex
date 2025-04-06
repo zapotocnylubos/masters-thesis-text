@@ -1,5 +1,45 @@
 \chapter{Frama-C}
+\label{ch:frama-c}
+
+V oblasti formální verifikace softwaru hrají významnou roli nástroje umožňující
+statickou analýzu zdrojového kódu a deduktivní dokazování správnosti těchto programů.
+Mezi ustálené platformy zaměřené na analýzu programů napsaných v jazyce C patří prostředí Frama-C,
+které poskytuje užitečné nástroje a možnost rozšíření o moduly a pluginy~\cite{FCKernelMaroneze2024}.
+Frama-C je open-source nástroj, který byl vyvinut na výzkumném ústavu CEA-LIST (Commissariat à l'Énergie Atomique et aux Énergies Alternatives)
+a první verze byla vydána v roce 2008.
+
+Jádro Frama-C je napsáno v jazyce OCaml a je postaveno jako modulární framework
+navržený s cílem usnadnit aplikaci pokročilých technik formální analýzy nad programy v jazyce C
+pomocí integrace různých analytických nástrojů ve formě pluginů~\cite{FCPluginDevSignoles2024}.
+Některé z těchto pluginů jsou obsaženy přímo v jádře Frama-C, zatímco další jsou dostupné jako externí moduly.
+Moduly obsažené v jádře Frama-C zahrnují například deduktivní analyzátor WP (Weakest Precondition)
+založený na teoretickém základu popsaném v kapitole~\ref{ch:metoda-nejslabsiho-predpokladu},
+RTE (Run-Time Error) pro detekci chyb při běhu programu, který si představíme v kapitole~\ref{sec:frama-c-rte},
+nebo například EVA (Evolving Value Analysis) pro analýzu hodnot proměnných v průběhu vykonávání programu.
+
+Klíčovým prvkem Frama-C je definice a podpora specifikačního jazyka ACSL (ANSI/ISO C Specification Language),
+který umožňuje uživatelům vyjadřovat vlastnosti a specifikace programů v jazyce C pomocí specifikačních komentářů.
+Tyto komentáře anotují kód a poskytují informace pro statickou analýzu a deduktivní dokazování.
+Návrh a implementace ACSL byly inspirovány podobným standardem pro jazyk Java, známým jako JML (Java Modeling Language)~\cite{ACSLSpec}.
+ACLS bude podrobněji představen v kapitole~\ref{sec:acsl}.
 
 \section{ACSL (ANSI/ISO C Specification Language)}
+\label{sec:acsl}
+
+
+\section{RTE (Run-Time Error)}
+\label{sec:frama-c-rte}
+
+
 \section{WP (Weakest Precondition)}
+\label{sec:frama-c-wp}
+
+
 \section{Paměťové modely}
+\label{sec:frama-c-mem}
+
+\subsection{Hoaerův paměťový model}
+
+\subsection{Typový paměťový model}
+
+\subsection{Referenční paměťový model}

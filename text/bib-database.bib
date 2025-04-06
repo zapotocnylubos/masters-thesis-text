@@ -32,3 +32,84 @@
     publisher = "Association for Computing Machinery, Inc",
     number = "8",
 }
+
+@Inbook{BlanchardACSL2024,
+    author="Blanchard, Allan
+and March{\'e}, Claude
+and Prevosto, Virgile",
+    editor="Kosmatov, Nikolai
+and Prevosto, Virgile
+and Signoles, Julien",
+    title="Formally Expressing What a Program Should Do: The ACSL Language",
+    bookTitle="Guide to Software Verification with Frama-C: Core Components, Usages, and Applications",
+    year="2024",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="3--80",
+    abstract="This chapter presents ACSL, the ANSI/ISO C Specification Language, focusing on its current implementation within the Frama-C framework. As its name suggests, ACSL is meant to express precisely and unambiguously the expected behavior of a piece of C code. It plays a central role in Frama-C, as nearly all plug-ins eventually manipulate ACSL specifications, either to generate properties that are to be verified, or to assess that the code is conforming to these specifications. It is thus very important to have a clear view of ACSL 's semantics in order to be sure that what you check with Frama-C is really what you mean. This chapter describes the language in an agnostic way, independently of the various verification plug-ins that are implemented in the platform, which are described in more details in other chapters. It contains many examples and exercises that introduce the main features of the language and insists on the most common pitfalls that users, even experienced ones, may encounter.",
+    isbn="978-3-031-55608-1",
+    doi="10.1007/978-3-031-55608-1_1",
+    url="https://doi.org/10.1007/978-3-031-55608-1_1"
+}
+
+@Inbook{BlanchardWP2024,
+    author="Blanchard, Allan
+and Bobot, Fran{\c{c}}ois
+and Baudin, Patrick
+and Correnson, Lo{\"i}c",
+    editor="Kosmatov, Nikolai
+and Prevosto, Virgile
+and Signoles, Julien",
+    title="Formally Verifying that a Program Does What It Should: The Wp (Frama-C plug-in) Plug-in",
+    bookTitle="Guide to Software Verification with Frama-C: Core Components, Usages, and Applications",
+    year="2024",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="187--261",
+    abstract="This chapter presents how to prove ACSL properties of C programs with the WpWp (Frama-C plug-in) plug-in of Frama-C using deductive verification and SMT solvers or Proof Assistants. Specifically, this chapter explores the internals of the WpWp (Frama-C plug-in) plug-in, with a specific focus on how ACSL and C are encoded into classical first-order logic, including its various memory models. Then, the internal proof strategy of WpWp (Frama-C plug-in) is described, which leads to a discussion on specification methodology and proof engineering, and how to interact with the WpWp (Frama-C plug-in) plug-in. Finally, we compare WpWp (Frama-C plug-in) with a selection of other amazing systems and logics for the deductive verification of C programs.",
+    isbn="978-3-031-55608-1",
+    doi="10.1007/978-3-031-55608-1_4",
+    url="https://doi.org/10.1007/978-3-031-55608-1_4"
+}
+
+@Inbook{FCKernelMaroneze2024,
+    author="Maroneze, Andr{\'e}
+and Prevosto, Virgile
+and Signoles, Julien",
+    editor="Kosmatov, Nikolai
+and Prevosto, Virgile
+and Signoles, Julien",
+    title="The Heart of Frama-C: The Frama-C Kernel",
+    bookTitle="Guide to Software Verification with Frama-C: Core Components, Usages, and Applications",
+    year="2024",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="81--130",
+    abstract="This chapter provides an overview of the Frama-C distribution, including its main plugins that are covered in depth by other chapters. It mainly focuses on the Frama-C kernel and the main services that it offers to the user. This includes notably passing proper arguments to launch Frama-C and drive an analysis, controlling the parsing and code normalization phases of the analysis, and visualizing results.",
+    isbn="978-3-031-55608-1",
+    doi="10.1007/978-3-031-55608-1_2",
+    url="https://doi.org/10.1007/978-3-031-55608-1_2"
+}
+
+@manual{FCPluginDevSignoles2024,
+    title        = {Plug-in Development Guide: For Frama-C 30.0 (Zinc)},
+    author       = {Julien Signoles and Thibaud Antignac and Loïc Correnson and Matthieu Lemerre and Virgile Prevosto},
+    year         = {2024},
+    note         = {Available at \url{https://www.frama-c.com/download/frama-c-plugin-development-guide.pdf}},
+    url          = {https://www.frama-c.com/download/frama-c-plugin-development-guide.pdf},
+    organization = {Frama-C}
+}
+
+@manual{ACSLSpec,
+    title        = {{ANSI/ISO C Specification Language, Version 1.21: Implementation in Frama-C 30.0}},
+    author       = {Patrick Baudin and Pascal Cuoq and Jean-Christophe Filliâtre and Claude Marché and Benjamin Monate and Yannick Moy and Virgile Prevosto},
+    year         = {2024},
+    version      = {1.21},
+    institution  = {CEA-List and Inria},
+    address      = {France},
+    note         = {Available at \url{https://frama-c.com/download/frama-c-acsl-implementation.pdf}},
+    license      = {Creative Commons Attribution 4.0 International (CC BY 4.0)},
+    url          = {https://frama-c.com/download/frama-c-acsl-implementation.pdf}
+}
+
+

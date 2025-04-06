@@ -58,12 +58,12 @@ který ale může obsahovat proměnnou $x$, např. $x \coloneqq x + 1$.
 
 Chceme zajistit, že jakékoli tvrzení $T$ platné o $f$
 je také platné o hodnotě proměnné $x$ po provedení přiřazení.
-Označíme si $T[x \mapsto f]$ tvrzení $T$ ve kterém výskyt proměnné $x$ nahradíme výrazem $f$ (substituce).
+Označíme si $T[x \leftarrow f]$ tvrzení $T$ ve kterém výskyt proměnné $x$ nahradíme výrazem $f$ (substituce).
 
 Poté můžeme definovat axiom přiřazení jako
 
 \begin{equation*}
-    \{ T[x \mapsto f] \} \  x \coloneqq f \  \{ T \}
+    \{ T[x \leftarrow f] \} \  x \coloneqq f \  \{ T \}
 \end{equation*}
 
 Tento zápis říká, že pokud je pravdivé tvrzení $T$, ve kterém
