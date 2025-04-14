@@ -30,7 +30,7 @@ a po provedení programu $Q$ bude zajištěno, že hodnota proměnné $x$ bude k
     \{ x \geq 0 \} \  x \coloneqq x + 1 \  \{ x > 0 \}
 \end{equation*}
 
-Předpoklad může být také prázdný, což znamená, že program nevyžaduje žádné předpoklady
+Předpoklad může být také prázdný, což znamená, že program nevyžaduje žádné speciální podmínky pro spuštění
 a formálně to lze zapsat jako $\{ true \} \  Q \  \{ R \}$.
 Pokud je předpoklad prázdný, předpokládáme, že program může být spuštěn
 v libovolném stavu systému nebo s libovolnými hodnotami proměnných.
@@ -54,7 +54,7 @@ Přiřazení je operace obecně zapsaná ve tvaru
 \end{equation*}
 
 kde $x$ je proměnná a $f$ je výraz bez vedlejších efektů (side effect),
-který ale může obsahovat proměnnou $x$, např. $x \coloneqq x + 1$.
+který ale může obsahovat proměnnou $x$, například $x \coloneqq x + 1$.
 
 Chceme zajistit, že jakékoli tvrzení $T$ platné o $f$
 je také platné o hodnotě proměnné $x$ po provedení přiřazení.
@@ -134,7 +134,7 @@ můžeme říci, že složený příkaz $Q_1; Q_2$ splňuje následující tvrze
 
 kde $;$ je operátor sekvence příkazů, který říká, že příkaz $Q_1$ bude proveden před příkazem $Q_2$.
 
-Toto pravidlo umožňuje vytvářet složené příkazy z jednodušších příkazů.
+Toto pravidlo umožňuje vytvářet složitější příkazy z několika jednodušších příkazů.
 Zároveň je možné rozmyslet, že na sekvenci příkazů $Q_1, Q_2, \cdots, Q_n$
 lze aplikovat stejné pravidlo skládání, které jsme použili pro dva příkazy
 pomocí asociativity operátoru $;$ a závorek. A tedy platí, že

@@ -3,28 +3,93 @@
 
 V oblasti formální verifikace softwaru hrají významnou roli nástroje umožňující
 statickou analýzu zdrojového kódu a deduktivní dokazování správnosti těchto programů.
-Mezi ustálené platformy zaměřené na analýzu programů napsaných v jazyce C patří prostředí Frama-C,
+Mezi ustálené platformy zaměřené na analýzu programů napsaných v jazyce C patří prostředí Frama\mbox{-}C,
 které poskytuje užitečné nástroje a možnost rozšíření o moduly a pluginy~\cite{FCKernelMaroneze2024}.
-Frama-C je open-source nástroj, který byl vyvinut na výzkumném ústavu CEA-LIST (Commissariat à l'Énergie Atomique et aux Énergies Alternatives)
+Frama\mbox{-}C je open-source nástroj, který byl vyvinut na výzkumném ústavu CEA-LIST (Commissariat à l'Énergie Atomique et aux Énergies Alternatives)
 a první verze byla vydána v roce 2008.
 
-Jádro Frama-C je napsáno v jazyce OCaml a je postaveno jako modulární framework
+Jádro Frama\mbox{-}C je napsáno v jazyce OCaml a je postaveno jako modulární framework
 navržený s cílem usnadnit aplikaci pokročilých technik formální analýzy nad programy v jazyce C
 pomocí integrace různých analytických nástrojů ve formě pluginů~\cite{FCPluginDevSignoles2024}.
-Některé z těchto pluginů jsou obsaženy přímo v jádře Frama-C, zatímco další jsou dostupné jako externí moduly.
-Moduly obsažené v jádře Frama-C zahrnují například deduktivní analyzátor WP (Weakest Precondition)
+Některé z těchto pluginů jsou obsaženy přímo v jádře Frama\mbox{-}C, zatímco další jsou dostupné jako externí moduly.
+Moduly obsažené v jádře Frama\mbox{-}C zahrnují například deduktivní analyzátor WP (Weakest Precondition)
 založený na teoretickém základu popsaném v kapitole~\ref{ch:metoda-nejslabsiho-predpokladu},
 RTE (Run-Time Error) pro detekci chyb při běhu programu, který si představíme v kapitole~\ref{sec:frama-c-rte},
 nebo například EVA (Evolving Value Analysis) pro analýzu hodnot proměnných v průběhu vykonávání programu.
 
-Klíčovým prvkem Frama-C je definice a podpora specifikačního jazyka ACSL (ANSI/ISO C Specification Language),
+Klíčovým prvkem Frama\mbox{-}C je definice a podpora specifikačního jazyka ACSL (ANSI/ISO C Specification Language),
 který umožňuje uživatelům vyjadřovat vlastnosti a specifikace programů v jazyce C pomocí specifikačních komentářů.
 Tyto komentáře anotují kód a poskytují informace pro statickou analýzu a deduktivní dokazování.
 Návrh a implementace ACSL byly inspirovány podobným standardem pro jazyk Java, známým jako JML (Java Modeling Language)~\cite{ACSLSpec}.
 ACLS bude podrobněji představen v kapitole~\ref{sec:acsl}.
 
+Prostředí Frama\mbox{-}C je distribuováno jako program pro příkazový řádek a také jako grafické uživatelské rozhraní (GUI).
+GUI poskytuje uživatelsky přívětivé prostředí pro interakci s celým ekosystémem Frama\mbox{-}C a hlavně s nainstalovanými pluginy.
+Grafické prostředí je dostupné hlavně pro operační systémy Linux a Windows.
+Pro uživatele operačního systému macOS je k dispozici pouze příkazová řádka.
+
+Organizace stojící za vývojem Frama\mbox{-}C distribuuje mimo jiné také Docker image, které obsahují všechny potřebné závislosti
+pro běh Frama\mbox{-}C a základních pluginů společně s několika SMT řešičemi, jako je Alt-Ergo, CVC4 a Z3.
+Také distribuují GUI variantu imagů a je tedy velmi snadné spustit Frama\mbox{-}C GUI pomocí Dockeru na libovolném operačním systému,
+jako je například macOS nebo Windows.
+Tyto image obsahují minimalistické desktopové prostředí, Frama\mbox{-}C GUI a VNC aplikaci
+umožnující připojení k desktopovému prostředí pomocí webového prohlížeče~\cite{FCDockerGUIMaroneze2021}.
+
+
 \section{ACSL (ANSI/ISO C Specification Language)}
 \label{sec:acsl}
+
+ACLS je specifikační jazyk pro jazyk C, který umožňuje uživatelům
+vyjadřovat vlastnosti a specifikace programů pomocí anotací v podobě speciálních komentářů ve zdrojovém kódu.
+
+Anotace lze zapsat jako jednořádkový komentář \texttt{//@ ...} nebo víceřádkový komentář \texttt{/*@ ... */}.
+Tyto anotace jsou umístěny přímo ve zdrojovém kódu a vypadají například jako v ukázce~\ref{list:acsl-example}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@ requires x > 0;
+        assigns \result;
+        ensures \result == x + 2;
+    */
+    int increment(int x) {
+        x = x + 1;
+        //@ assert x > 1;
+        return x + 1;
+    }
+    \end{minted}
+    \caption{Ukázka anotace funkce v jazyce C pomocí ACSL}
+    \label{list:acsl-example}
+\end{listing}
+
+V návaznosti na kapitolu~\ref{ch:metoda-nejslabsiho-predpokladu}, kde jsme se seznámili
+s metodou nejslabšího předpokladu, si nyní ukážeme, jakým způsobem lze pomocí ACSL
+vyjádřit vlastnosti, předpoklady a závěry pro funkce v jazyce C.
+
+V ukázce~\ref{list:acsl-example} je uvedena funkce \texttt{increment}, která
+definuje předpoklad a závěř pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
+Zjednodušená Hoaerova trojice pro příklad z kódu~\ref{list:acsl-example} vypadá následovně:
+
+\begin{equation*}
+    \{ x > 0 \} \ (x = x + 1; return \  x + 1) \ \{ result == x + 2 \}
+\end{equation*}
+
+Frama\mbox{-}C před spuštěním analýzy převede zdrojový kód do mezi-interpretace (intermediate representation)
+nazývané \texttt{CIL} (C Intermediate Language)~\cite{Necula2002CIL}.
+Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula.
+Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C stále podporuje vlastní verzi.
+
+Výhodou vlastního předzpracování a použití mezi-interpretace je,
+že Frama\mbox{-}C může analyzovat zdrojový kód efektivně
+a nainstalované pluginy mohou pracovat s touto abstraktní reprezentací
+a nebo ji dokonce upravovat či transformovat~\cite{FCKernelMaroneze2024}.
+
+TODO: pointery a validita, separace
+
+TODO: kvantifikátory, predikáty, logické funkce
+
+TODO: loop invarianty, loop varianty
+
+TODO: ghost konstrukty
 
 
 \section{RTE (Run-Time Error)}
@@ -38,8 +103,138 @@ ACLS bude podrobněji představen v kapitole~\ref{sec:acsl}.
 \section{Paměťové modely}
 \label{sec:frama-c-mem}
 
+Paměťové modely jsou důležitou součástí analýzy programů,
+protože umožňují definovat, jakým způsobem se programy chovají
+vzhledem k paměti a jakým způsobem manipulují s daty.
+
+Paměťové modely popisují způsob popisu operace na
+
 \subsection{Hoaerův paměťový model}
+\label{subsec:hoaeruv-pametovy-model}
+
+Nejjednodušší paměťový model je Hoareův paměťový model,
+ve kterém se operace s pamětí provádějí pomocí přiřazení do logických proměnných.
+Jedná se o aplikaci metody Single Static Assignment (SSA),
+která zajišťuje, že každá proměnná má přiřazenou hodnotu pouze jednou.
+
+V tomto modelu jsou proměnné a jejich hodnoty v různých časech reprezentovány
+pomocí několika různých logických proměnných, na které se odkazujeme pomocí
+ACLS anotace \texttt{\textbackslash at}.
+
+Například, pro následující program~\ref{list:ssa-example}:
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc(int x) {
+        x++;
+        x += 2;
+        //@ assert x >= \at(x, Pre) + 3;
+    }
+    \end{minted}
+    \caption{Ukázka Single Static Assignment v Frama-C}
+    \label{list:ssa-example}
+\end{listing}
+
+můžeme pomocí Frama\mbox{-}C nahlédnout na interní reprezentaci paměťového modelu
+a proměnných pomocí příkazu \texttt{frama-c -wp -wp-no-let -wp-print ssa.c}.
+Výstupem je následující kód:
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file ssa.c, line 4):
+    Assume {
+      Type: is_sint32(x_1) /\ is_sint32(x)
+            /\ is_sint32(x_2) /\ is_sint32(x_3).
+      Have: x_3 = x.
+      Have: (1 + x_3) = x_2.
+      Have: (2 + x_2) = x_1.
+    }
+    Prove: (3 + x) <= x_1.
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Ukázka SSA v Frama-C}
+    \label{list:ssa-frama-c}
+\end{listing}
+
+V příkladu~\ref{list:ssa-frama-c} vidíme, že při každém přiřazení do proměnné $x$ vzniká nová logická proměnná.
+Proměnné jsou číslované ve vzestupném pořadí a číslují se v obráceném pořadí, než v jakém byly přiřazeny.
+Tedy poslední přiřazení do proměnné $x$ je reprezentováno proměnnou $x_1$,
+předposlední přiřazení $x_2$ a tak dále.
+Samostatná logická proměnná $x$ reprezentuje hodnotu proměnné $x$ před prvním přiřazením,
+tedy na začátku funkce a jedná se o hodnotu proměnné $x$, kterou získáváme voláním \texttt{\textbackslash at(x, Pre)}.
+
+Anotaci \texttt{\textbackslash at(x, L)} můžeme využít pro jakékoliv místo v programu anotované jako $L$.
+Návěští (label) $L$ může být například začátek funkce, začátek cyklu nebo libovolné místo v programu, které je ve zdrojovém kódu explicitně označeno.
+Uživatelem definovaná návěští jsou standardní součástí jazyka C a Frama\mbox{-}C je používá pro specifikiaci časových bodů v programu.
+
+Například v následujícím programu~\ref{list:label-example}:
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc(int x) {
+        L0:
+        x++;
+        L1:
+        x += 2;
+        //@ assert x >= \at(x, L0) + 3;
+    }
+    \end{minted}
+    \caption{Ukázka uživatelského návěští v Frama-C}
+    \label{list:label-example}
+\end{listing}
+
+jsou explicitně definovaná dvě návěští \texttt{L0} a \texttt{L1},
+na která je možné se odkazovat pomocí anotace \texttt{\textbackslash at(x, L0)} a \texttt{\textbackslash at(x, L1)}.
+
+Frama\mbox{-}C poskytuje implicitní návěští, která jsou automaticky generována,
+konrkrétně jsou k dispozici tyto návěští~\cite{ACSLSpec}:
+
+% TODO: doplnit popis k os
+
+\begin{itemize}
+    \item \textbf{Pre}
+    \begin{itemize}
+        \item Použitelné pouze v anotacích příkazů, nikoliv v kontraktech funkcí.
+        \item Odkazuje na stav před začátkem funkce, ve které se anotace nachází.
+    \end{itemize}
+
+    \item \textbf{Post}
+    \begin{itemize}
+        \item Použitelné pouze v kontraktech funkcí v klauzulích \texttt{assigns} a \texttt{ensures}.
+        \item Odkazuje na stav po ukončení funkce, ve které se anotace nachází.
+    \end{itemize}
+
+    \item \textbf{Here}
+    \begin{itemize}
+        \item Použitelné v anotacích příkazů i kontraktech funkcí.
+        \item U klauzulí \texttt{requires}, \texttt{assumes}, \texttt{assigns}, \texttt{frees}, \texttt{decreases}, \texttt{terminates} odkazuje na \texttt{Pre} stav.
+        \item U klauzulí \texttt{ensures}, \texttt{allocates} a při ukončení s výjimkou odkazuje na \texttt{Post} stav.
+        \item V ostatních klauzulích odkazuje na aktualní stav v místě, kde se anotace nachází.
+    \end{itemize}
+
+    \item \textbf{LoopEntry}
+    \begin{itemize}
+        \item Použitelné v anotacích cyklů.
+        \item Odkazuje na stav před provedením prvním iterace cyklu.
+    \end{itemize}
+
+    \item \textbf{LoopCurrent}
+    \begin{itemize}
+        \item Použitelné v anotacích cyklů.
+        \item Odkazuje na stav před provedením aktuální iterace cyklu.
+    \end{itemize}
+
+    \item \textbf{Old}
+    \begin{itemize}
+        \item Použitelné v anotacích příkazů i kontraktech funkcí.
+        \item U klauzulí \texttt{assigns} a \texttt{ensures} odkazuje na stav před provedením funkce.
+        \item Oproti \texttt{Pre} lze \texttt{Old} použít i v kontraktech funkcí.
+        \item ACSL definuje \texttt{\textbackslash old(x)} jako syntaktický cukr pro \texttt{\textbackslash at(x, Old)}.
+    \end{itemize}
+\end{itemize}
 
 \subsection{Typový paměťový model}
 
 \subsection{Referenční paměťový model}
+
+\subsection{Problémy paměťových modelů}
