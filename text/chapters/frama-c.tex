@@ -83,89 +83,15 @@ Výhodou vlastního předzpracování a použití mezi-interpretace je,
 a nainstalované pluginy mohou pracovat s touto abstraktní reprezentací
 a nebo ji dokonce upravovat či transformovat~\cite{FCKernelMaroneze2024}.
 
-TODO: pointery a validita, separace
 
-TODO: kvantifikátory, predikáty, logické funkce
-
-TODO: loop invarianty, loop varianty
-
-TODO: ghost konstrukty
-
-
-\section{RTE (Run-Time Error)}
-\label{sec:frama-c-rte}
-
-
-\section{WP (Weakest Precondition)}
-\label{sec:frama-c-wp}
-
-
-\section{Paměťové modely}
-\label{sec:frama-c-mem}
-
-Paměťové modely jsou důležitou součástí analýzy programů,
-protože umožňují definovat, jakým způsobem se programy chovají
-vzhledem k paměti a jakým způsobem manipulují s daty.
-
-Paměťové modely popisují způsob popisu operace na
-
-\subsection{Hoaerův paměťový model}
-\label{subsec:hoaeruv-pametovy-model}
-
-Nejjednodušší paměťový model je Hoareův paměťový model,
-ve kterém se operace s pamětí provádějí pomocí přiřazení do logických proměnných.
-Jedná se o aplikaci metody Single Static Assignment (SSA),
-která zajišťuje, že každá proměnná má přiřazenou hodnotu pouze jednou.
-
-V tomto modelu jsou proměnné a jejich hodnoty v různých časech reprezentovány
-pomocí několika různých logických proměnných, na které se odkazujeme pomocí
-ACLS anotace \texttt{\textbackslash at}.
-
-Například, pro následující program~\ref{list:ssa-example}:
-
-\begin{listing}[H]
-    \begin{minted}{C}
-    void calc(int x) {
-        x++;
-        x += 2;
-        //@ assert x >= \at(x, Pre) + 3;
-    }
-    \end{minted}
-    \caption{Ukázka Single Static Assignment v Frama-C}
-    \label{list:ssa-example}
-\end{listing}
-
-můžeme pomocí Frama\mbox{-}C nahlédnout na interní reprezentaci paměťového modelu
-a proměnných pomocí příkazu \texttt{frama-c -wp -wp-no-let -wp-print ssa.c}.
-Výstupem je následující kód:
-
-\begin{listing}[H]
-    \begin{minted}{text}
-    Goal Assertion (file ssa.c, line 4):
-    Assume {
-      Type: is_sint32(x_1) /\ is_sint32(x)
-            /\ is_sint32(x_2) /\ is_sint32(x_3).
-      Have: x_3 = x.
-      Have: (1 + x_3) = x_2.
-      Have: (2 + x_2) = x_1.
-    }
-    Prove: (3 + x) <= x_1.
-    Prover Qed returns Valid
-    \end{minted}
-    \caption{Ukázka SSA v Frama-C}
-    \label{list:ssa-frama-c}
-\end{listing}
-
-V příkladu~\ref{list:ssa-frama-c} vidíme, že při každém přiřazení do proměnné $x$ vzniká nová logická proměnná.
-Proměnné jsou číslované ve vzestupném pořadí a číslují se v obráceném pořadí, než v jakém byly přiřazeny.
-Tedy poslední přiřazení do proměnné $x$ je reprezentováno proměnnou $x_1$,
-předposlední přiřazení $x_2$ a tak dále.
-Samostatná logická proměnná $x$ reprezentuje hodnotu proměnné $x$ před prvním přiřazením,
-tedy na začátku funkce a jedná se o hodnotu proměnné $x$, kterou získáváme voláním \texttt{\textbackslash at(x, Pre)}.
+\subsection{Anotace \texttt{\textbackslash at} a časové body}
+\label{subsec:anotace-at-a-casove-body}
 
 Anotaci \texttt{\textbackslash at(x, L)} můžeme využít pro jakékoliv místo v programu anotované jako $L$.
 Návěští (label) $L$ může být například začátek funkce, začátek cyklu nebo libovolné místo v programu, které je ve zdrojovém kódu explicitně označeno.
 Uživatelem definovaná návěští jsou standardní součástí jazyka C a Frama\mbox{-}C je používá pro specifikiaci časových bodů v programu.
+
+Následující příklad~\ref{list:label-example} ukazuje, jakým způsobem lze definovat uživatelská návěští
 
 Například v následujícím programu~\ref{list:label-example}:
 
@@ -188,8 +114,6 @@ na která je možné se odkazovat pomocí anotace \texttt{\textbackslash at(x, L
 
 Frama\mbox{-}C poskytuje implicitní návěští, která jsou automaticky generována,
 konrkrétně jsou k dispozici tyto návěští~\cite{ACSLSpec}:
-
-% TODO: doplnit popis k os
 
 \begin{itemize}
     \item \textbf{Pre}
@@ -233,8 +157,130 @@ konrkrétně jsou k dispozici tyto návěští~\cite{ACSLSpec}:
     \end{itemize}
 \end{itemize}
 
+TODO: pointery a validita, separace
+
+TODO: kvantifikátory, predikáty, logické funkce
+
+TODO: loop invarianty, loop varianty
+
+TODO: ghost konstrukty
+
+
+\section{RTE (Run-Time Error)}
+\label{sec:frama-c-rte}
+
+
+\section{WP (Weakest Precondition)}
+\label{sec:frama-c-wp}
+
+
+\section{Paměťové modely}
+\label{sec:frama-c-mem}
+
+% TODO: objasnit co znamená ...chovají vzhledem k paměti...
+Paměťové modely jsou důležitou součástí analýzy programů,
+protože umožňují definovat, jakým způsobem se programy chovají
+vzhledem k paměti a jakým způsobem manipulují s daty.
+
+Paměťové modely popisují způsob popisu operace na
+
+\subsection{Hoaerův paměťový model}
+\label{subsec:hoaeruv-pametovy-model}
+
+Nejjednodušší paměťový model je Hoareův paměťový model,
+ve kterém se operace s pamětí provádějí pomocí přiřazení do logických proměnných.
+Jedná se o aplikaci metody Single Static Assignment (SSA),
+která zajišťuje, že každá logická proměnná má přiřazenou hodnotu pouze jednou.
+
+Hoaerův paměťový model reprezentuje proměnné a jejich hodnoty v různých časech
+pomocí několika různých logických proměnných, na které lze odkazovat pomocí
+ACLS anotace \texttt{\textbackslash at}.
+Tato anotace, její použití a význam byly podrobněji popsány v kapitole~\ref{subsec:anotace-at-a-casove-body}.
+
+Následující příklad~\ref{list:ssa-example} popisuje velmi jednoduchou funkci,
+která přijímá jeden parametr $x$ typu \texttt{int} (celé číslo) a provádí na něm dvě operace.
+První operace zvyšuje hodnotu $x$ o 1 a druhá operace zvyšuje hodnotu $x$ o 2.
+Provedením těchto operací se tedy hodnota proměnné $x$ zvětší o 3.
+Pomocí anotace \texttt{\textbackslash at(x, Pre)} popisujeme počáteční hodnotu proměnné $x$,
+tedy původní hodnotu parametru funkce.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc(int x) {
+        x++;
+        x += 2;
+        //@ assert x >= \at(x, Pre) + 3;
+    }
+    \end{minted}
+    \caption{Ukázka Single Static Assignment ve Frama-C}
+    \label{list:ssa-example}
+\end{listing}
+
+Pomocí Frama\mbox{-}C lze nahlédnout na interní reprezentaci proměnných pomocí příkazu~\ref{list:ssa-example-run}.
+Tento příkaz spustí analýzu zdrojového kódu v souboru \texttt{ssa.c} pomocí metody nejslabšího předpokladu.
+Dále explicitně specifikujeme, že chceme použít paměťový model \texttt{Hoare},
+jelikož Frama\mbox{-}C podporuje více paměťových modelů a výchozím modelem je \texttt{Typed},
+který je popsán v následující kapitole~\ref{subsec:typovy-pametovy-model}.
+Přepínač \texttt{-wp-no-let} zakazuje zjednodušování a propagaci rovností a substitucí,
+bez kterého by výstup byl pouze označen za platný (valid) interním Qed zjednodušovačem (simplifier).
+Qed je zjednodušovač, který se používá před odesláním dotazů do SMT solverů,
+primárně z důvodu zjednodušení dotazů a zrychlení analýzy~\cite{WPManual}.
+Přepínač \texttt{-wp-print} specifikuje, že chceme zobrazit detaily analýzy a vypsat je na standardní výstup.
+
+\begin{listing}[H]
+    \begin{minted}{console}
+    frama-c -wp -wp-model="Hoare" -wp-no-let -wp-print ssa.c
+    \end{minted}
+    \caption{Příkaz pro zobrazení SSA ve Frama-C}
+    \label{list:ssa-example-run}
+\end{listing}
+
+Výstup analýzy~\ref{list:ssa-frama-c} potvrzuje, že při každém přiřazení do proměnné $x$ vzniká nová logická proměnná.
+Logické proměnné jsou číslované ve vzestupném pořadí a číslují se v obráceném pořadí, než v jakém byly přiřazeny.
+Tedy poslední přiřazení do proměnné $x$ je reprezentováno proměnnou $x_1$, předposlední přiřazení $x_2$ a tak dále.
+Samostatná logická proměnná $x$ reprezentuje hodnotu proměnné $x$ před prvním přiřazením,
+tedy na začátku funkce a jedná se o hodnotu proměnné $x$, kterou získáváme voláním \texttt{\textbackslash at(x, Pre)}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file ssa.c, line 4):
+    Assume {
+      Type: is_sint32(x_1) /\ is_sint32(x)
+            /\ is_sint32(x_2) /\ is_sint32(x_3).
+      Have: x_3 = x.
+      Have: (1 + x_3) = x_2.
+      Have: (2 + x_2) = x_1.
+    }
+    Prove: (3 + x) <= x_1.
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Ukázka SSA ve Frama-C}
+    \label{list:ssa-frama-c}
+\end{listing}
+
+% TODO: sem sepsat nevyhody Hoaerova pametoveho modelu
+
+Hoareův paměťový model a SSA jsou velmi užitečné metody pro analýzu programů,
+ale mají své omezení.
+Největší nevýhodou je, že není je
+
 \subsection{Typový paměťový model}
+\label{subsec:typovy-pametovy-model}
 
 \subsection{Referenční paměťový model}
+\label{subsec:referencni-pametovy-model}
 
-\subsection{Problémy paměťových modelů}
+% TODO: jo?
+% -wp-model <model+...>  Memory model selection. Available selectors:
+% * 'Hoare' logic variables only
+% * 'Typed' typed pointers only
+% * '+nocast' no pointer cast
+% * '+cast' unsafe pointer casts
+% * '+raw' no logic variable
+% * '+ref' by-reference-style pointers detection
+% * '+nat/+int' natural / machine-integers arithmetics
+% * '+real/+float' real / IEEE floating point arithmetics
+% * 'Eva' (experimental) based on the results from Eva
+% plugin (preferably use -wp-model="model+...")
+% ====
+%\subsection{Problémy paměťových modelů}
