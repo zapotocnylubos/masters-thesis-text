@@ -74,8 +74,8 @@ Zjednodušená Hoaerova trojice pro příklad z kódu~\ref{list:acsl-example} vy
 \end{equation*}
 
 Frama\mbox{-}C před spuštěním analýzy převede zdrojový kód do mezi-interpretace (intermediate representation)
-nazývané \texttt{CIL} (C Intermediate Language)~\cite{Necula2002CIL}.
-Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula.
+nazývané \texttt{CIL} (C Intermediate Language)~\cite{BlanchardACSL2024}.
+Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula~\cite{Necula2002CIL}.
 Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C stále podporuje vlastní verzi.
 
 Výhodou vlastního předzpracování a použití mezi-interpretace je,
@@ -87,13 +87,17 @@ a nebo ji dokonce upravovat či transformovat~\cite{FCKernelMaroneze2024}.
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
 \label{subsec:anotace-at-a-casove-body}
 
-Anotaci \texttt{\textbackslash at(x, L)} můžeme využít pro jakékoliv místo v programu anotované jako $L$.
-Návěští (label) $L$ může být například začátek funkce, začátek cyklu nebo libovolné místo v programu, které je ve zdrojovém kódu explicitně označeno.
-Uživatelem definovaná návěští jsou standardní součástí jazyka C a Frama\mbox{-}C je používá pro specifikiaci časových bodů v programu.
+Anotaci \texttt{\textbackslash at(\dots, L)} můžeme využít pro odkazování na hodnoty proměnných
+v různých časových bodech programu označených jako $L$.
+Návěští (label) $L$ může být například začátek funkce, začátek cyklu nebo libovolné místo v programu,
+které je ve zdrojovém kódu explicitně označeno.
+Uživatelem definovaná návěští jsou standardní součástí jazyka C
+a Frama\mbox{-}C je používá pro specifikaci časových bodů v programu.
 
-Následující příklad~\ref{list:label-example} ukazuje, jakým způsobem lze definovat uživatelská návěští
-
-Například v následujícím programu~\ref{list:label-example}:
+Následující příklad~\ref{list:label-example} zobrazuje kód,
+ve kterém jsou explicitně definovaná dvě návěští \texttt{L0} a \texttt{L1}.
+Odkazovat se na hodnoty proměnných v časových bodech definovanými těmito návěštími
+je možné pomocí anotace \texttt{\textbackslash at(\dots, L0)} a \texttt{\textbackslash at(\dots, L1)}.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -103,17 +107,17 @@ Například v následujícím programu~\ref{list:label-example}:
         L1:
         x += 2;
         //@ assert x >= \at(x, L0) + 3;
+        //@ assert x >= \at(x, L1) + 2;
     }
     \end{minted}
     \caption{Ukázka uživatelského návěští v Frama-C}
     \label{list:label-example}
 \end{listing}
 
-jsou explicitně definovaná dvě návěští \texttt{L0} a \texttt{L1},
-na která je možné se odkazovat pomocí anotace \texttt{\textbackslash at(x, L0)} a \texttt{\textbackslash at(x, L1)}.
-
-Frama\mbox{-}C poskytuje implicitní návěští, která jsou automaticky generována,
-konrkrétně jsou k dispozici tyto návěští~\cite{ACSLSpec}:
+Frama\mbox{-}C také poskytuje implicitní návěští,
+která jsou automaticky generována a jejich časový bod je definován
+standardem podle toho, kde se anotace nachází.
+Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
 
 \begin{itemize}
     \item \textbf{Pre}
@@ -165,7 +169,6 @@ TODO: loop invarianty, loop varianty
 
 TODO: ghost konstrukty
 
-
 \section{RTE (Run-Time Error)}
 \label{sec:frama-c-rte}
 
@@ -212,7 +215,7 @@ tedy původní hodnotu parametru funkce.
         //@ assert x >= \at(x, Pre) + 3;
     }
     \end{minted}
-    \caption{Ukázka Single Static Assignment ve Frama-C}
+    \caption{Zdrojový kód pro ukázku Single Static Assignment}
     \label{list:ssa-example}
 \end{listing}
 
@@ -221,21 +224,21 @@ Tento příkaz spustí analýzu zdrojového kódu v souboru \texttt{ssa.c} pomoc
 Dále explicitně specifikujeme, že chceme použít paměťový model \texttt{Hoare},
 jelikož Frama\mbox{-}C podporuje více paměťových modelů a výchozím modelem je \texttt{Typed},
 který je popsán v následující kapitole~\ref{subsec:typovy-pametovy-model}.
-Přepínač \texttt{-wp-no-let} zakazuje zjednodušování a propagaci rovností a substitucí,
+Přepínač \texttt{-wp-no-let} zakazuje zjednodušování pomocí propagace rovnosti a substituce,
 bez kterého by výstup byl pouze označen za platný (valid) interním Qed zjednodušovačem (simplifier).
-Qed je zjednodušovač, který se používá před odesláním dotazů do SMT solverů,
-primárně z důvodu zjednodušení dotazů a zrychlení analýzy~\cite{WPManual}.
-Přepínač \texttt{-wp-print} specifikuje, že chceme zobrazit detaily analýzy a vypsat je na standardní výstup.
+Qed se používá pro zjednodušení dotazů pro SMT řešiče a v triviálních případech dokáže sám ověřit platnost dotazu~\cite{WPManual, BlanchardWP2024}.
+Pomocí přepínače \texttt{-wp-print} specifikujeme, že chceme zobrazit detaily analýzy a vypsat je na standardní výstup.
 
 \begin{listing}[H]
     \begin{minted}{console}
-    frama-c -wp -wp-model="Hoare" -wp-no-let -wp-print ssa.c
+    frama-c -wp -wp-model Hoare -wp-no-let -wp-print ssa.c
     \end{minted}
-    \caption{Příkaz pro zobrazení SSA ve Frama-C}
+    \caption{Příkaz pro zobrazení interní reprezentace proměnných}
     \label{list:ssa-example-run}
 \end{listing}
 
-Výstup analýzy~\ref{list:ssa-frama-c} potvrzuje, že při každém přiřazení do proměnné $x$ vzniká nová logická proměnná.
+Výstup analýzy~\ref{list:ssa-frama-c} potvrzuje využití principu Single Static Assignment
+a zobrazuje interní reprezentaci programu jako několik přiřazení do logických proměnných $x_i$.
 Logické proměnné jsou číslované ve vzestupném pořadí a číslují se v obráceném pořadí, než v jakém byly přiřazeny.
 Tedy poslední přiřazení do proměnné $x$ je reprezentováno proměnnou $x_1$, předposlední přiřazení $x_2$ a tak dále.
 Samostatná logická proměnná $x$ reprezentuje hodnotu proměnné $x$ před prvním přiřazením,
@@ -254,18 +257,204 @@ tedy na začátku funkce a jedná se o hodnotu proměnné $x$, kterou získává
     Prove: (3 + x) <= x_1.
     Prover Qed returns Valid
     \end{minted}
-    \caption{Ukázka SSA ve Frama-C}
+    \caption{Interní reprezentace proměnných pomocí Hoareova paměťového modelu}
     \label{list:ssa-frama-c}
 \end{listing}
 
-% TODO: sem sepsat nevyhody Hoaerova pametoveho modelu
+% TODO: ukázat IF-Then-Else SSA
 
-Hoareův paměťový model a SSA jsou velmi užitečné metody pro analýzu programů,
-ale mají své omezení.
-Největší nevýhodou je, že není je
+Hoareův paměťový model je velmi jednoduchý a efektivní na základní práci s proměnnými, ale má také své nevýhody.
+Hlavní nevýhodu popsal sám Hoare v roce 1969, který ve svém článku~\cite{Hoare1969} uvádí,
+že tento model je nevhodný na analýzu kódu, který pracuje s ukazateli, dynamickou pamětí a možným aliasingem.
+Problém při modelování ukazatelů nastává v okamžiku,
+kdy paměťové místo (například proměnná) může být modifikováno z více než jednoho místa v programu (aliasing).
+Tento problém je způsoben tím, že Hoareův paměťový model modeluje každou proměnnou odděleně.
+Tedy proměnná typu \texttt{int}, například $x$, je reprezentována jako jedno paměťové místo,
+a proměnná typu \texttt{int*}, například $px$, jako jiné paměťové místo a nepředpokládá se,
+že by program prováděl nepřímou úpravu paměťi (například proměnné $x$) pomocí paměťové adresy
+uložené v jiné proměnné (například $px$).
+
+Pokud použijeme Hoaerův paměťový model na programy, které pracují s ukazateli,
+můžeme dostat neplatné výsledky, které neodpovídají skutečnému chování programu.
+Následující příklad~\ref{list:ssa-pointer-invalid-example} ukazuje jednoduchou funkci,
+která přiřazuje hodnotu 1 do proměnné $x$ pomocí ukazatele $p$.
+
+Po přiřazení je provedena kontrola, zdali hodnota v proměnné $x$ je 0.
+Tento program ale vždy uloží do proměnné $x$ hodnotu 1 (přes ukazatel $p$),
+ale pokud budeme chování programu analyzovat pomocí Hoareova paměťového modelu,
+zjistíme, že model o změně hodnoty proměnné $x$ pomocí ukazatele $p$ neví
+a výsledek analýzy~\ref{list:ssa-pointer-invalid-example-result} bude označený jako platný (valid),
+což je v rozporu se skutečným chováním programu.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc() {
+        int x = 0;
+        int *p = &x;
+
+        *p = 1;
+        //@ assert x == 0;
+    }
+    \end{minted}
+    \caption{Nesprávné použití Hoareova paměťového modelu na kód s ukazateli}
+    \label{list:ssa-pointer-invalid-example}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file hoare-wrong-when-pointer.c, line 6):
+    Assume { Type: is_sint32(x). (* Initializer *) Init: x = 0. }
+    Prove: x = 0.
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Nesprávný výsledek analýzy pomocí Hoareova paměťového modelu}
+    \label{list:ssa-pointer-invalid-example-result}
+\end{listing}
+
+Pro práci s programy, které obsahují ukazatele a dynamickou paměť,
+tedy Hoareův paměťový model není vhodný.
+Proto Frama\mbox{-}C podporuje také jiné paměťové modely,
+které jsou schopny správně reprezentovat chování programu, i když s některými omezeními.
+V následující kapitole~\ref{subsec:typovy-pametovy-model} si představíme typový paměťový model,
+který Frama\mbox{-}C používá jako výchozí paměťový model a pro většinu programů by měl být dostačující.
 
 \subsection{Typový paměťový model}
 \label{subsec:typovy-pametovy-model}
+
+% TODO: unifikovat mluveni, nerikat Představíme, ale neco univerzalniho a asi v jednotnem cisle
+
+Typový paměťový model je výchozím paměťovým modelem Frama\mbox{-}C
+a je navržen tak, aby byl schopen správně reprezentovat chování programů,
+které obsahují ukazatele, dynamickou paměť a aliasing.
+Představíme si zjednodušený paměťový model a následně tento model rozšíříme na typový paměťový model.
+
+
+TODO
+
+Zjednodušený paměťový model se odlišuje od Hoareova paměťového modelu tím,
+že místo reprezentace proměnných jako logických proměnných
+používá globální paměťovou mapu a operaci čtení a zápisu v této mapě.
+Operace čtení paměťového místa $a$ z paměti $M$ je reprezentována zápisem \texttt{M[a]},
+Operace zápisu hodnoty $v$ do paměťového místa $a$ v paměti $M$ je reprezentována zápisem \texttt{M[a <- v]}.
+
+% TODO: replace <- with \leftarrow
+
+Podobně jako v Hoareově paměťovém modelu,
+i v tomto modelu nalezneme možnost odkazovat se na stav paměti (paměťové mapy)
+v různých časových bodech pomocí anotace \texttt{\textbackslash at}.
+Princip Single Static Assignment (SSA) je zachován, ale na úrovni celé paměťové mapy.
+Každý zápis do paměti vytvoří novou paměťovou mapu,
+která se odlišuje od původní paměťové mapy pouze tím,
+že obsahuje novou hodnotu na daném paměťovém místě.
+Paměťová mapa je tedy immutabilní a každá modifikace paměti vytvoří novou paměťovou mapu.
+Formálně je tedy operace zápisu hodnoty $v$ na paměťové místo $a$ v paměti $M$ reprezentována zápisem
+\texttt{M[a <- v] = M'}, kde $M'$ je nová paměťová mapa.
+Takto upravené paměťové mapy jsou indexované podobně jako logické proměnné v Hoareově paměťovém modelu,
+s tím rozdílem, že paměťové mapy jsou číslovány vzestupně dle pořadí výskytu modifikace paměti,
+tedy první přiřazení do paměťové mapy vygenerovalo mapu $M_2$ z iniciální paměti $M_1$,
+další přiřazení do paměti vygenerovalo mapu $M_3$ z mapy $M_2$ a tak dále.
+Poslední přiřazení do paměti vygeneruje mapu $M_0$ z mapy $M_n$ po n-tém přiřazení do paměti.
+
+Následující kód~\ref{list:typed-assign-example} ukazuje jednoduchou funkci,
+která přiřazuje hodnoty do proměnné na kterou ukazuje ukazatel $p$.
+Provádí se celkem čtyři přiřazení do paměti a na konci funkce je provedena kontrola,
+zdali je hodnota proměnné $p$ rovná 2.
+Pomocí Frama\mbox{-}C lze nahlédneme na interní reprezentaci
+a operace s paměťovým modelem pomocí příkazu~\ref{list:typed-assign-example-run}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc(int *p) {
+        *p = -1;
+        *p = 0;
+        *p = 1;
+        *p = 2;
+        //@ assert *p == 2;
+    }
+    \end{minted}
+    \caption{Ukázka modifikace paměti pomocí typového paměťového modelu}
+    \label{list:typed-assign-example}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{console}
+    frama-c -wp -wp-model Typed \
+      -wp-no-let -wp-print mem-map-example.c
+    \end{minted}
+    \caption{Příkaz pro zobrazení interní reprezentace pomocí typového paměťového modelu}
+    \label{list:typed-assign-example-run}
+\end{listing}
+
+
+Následující příklad~\ref{list:typed-pointer-valid-example} je téměř identický
+s předchozím příkladem~\ref{list:ssa-pointer-invalid-example},
+ale místo použití Hoareova paměťového modelu použijeme typový paměťový model
+a místo kontroly, zda je hodnota proměnné $x$ 0 (což je v rozporu se skutečným chováním programu),
+zkontrolujeme, zda je hodnota proměnné $x$ 1, což je očekávané chování programu.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    void calc() {
+        int x = 0;
+        int *p = &x;
+
+        *p = 1;
+        //@ assert x == 1;
+    }
+    \end{minted}
+    \caption{Správné použití typového paměťového modelu na kód s ukazateli}
+    \label{list:typed-pointer-valid-example}
+\end{listing}
+
+Analýzu programu provedeme pomocí příkazu~\ref{list:typed-pointer-valid-example-run},
+který spustí analýzu pomocí metody nejslabšího předpokladu s využitím typového paměťového modelu.
+
+\begin{listing}[H]
+    \begin{minted}{console}
+    frama-c -wp -wp-model Typed \
+      -wp-no-let -wp-print typed-correct-when-pointer.c
+    \end{minted}
+    \caption{Příkaz pro spuštění analýzy pomocí typového paměťového modelu}
+    \label{list:typed-pointer-valid-example-run}
+\end{listing}
+
+Výstup analýzy~\ref{list:typed-pointer-valid-example-result} ukazuje,
+že typový paměťový model správně reprezentuje chování programu,
+tedy, že správně rozhoduje o platnosti (valid) dotazu na hodnotu proměnné $x$.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file typed-correct-when-pointer.c, line 6):
+    Let a = global(L_x_24).
+    Let x = Mint_0[a].
+    Assume {
+      Type: is_sint32(x).
+      (* Heap *)
+      Type: linked(Malloc_0) /\ cinits(Init_0).
+      (* Block In *)
+      Have: Malloc_0[L_x_24 <- 1] = Malloc_1.
+      (* Initializer *)
+      Init: (Init_0[a]=true).
+      (* Initializer *)
+      Init: Mint_1[a] = 0.
+      (* Initializer *)
+      Init: a = p.
+      Have: (Init_0[p <- true] = Init_1)
+              /\ (Mint_1[p <- 1] = Mint_0).
+    }
+    Prove: x = 1.
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Správný výsledek analýzy pomocí typového paměťového modelu}
+    \label{list:typed-pointer-valid-example-result}
+\end{listing}
+
+
+Aplikací typoveého
+
+
+Ukazatel (pointer) je ve Frama\mbox{-}C reprezentován jako dvojice
+
 
 \subsection{Referenční paměťový model}
 \label{subsec:referencni-pametovy-model}
