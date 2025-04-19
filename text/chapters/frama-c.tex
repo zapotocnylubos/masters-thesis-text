@@ -36,6 +36,9 @@ Tyto image obsahují minimalistické desktopové prostředí, Frama\mbox{-}C GUI
 umožnující připojení k desktopovému prostředí pomocí webového prohlížeče~\cite{FCDockerGUIMaroneze2021}.
 
 
+\section{Why3 a Coq}
+\label{sec:frama-c-why3-coq}
+
 \section{ACSL (ANSI/ISO C Specification Language)}
 \label{sec:acsl}
 
@@ -47,7 +50,8 @@ Tyto anotace jsou umístěny přímo ve zdrojovém kódu a vypadají například
 
 \begin{listing}[H]
     \begin{minted}{C}
-    /*@ requires x > 0;
+    /*@
+        requires x > 0;
         assigns \result;
         ensures \result == x + 2;
     */
@@ -63,10 +67,10 @@ Tyto anotace jsou umístěny přímo ve zdrojovém kódu a vypadají například
 
 V návaznosti na kapitolu~\ref{ch:metoda-nejslabsiho-predpokladu}, kde jsme se seznámili
 s metodou nejslabšího předpokladu, si nyní ukážeme, jakým způsobem lze pomocí ACSL
-vyjádřit vlastnosti, předpoklady a závěry pro funkce v jazyce C.
+vyjádřit vlastnosti, předpoklady a závěry pro funkce v jazyce C\@.
 
-V ukázce~\ref{list:acsl-example} je uvedena funkce \texttt{increment}, která
-definuje předpoklad a závěř pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
+Ukázka~\ref{list:acsl-example} představuje funkci \texttt{increment},
+která definuje předpoklad a závěř pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
 Zjednodušená Hoareova trojice pro příklad z kódu~\ref{list:acsl-example} vypadá následovně:
 
 \begin{equation*}
@@ -79,15 +83,123 @@ Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na p�
 Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C stále podporuje vlastní verzi.
 
 Výhodou vlastního předzpracování a použití mezi-interpretace je,
-že Frama\mbox{-}C může analyzovat zdrojový kód efektivně
+že Frama\mbox{-}C má možnost analyzovat zdrojový kód efektivně
 a nainstalované pluginy mohou pracovat s touto abstraktní reprezentací
 a nebo ji dokonce upravovat či transformovat~\cite{FCKernelMaroneze2024}.
 
+Anotace \texttt{\textbackslash requires} se používá k vyjádření předpokladů
+u kterých se předpokládá, že jsou splněny před provedením funkce.
+Syntakticky je možné použít \texttt{\textbackslash requires} pouze v kontraktech funkcí.
+
+Anotace \texttt{\textbackslash ensures} se používá k vyjádření vlastností,
+které budou platit, za předpokladu úspěšného provedení důkazu, po provedení funkce.
+Syntakticky je možné použít \texttt{\textbackslash ensures} pouze v kontraktech funkcí.
+
+Anotace \texttt{\textbackslash requires} a \texttt{\textbackslash ensures}
+jsou přímou aplikací Hoareovy logiky na funkce v jazyce C\@.
+Předpoklady z Hoareovy logiky jsou vyjádřeny pomocí klauzule \texttt{\textbackslash requires},
+následky pomocí klauzule \texttt{\textbackslash ensures} a příkaz (program) je vyjádřen jako tělo funkce.
+
+\subsection{Obecné a existenční kvantifikátory}
+\label{subsec:anotace-kvantifikatory}
+
+% TODO: uživatelům/programátorům?
+
+Obecný kvantifikátor \texttt{\textbackslash forall} a existenční kvantifikátor \texttt{\textbackslash exists}
+umožňují uživatelům vyjadřovat vlastnosti a vztahy mezi proměnnými v anotacích.
+Jejich použití nejčastěji nalezneme v kontraktech funkcí,
+kde vyjádřují vlastnosti, které musí být splněny před a po provedení funkce.
+
+% TODO: říká -> specifikuje...?
+
+Příklad~\ref{list:acsl-forall} zobrazuje použití obecného kvantifikátoru,
+který se používá k vyjádření vlastnosti, která musí být splněna pro všechny hodnoty.
+Zde je definována vlastnost prvků v poli celých čísel \texttt{arr} o velikosti \texttt{n},
+která specifikuje, že pro každé $i$ v intervalu $[0, n)$ platí,
+že hodnota $arr[i]$ (prvek pole) je větší nebo rovna nule (pole obsahuje pouze nezáporné hodnoty).
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        requires \valid(arr);
+        requires n > 0;
+
+        requires
+            \forall integer i;
+                0 <= i < n
+                    ==> 0 <= arr[i];
+    */
+    int find_min(int *arr, int n) {
+    }
+    \end{minted}
+    \caption{Ukázka obecného kvantifikátorů v ACSL}
+    \label{list:acsl-forall}
+\end{listing}
+
+% TODO: ukazuje -> zobrazuje
+
+Použití existenčního kvantifikátoru \texttt{\textbackslash exists} je podobné,
+ale místo toho, aby vyžadoval splnění vlastnosti pro všechny hodnoty,
+umožňuje vyjádřit, že existuje alespoň jeden prvek, pro který je daná vlastnost splněna.
+Příklad~\ref{list:acsl-exists} zobrazuje anotaci funnkce pro hledání minimální hodnoty v poli celých (nezáporných) čísel.
+Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku v poli.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        ...
+        ensures
+            \exists integer i;
+                0 <= i < n
+                    ==> arr[i] == \result;
+    */
+    int find_min(int *arr, int n) {
+    }
+    \end{minted}
+    \caption{Ukázka existenčního kvantifikátoru v ACSL}
+    \label{list:acsl-exists}
+\end{listing}
+
+Nicméně tato anotace sama o sobě říká pouze to, že existuje prvek v poli,
+který má stejnou hodnotu jako výstup funkce.
+Tato anotace by byla splnitelná i jednoduchým kódem, který vrací první prvek pole (například \texttt{return arr[0]}).
+Jelikož je zajištěno, že $n$ je alespoň 1 (\texttt{requires n > 0}),
+tak je tento program korektní a splňuje kontrakt funkce.
+
+Kontrakt je tedy nedostatečný, protože neříká nic o tom, že je tento prvek minimální.
+Pokud bychom chtěli vyjádřit, že tento prvek je minimální,
+museli bychom přidat kombinaci obecného a existenčního kvantifikátoru,
+jak je zobrazeno v ukázce~\ref{list:acsl-exists-forall},
+která nám umožňuje vyjádřit vlastnost, že existuje prvek v poli,
+jehož hodnota je rovna výsledku funkce a zároveň splňuje vlastnost,
+že je minimální vůči všem ostatním prvkům v poli.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        ...
+
+        ensures
+            \exists integer i;
+                0 <= i < n
+                    ==> arr[i] == \result
+                    && \forall integer j;
+                        0 <= j < n
+                            ==> arr[i] <= arr[j];
+    */
+    int find_min(int *arr, int n) {
+    }
+    \end{minted}
+    \caption{Ukázka kombinace obecného a existenčního kvantifikátoru v ACSL}
+    \label{list:acsl-exists-forall}
+\end{listing}
 
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
 \label{subsec:anotace-at-a-casove-body}
 
-Anotaci \texttt{\textbackslash at(\dots, L)} můžeme využít pro odkazování na hodnoty proměnných
+% TODO: můžeme -> lze?
+
+Anotaci \texttt{\textbackslash at(\dots, L)} lze využít pro odkazování na hodnoty proměnných
 v různých časových bodech programu označených jako $L$.
 Návěští (label) $L$ může být například začátek funkce, začátek cyklu nebo libovolné místo v programu,
 které je ve zdrojovém kódu explicitně označeno.
@@ -161,6 +273,12 @@ Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
     \end{itemize}
 \end{itemize}
 
+ACSL definuje pamětový ukazatel (pointer) jako dvojici \texttt{(base, offset)},
+kde \texttt{base} je základní adresa paměťového bloku a \texttt{offset} je relativní počet bytů
+od základní adresy.
+Například v poli celých čí
+TODO: rict, ze v poli maji vsechny prvky stejnou base, ale jiny offset
+
 TODO: pointery a validita, separace
 
 TODO: kvantifikátory, predikáty, logické funkce
@@ -170,6 +288,72 @@ TODO: loop invarianty, loop varianty
 TODO: ghost konstrukty
 
 TODO: Why3 a WhyML
+
+\subsection{Anotace \texttt{\textbackslash assigns}}
+\label{subsec:anotace-assigns}
+
+\subsection{Anotace cyklů}
+\label{subsec:anotace-cyklu}
+
+\section{Why3 a WhyML}
+\label{sec:frama-c-why3}
+
+Why3 je platforma pro deduktivní ověřování programů.
+Poskytuje jazyk pro specifikaci a programování, který se nazývá WhyML,
+a spoléhá se na externí dokazovací nástroje (provers) pro ověřování vlastností zadaných programů.
+Why3 je navržen tak, aby byl nezávislý na konkrétním programovacím jazyce
+a slouží jako univerzální mezivrstva mezi programovacím jazykem a dokazovacími nástroji~\cite{boogie11why3}.
+Hlavním cílem Why3 je poskytnout uživatelům možnost psát specifikace a programy v jednotném rozhraní
+a následně je ověřovat pomocí různých externích dokazovacích nástrojů bez nutnosti přepisovat kód pro každý nástroj zvlášť.
+Why3 je zakomponován do několika nástrojů pro formální verifikaci,
+jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
+Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
+který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
+
+Frama\mbox{-}C definuje několik základních axiomů, lemmat a predikátů,
+které jsou použity v rámci generování WhyML kódu~\cite{FCGitWhy}.
+V této kapitole se zaměříme na některé z těchto axiomů, lemmat a predikátů,
+které v následujících kapitolách uvidíme v příkladech a analýzách.
+
+Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
+jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}.
+Paměťovou adresu lze instancovat pomocí konstruktoru \texttt{mk\_addr},
+který přijímá dva celočíselné argumenty.
+Prvním argumentem je \texttt{base}, což je základní adresa paměťového bloku,
+a druhým argumentem je \texttt{offset}, což je relativní offset v bytech od základní adresy.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Inductive addr :=
+      | mk_addr : Z -> Z -> addr.
+    \end{minted}
+    \caption{Definice paměťového ukazatele v jazyce WhyML}
+    \label{list:why-addr}
+\end{listing}
+
+ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
+Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset},
+které jsou ve WhyML následně přeloženy do funkcí \texttt{base},
+která vrací první argument konstruktoru \texttt{mk\_addr}, tedy \texttt{base},
+a \texttt{offset}, která vrací druhý argument konstruktoru \texttt{mk\_addr}, tedy \texttt{offset}.
+předstané v ukázce~\ref{list:why-addr-base-offset}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Definition base (v:addr) : Z :=
+      match v with
+        mk_addr x x1 => x
+      end.
+
+    Definition offset (v:addr) : Z :=
+      match v with
+        mk_addr x x1 => x1
+      end.
+    \end{minted}
+    \caption{Definice funkcí pro získání \texttt{base} a \texttt{offset} z paměťového ukazatele}
+    \label{list:why-addr-base-offset}
+\end{listing}
+
 
 TODO: .. popslat global, linked, framed, separated
 
@@ -281,7 +465,7 @@ a proměnná typu \texttt{int*} $px$, jako jiné paměťové místo a nepředpok
 uložené v jiné proměnné (například ukazatelem $px$).
 
 Pokud použijeme Hoareův paměťový model na programy, které pracují s ukazateli,
-můžeme dostat neplatné výsledky, které neodpovídají skutečnému chování programu.
+je možné dostat neplatné výsledky, které neodpovídají skutečnému chování programu.
 Následující příklad~\ref{list:ssa-pointer-invalid-example} ukazuje jednoduchou funkci,
 která přiřazuje hodnotu 1 do proměnné $x$ pomocí ukazatele $p$.
 
@@ -549,3 +733,36 @@ Ukazatel (pointer) je ve Frama\mbox{-}C reprezentován jako dvojice
 
 \section{Oddělená paměť}
 \label{sec:oddelena-pamet}
+
+\section{Protipříklady}
+\label{sec:frama-c-counterexamples}
+
+%why3 config detect
+%Found prover Alt-Ergo version 2.5.3, OK.
+%Found prover Alt-Ergo version 2.5.3 (alternative: BV)
+%Found prover Alt-Ergo version 2.5.3 (alternative: counterexamples)
+%Found prover CVC4 version 1.8 (alternative: strings+counterexamples)
+%Found prover CVC4 version 1.8 (alternative: strings)
+%Found prover CVC4 version 1.8 (alternative: counterexamples)
+%Found prover CVC4 version 1.8, OK.
+%7 prover(s) added
+%Save config to /home/parallels/.why3.conf
+
+
+%2.3.3 Model Selection
+%These options modify the underlying memory model that is used for computing weakest
+%preconditions. See chapter 3 for details. Models are identified by a combination of selectors
+%which are defined below:
+%Selector Description
+%Hoare Select Hoare memory model.
+%Typed Select Typed memory model with limited casts.
+%cast Select Typed memory model with unlimited casts (unsound).
+%nocast Select Typed memory model with no casts.
+%raw Disable the combination of memory models.
+%var Combination of memory models based on variable analysis.
+%ref Activate the detection of pointer variables used for reference passing style.
+%caveat Caveat memory model (see 3.7).
+%int Use machine integers when overflows and downcasts might occurs.
+%nat Integer model without bounds (no overflow assumed).
+%float Use floating-point operations.
+%real Use mathematical reals instead of floating point.
