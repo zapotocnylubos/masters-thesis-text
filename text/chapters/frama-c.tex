@@ -20,24 +20,30 @@ nebo například EVA (Evolving Value Analysis) pro analýzu hodnot proměnných 
 Klíčovým prvkem Frama\mbox{-}C je definice a podpora specifikačního jazyka ACSL (ANSI/ISO C Specification Language),
 který umožňuje uživatelům vyjadřovat vlastnosti a specifikace programů v jazyce C pomocí specifikačních komentářů.
 Tyto komentáře anotují kód a poskytují informace pro statickou analýzu a deduktivní dokazování.
-Návrh a implementace ACSL byly inspirovány podobným standardem pro jazyk Java, známým jako JML (Java Modeling Language)~\cite{ACSLSpec}.
-ACLS bude podrobněji představen v kapitole~\ref{sec:acsl}.
+Návrh a implementace ACSL byly inspirovány podobným standardem JML (Java Modeling Language) pro jazyk Java~\cite{ACSLSpec}.
+Jazyk ACLS bude podrobněji představen v kapitole~\ref{sec:acsl}.
 
-Prostředí Frama\mbox{-}C je distribuováno jako program pro příkazový řádek a také jako grafické uživatelské rozhraní (GUI).
-GUI poskytuje uživatelsky přívětivé prostředí pro interakci s celým ekosystémem Frama\mbox{-}C a hlavně s nainstalovanými pluginy.
+Prostředí Frama\mbox{-}C je distribuováno jako program pro příkazový řádek a také jako grafické uživatelské rozhraní (GUI),
+které poskytuje uživatelsky přívětivé prostředí pro interakci s celým ekosystémem Frama\mbox{-}C a hlavně s nainstalovanými pluginy.
 Grafické prostředí je dostupné hlavně pro operační systémy Linux a Windows.
 Pro uživatele operačního systému macOS je k dispozici pouze příkazová řádka.
 
-Organizace stojící za vývojem Frama\mbox{-}C distribuuje mimo jiné také Docker image, které obsahují všechny potřebné závislosti
+Distibuje Frama\mbox{-}C obsahuje mimo jiné také Docker image, které obsahují všechny potřebné závislosti
 pro běh Frama\mbox{-}C a základních pluginů společně s několika SMT řešičemi, jako je Alt-Ergo, CVC4 a Z3.
 Také distribuují GUI variantu imagů a je tedy velmi snadné spustit Frama\mbox{-}C GUI pomocí Dockeru na libovolném operačním systému,
 jako je například macOS nebo Windows.
 Tyto image obsahují minimalistické desktopové prostředí, Frama\mbox{-}C GUI a VNC aplikaci
 umožnující připojení k desktopovému prostředí pomocí webového prohlížeče~\cite{FCDockerGUIMaroneze2021}.
 
+% TODO: převádí -> převede? jaký čas/rod? (spíš převádí)
 
-\section{Why3 a Coq}
-\label{sec:frama-c-why3-coq}
+Frama\mbox{-}C před spuštěním analýzy převádí zdrojový kód do mezi-interpretace (intermediate representation)
+nazývané \texttt{CIL} (C Intermediate Language)~\cite{BlanchardACSL2024}.
+Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula~\cite{Necula2002CIL}.
+Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C stále podporuje vlastní verzi.
+Vlastní předzpracování a použití mezi-interpretace umožňuje Frama\mbox{-}C
+analyzovat zdrojový kód efektivněji a nainstalované pluginy mohou pracovat
+s touto abstraktní reprezentací, upravovat ji nebo dokonce transformovat~\cite{FCKernelMaroneze2024}.
 
 \section{ACSL (ANSI/ISO C Specification Language)}
 \label{sec:acsl}
@@ -45,8 +51,8 @@ umožnující připojení k desktopovému prostředí pomocí webového prohlí�
 ACLS je specifikační jazyk pro jazyk C, který umožňuje uživatelům
 vyjadřovat vlastnosti a specifikace programů pomocí anotací v podobě speciálních komentářů ve zdrojovém kódu.
 
-Anotace lze zapsat jako jednořádkový komentář \texttt{//@ ...} nebo víceřádkový komentář \texttt{/*@ ... */}.
-Tyto anotace jsou umístěny přímo ve zdrojovém kódu a vypadají například jako v ukázce~\ref{list:acsl-example}.
+Anotace lze zapsat jako jednořádkový komentář \texttt{//@ ...} nebo víceřádkový komentář \texttt{/*@ ... */} umístěný přímo ve zdrojovém kódu.
+Ukázka~\ref{list:acsl-example} zobrazuje příklad zdrojového kódu ve kterém nalezneme obě varianty anotací.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -61,54 +67,63 @@ Tyto anotace jsou umístěny přímo ve zdrojovém kódu a vypadají například
         return x + 1;
     }
     \end{minted}
-    \caption{Ukázka anotace funkce v jazyce C pomocí ACSL}
+    \caption{Ukázka anotací v jazyce C pomocí ACSL}
     \label{list:acsl-example}
 \end{listing}
 
-V návaznosti na kapitolu~\ref{ch:metoda-nejslabsiho-predpokladu}, kde jsme se seznámili
-s metodou nejslabšího předpokladu, si nyní ukážeme, jakým způsobem lze pomocí ACSL
-vyjádřit vlastnosti, předpoklady a závěry pro funkce v jazyce C\@.
+V návaznosti na kapitolu~\ref{ch:metoda-nejslabsiho-predpokladu},
+ve které byla teoreticky popsána metodou nejslabšího předpokladu,
+nyní navážeme a představíme ACSL anotace umožňující zápis specifikací a vlastností programů,
+které společně se zdrojovým kódem zpracovává WP (Weakest Precondition) plugin Frama\mbox{-}C\@.
 
-Ukázka~\ref{list:acsl-example} představuje funkci \texttt{increment},
-která definuje předpoklad a závěř pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
-Zjednodušená Hoareova trojice pro příklad z kódu~\ref{list:acsl-example} vypadá následovně:
+Ukázka~\ref{list:acsl-example} představila funkci \texttt{increment},
+která definuje předpoklad a následek pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
+Zjednodušená Hoareova trojice pro příklad z ukázky~\ref{list:acsl-example} by vypadala následovně:
 
 \begin{equation*}
     \{ x > 0 \} \ (x = x + 1; return \  x + 1) \ \{ result == x + 2 \}
 \end{equation*}
 
-Frama\mbox{-}C před spuštěním analýzy převede zdrojový kód do mezi-interpretace (intermediate representation)
-nazývané \texttt{CIL} (C Intermediate Language)~\cite{BlanchardACSL2024}.
-Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula~\cite{Necula2002CIL}.
-Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C stále podporuje vlastní verzi.
-
-Výhodou vlastního předzpracování a použití mezi-interpretace je,
-že Frama\mbox{-}C má možnost analyzovat zdrojový kód efektivně
-a nainstalované pluginy mohou pracovat s touto abstraktní reprezentací
-a nebo ji dokonce upravovat či transformovat~\cite{FCKernelMaroneze2024}.
-
 Anotace \texttt{\textbackslash requires} se používá k vyjádření předpokladů
-u kterých se předpokládá, že jsou splněny před provedením funkce.
+u kterých předpokládáme, že jsou splněny před provedením funkce.
 Syntakticky je možné použít \texttt{\textbackslash requires} pouze v kontraktech funkcí.
 
-Anotace \texttt{\textbackslash ensures} se používá k vyjádření vlastností,
+Anotace \texttt{\textbackslash ensures} se používá k vyjádření následků,
 které budou platit, za předpokladu úspěšného provedení důkazu, po provedení funkce.
 Syntakticky je možné použít \texttt{\textbackslash ensures} pouze v kontraktech funkcí.
 
 Anotace \texttt{\textbackslash requires} a \texttt{\textbackslash ensures}
-jsou přímou aplikací Hoareovy logiky na funkce v jazyce C\@.
+jsou přímou aplikací Hoareovy logiky na funkcích v jazyce C\@.
 Předpoklady z Hoareovy logiky jsou vyjádřeny pomocí klauzule \texttt{\textbackslash requires},
 následky pomocí klauzule \texttt{\textbackslash ensures} a příkaz (program) je vyjádřen jako tělo funkce.
 
-\subsection{Obecné a existenční kvantifikátory}
+Frama\mbox{-}C převádí kód napsaný v jazyce C společně s ACSL anotacemi do formálního jazyka WhyML,
+který je součástí platformy Why3 a poskytuje podporu pro specifikaci vlastností programů
+a následného ověření pomocí externích dokazovacích nástrojů~\cite{why3web}.
+Plaforma Why3 slouží jako univerzální mezi-vrstva mezi popisem programu v jazyce WhyML a různými SMT řešiči
+jako jsou například Alt-Ergo, CVC4 a Z3~\cite{boogie11why3}.
+Cílem Why3 je poskytnout jednotné rozhraní pro specifikaci a verifikaci programů
+a náslédně automaticky generovat formální důkazy pomocí různých SMT řešičů bez nutnosti přepisovat kód pro každý SMT řešič zvlášť.
+Why3 je zakomponován do několika nástrojů pro formální verifikaci,
+jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
+Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
+který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
+
+% TODO: jsou ..použity.. -> používá?
+
+Frama\mbox{-}C definuje několik základních axiomů, lemmat, predikátů, funkcí a typů,
+které jsou použity v rámci generování WhyML kódu~\cite{FCGitWhy} a
+některé ukázky v následujících kapitolách budou pro úplnost doplněny o tyto definice jazyce WhyML\@.
+
+\subsection{Obecný a existenční kvantifikátor}
 \label{subsec:anotace-kvantifikatory}
 
 % TODO: uživatelům/programátorům?
 
 Obecný kvantifikátor \texttt{\textbackslash forall} a existenční kvantifikátor \texttt{\textbackslash exists}
-umožňují uživatelům vyjadřovat vlastnosti a vztahy mezi proměnnými v anotacích.
+umožňují uživatelům vyjadřovat vlastnosti proměnných a paměťových oblastí.
 Jejich použití nejčastěji nalezneme v kontraktech funkcí,
-kde vyjádřují vlastnosti, které musí být splněny před a po provedení funkce.
+kde kvantifikátory pomáhají vyjádřit vlastnosti o parametrech funkcí nebo návratových hodnotách.
 
 % TODO: říká -> specifikuje...?
 
@@ -160,13 +175,19 @@ Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku 
     \label{list:acsl-exists}
 \end{listing}
 
-Nicméně tato anotace sama o sobě říká pouze to, že existuje prvek v poli,
-který má stejnou hodnotu jako výstup funkce.
+Nicméně tato anotace sama o sobě specifikuje pouze to, že existuje prvek v poli,
+který má stejnou hodnotu jako návratová hodnota funkce.
 Tato anotace by byla splnitelná i jednoduchým kódem, který vrací první prvek pole (například \texttt{return arr[0]}).
 Jelikož je zajištěno, že $n$ je alespoň 1 (\texttt{requires n > 0}),
 tak je tento program korektní a splňuje kontrakt funkce.
 
-Kontrakt je tedy nedostatečný, protože neříká nic o tom, že je tento prvek minimální.
+% TODO: je zobrazeno -> zobrazuje?
+% TODO: trpný rod/prítomný
+
+% TODO: je zobrazeno -> zobrazuje
+
+Kontrakt je tedy nedostatečný, protože nespecifikuje vlastnost,
+že by tento prvek byl doopravdy minimální.
 Pokud bychom chtěli vyjádřit, že tento prvek je minimální,
 museli bychom přidat kombinaci obecného a existenčního kvantifikátoru,
 jak je zobrazeno v ukázce~\ref{list:acsl-exists-forall},
@@ -194,8 +215,312 @@ jehož hodnota je rovna výsledku funkce a zároveň splňuje vlastnost,
     \label{list:acsl-exists-forall}
 \end{listing}
 
+
+\subsection{Cykly}
+\label{subsec:acsl-cykly}
+
+Cykly v jazyce C jsou reprezentovány pomocí konstrukcí \texttt{for}, \texttt{while} a \texttt{do-while}.
+Frama\mbox{-}C v rámci předzpracování kódu převádí tyto konstrukce pouze na konstrukci \texttt{while}.
+Následující ukázky~\ref{list:for-transform-while} a~\ref{list:do-while-transform-while}
+ukazují ekvivalentní zápis cyklu \texttt{for} a \texttt{do-while} pomocí cyklu \texttt{while},
+který Frama\mbox{-}C provádí automaticky během předzpracování.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    for (init; condition; increment) {
+        body;
+    }
+
+    // ekvivalentní zápis
+
+    init;
+    while (condition) {
+        body;
+        increment;
+    }
+    \end{minted}
+    \caption{Ekvivalentní zápis cyklu \texttt{for} pomocí \texttt{while}}
+    \label{list:for-transform-while}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    do {
+        body;
+    } while (condition);
+
+    // ekvivalentní zápis
+
+    while (1) {
+        body;
+        if (!condition) break;
+    }
+    \end{minted}
+    \caption{Ekvivalentní zápis cyklu \texttt{do-while} pomocí \texttt{while}}
+    \label{list:do-while-transform-while}
+\end{listing}
+
+Tvorba důkazů pro cykly je složitější než pouze pro sekvenci příkazů.
+Stejně jako v Hoareově logice je v ACSL nutné pro správné důkazy cyklů definovat invarianty cyklu (\texttt{loop invariant}).
+Invariant je vlastnost, která musí být splněna před spuštěním cyklu,
+na konci každé iterace cyklu a také po ukončení cyklu.
+Pokud invariant nespecifikujeme, jako například v ukázce~\ref{list:loop-no-invariant},
+poté pomocí metody nejslabšího předpokladu nelze prokázat,
+že cyklus skončí a že proměnná \texttt{n} bude mít hodnotu.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        requires n >= 0;
+    */
+    void loop_invariant(int n) {
+        while (n > 0) {
+            n--;
+        }
+        //@ assert n == 0;
+    }
+    \end{minted}
+    \caption{Ukázka cyklu bez invariantu}
+    \label{list:loop-no-invariant}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{console}
+    frama-c -wp -wp-prover alt-ergo,cvc4,z3
+      -wp-no-let -wp-print no-loop-invariant.c
+    \end{minted}
+    \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
+    \label{list:loop-no-invariant-command}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Termination-condition (generated) in 'loop_invariant':
+    Loop termination at line 5
+    Assume {
+      Type: is_sint32(n).
+      (* Pre-condition *)
+      Have: 0 <= n.
+      (* Pre-condition *)
+      Have: 0 <= n.
+    }
+    Prove: false.
+    Prover Alt-Ergo 2.5.3 returns Timeout (2s)
+    Prover CVC4 1.8 returns Unknown
+    Prover Z3 4.8.12 returns Timeout (2s)
+
+    ---
+
+    Goal Assertion (file no-loop-invariant.c, line 8):
+    Assume {
+      Type: is_sint32(n) /\ is_sint32(n_1) /\ is_sint32(n_2).
+      (* Pre-condition *)
+      Have: 0 <= n_2.
+      (* Pre-condition *)
+      Have: 0 <= n_2.
+      (* Else *)
+      Have: n_1 <= 0.
+      Have: n_1 = n.
+    }
+    Prove: n = 0.
+    Prover Alt-Ergo 2.5.3 returns Timeout (2s)
+    Prover CVC4 1.8 returns Unknown
+    Prover Z3 4.8.12 returns Timeout (2s)
+    \end{minted}
+    \caption{Výstup analýzy cyklu bez invariantu}
+    \label{list:loop-no-invariant-output}
+\end{listing}
+
+Spuštěním příkazu~\ref{list:loop-no-invariant-command} získáme výsledek analýzy~\ref{list:loop-no-invariant-output},
+který ukazuje, že proběhl pokus o dokázání dvou vlastností.
+
+První vlastnost je automaticky generovaná podmínka konečnosti cyklu, kterou uživatel musí vyplnit.
+Konečnost cyklů bude popsána na konci této kapitoly.
+
+Druhá vlastnost je naše očekávaná vlastnost (\texttt{assert n == 0}),
+kterou nemohl zádný z použitých SMT řešičů dokázat,
+jelikož jedinou informaci o výsledné proměnné \texttt{n} je,
+že je menší nebo rovna nule (\texttt{n == n\_1} a \texttt{n\_1 <= 0}).
+
+% TODO: dokázat -> prokázat?
+
+Přidáním správného invariantu cyklu do kódu~\ref{list:loop-with-invariant}
+popisující změny v proměnné \texttt{n} během iterací cyklu
+a spuštění nové analýzy~\ref{list:loop-with-invariant-output} získáváme již správný výsledek
+a to konkrétně v několika krocích:
+
+\begin{itemize}
+    \item Prokázání platnosti invariantu \texttt{0 <= n} před spuštěním cyklu (Establishment of Invariant).
+    \item Prokázání platnosti invariantu \texttt{0 <= n} na konci každé iterace cyklu (Preservation of Invariant).
+    \item Prokázání očekávané vlastnosti \texttt{assert n == 0}.
+\end{itemize}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        loop invariant n >= 0;
+    */
+    while (n > 0) {
+    ...
+    \end{minted}
+    \caption{Ukázka cyklu s invariantem}
+    \label{list:loop-with-invariant}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Termination-condition (generated) in 'loop_invariant':
+    ...
+
+    ---
+
+    Goal Establishment of Invariant (file loop-invariant.c, line 6):
+    Assume {
+      Type: is_sint32(n).
+      (* Pre-condition *)
+      Have: 0 <= n.
+      (* Pre-condition *)
+      Have: 0 <= n.
+    }
+    Prove: 0 <= n.
+    Prover Qed returns Valid
+
+    ---
+
+    Goal Preservation of Invariant (file loop-invariant.c, line 6):
+    Assume {
+      Type: is_sint32(n) /\ is_sint32(n_1) /\ is_sint32(n_2) /\ is_sint32(n_3).
+      (* Pre-condition *)
+      Have: 0 <= n_3.
+      (* Pre-condition *)
+      Have: 0 <= n_3.
+      (* Invariant *)
+      Have: 0 <= n_3.
+      (* Invariant *)
+      Have: 0 <= n_2.
+      (* Then *)
+      Have: 0 < n_2.
+      Have: n_2 = n_1.
+      Have: (1 + n) = n_1.
+    }
+    Prove: 0 <= n.
+    Prover Qed returns Valid
+
+    ---
+
+    Goal Assertion (file loop-invariant.c, line 11):
+    Assume {
+      Type: is_sint32(n) /\ is_sint32(n_1) /\ is_sint32(n_2).
+      (* Pre-condition *)
+      Have: 0 <= n_2.
+      (* Pre-condition *)
+      Have: 0 <= n_2.
+      (* Invariant *)
+      Have: 0 <= n_2.
+      (* Invariant *)
+      Have: 0 <= n_1.
+      (* Else *)
+      Have: n_1 <= 0.
+      Have: n_1 = n.
+    }
+    Prove: n = 0.
+    Prover Alt-Ergo 2.5.3 returns Valid (5ms) (7)
+    \end{minted}
+    \caption{Výstup analýzy cyklu s invariantem}
+    \label{list:loop-with-invariant-output}
+\end{listing}
+
+Interní Qed zjednodušovač prokázal platnost invariantu před spuštěním cyklu a také platnost invariantu na konci každé iterace cyklu,
+Následně vidímě, že externí SMT řešič Alt-Ergo prokázal platnost tvrzení \texttt{assert n == 0}.
+
+Předchozí analýza cyklu bez invariantu skončila neúspěšně,
+protože systém měl pouze informaci o tom, že proměnná \texttt{n} je menší nebo rovna nule,
+což nestačilo k dokázání očekáváné rovnosti s nulou.
+Přidáním invaritanu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace,
+konkrétně o tom, že proměnná \texttt{n} je nezáporná (větší nebo rovna nule) po ukončení cyklu (z definice invariantu cyklu).
+Systém tedy měl nyní k dipozici informace o dvou nerovnostech:
+
+\begin{itemize}
+    \item \texttt{n <= 0} (cyklus skončil).
+    \item \texttt{n >= 0} (invariant je platný i po skončení cyklu).
+\end{itemize}
+
+Spojením těchto dvou nerovností SMT řešič Alt-Ergo mohl prokázat,
+že proměnná \texttt{n} musí být rovna nule,
+což je vlastnost, kterou jsme chtěli prokázat pomocí \texttt{assert n == 0}.
+
+Poslední vlastnost, kterou v programu potřebujeme doplnit a dokázat je podmínka konečnosti cyklu.
+Konečnost cyklů se definuje pomocí variantu cyklu (\texttt{loop variant}),
+a jedná se o výraz,
+který se musí s každou iterací cyklu zmenšovat.
+Často lze využít iterační proměnné jako například \texttt{i} v případě cyklu pracujícího od nejvyššího indexu k nule
+nebo výraz \texttt{n - i} v případě cyklu, který iteruje od nuly do n.
+V obou případech tento výraz s každou iterací klesá,
+a v případě potvrzení platnosti tohoto variantu lze o cyklu říci,
+že je konečný a skončí po konečném počtu iterací.
+
+
+
+
+\subsection{Ukazatele a paměťové bloky}
+\label{subsec:acsl-anotace-ukazatele-a-pametove-bloky}
+
+TODO: pointery a validita, separace
+
+Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
+jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}.
+Paměťovou adresu lze instancovat pomocí konstruktoru \texttt{mk\_addr},
+který přijímá dva celočíselné argumenty.
+Prvním argumentem je \texttt{base}, což je základní adresa paměťového bloku,
+a druhým argumentem je \texttt{offset}, což je relativní offset v bytech od základní adresy.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    type addr = { base : int ; offset : int }
+    \end{minted}
+    \caption{Definice paměťového ukazatele v jazyce WhyML}
+    \label{list:why-addr}
+\end{listing}
+
+ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
+Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset},
+které jsou ve WhyML následně přeloženy do funkcí \texttt{base},
+která vrací první argument konstruktoru \texttt{mk\_addr}, tedy \texttt{base},
+a \texttt{offset}, která vrací druhý argument konstruktoru \texttt{mk\_addr}, tedy \texttt{offset}.
+předstané v ukázce~\ref{list:why-addr-base-offset}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Definition base (v:addr) : Z :=
+      match v with
+        mk_addr x x1 => x
+      end.
+
+    Definition offset (v:addr) : Z :=
+      match v with
+        mk_addr x x1 => x1
+      end.
+    \end{minted}
+    \caption{Definice funkcí pro získání \texttt{base} a \texttt{offset} z paměťového ukazatele}
+    \label{list:why-addr-base-offset}
+\end{listing}
+
+
+TODO: .. popslat global, linked, framed, separated
+
+\subsection{Anotace \texttt{\textbackslash assigns}}
+\label{subsec:acsl-anotace-assigns}
+
+Anotace \texttt{\textbackslash assigns} se používá k určení paměťových oblastí,
+které mohou být změněny během vykonávání funkce.
+Tato anotace je součástí následku spuštění funkce
+a indikuje volajícímu, které paměťové oblasti mohly být změněny.
+
+TODO: dodelat
+
+
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
-\label{subsec:anotace-at-a-casove-body}
+\label{subsec:acsl-anotace-at-a-casove-body}
 
 % TODO: můžeme -> lze?
 
@@ -277,100 +602,31 @@ ACSL definuje pamětový ukazatel (pointer) jako dvojici \texttt{(base, offset)}
 kde \texttt{base} je základní adresa paměťového bloku a \texttt{offset} je relativní počet bytů
 od základní adresy.
 Například v poli celých čí
+
 TODO: rict, ze v poli maji vsechny prvky stejnou base, ale jiny offset
 
-TODO: pointery a validita, separace
-
-TODO: kvantifikátory, predikáty, logické funkce
-
-TODO: loop invarianty, loop varianty
 
 TODO: ghost konstrukty
 
-TODO: Why3 a WhyML
+\subsection{Predikáty a logické funkce}
+\label{subsec:acsl-predikaty-a-logicke-funkce}
 
-\subsection{Anotace \texttt{\textbackslash assigns}}
-\label{subsec:anotace-assigns}
+TODO: kvantifikátory, predikáty, logické funkce
 
-\subsection{Anotace cyklů}
-\label{subsec:anotace-cyklu}
+% TODO: uživatelům -> programátorům?
 
-\section{Why3 a WhyML}
-\label{sec:frama-c-why3}
-
-Why3 je platforma pro deduktivní ověřování programů.
-Poskytuje jazyk pro specifikaci a programování, který se nazývá WhyML,
-a spoléhá se na externí dokazovací nástroje (provers) pro ověřování vlastností zadaných programů.
-Why3 je navržen tak, aby byl nezávislý na konkrétním programovacím jazyce
-a slouží jako univerzální mezivrstva mezi programovacím jazykem a dokazovacími nástroji~\cite{boogie11why3}.
-Hlavním cílem Why3 je poskytnout uživatelům možnost psát specifikace a programy v jednotném rozhraní
-a následně je ověřovat pomocí různých externích dokazovacích nástrojů bez nutnosti přepisovat kód pro každý nástroj zvlášť.
-Why3 je zakomponován do několika nástrojů pro formální verifikaci,
-jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
-Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
-který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
-
-Frama\mbox{-}C definuje několik základních axiomů, lemmat a predikátů,
-které jsou použity v rámci generování WhyML kódu~\cite{FCGitWhy}.
-V této kapitole se zaměříme na některé z těchto axiomů, lemmat a predikátů,
-které v následujících kapitolách uvidíme v příkladech a analýzách.
-
-Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
-jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}.
-Paměťovou adresu lze instancovat pomocí konstruktoru \texttt{mk\_addr},
-který přijímá dva celočíselné argumenty.
-Prvním argumentem je \texttt{base}, což je základní adresa paměťového bloku,
-a druhým argumentem je \texttt{offset}, což je relativní offset v bytech od základní adresy.
-
-\begin{listing}[H]
-    \begin{minted}{text}
-    Inductive addr :=
-      | mk_addr : Z -> Z -> addr.
-    \end{minted}
-    \caption{Definice paměťového ukazatele v jazyce WhyML}
-    \label{list:why-addr}
-\end{listing}
-
-ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
-Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset},
-které jsou ve WhyML následně přeloženy do funkcí \texttt{base},
-která vrací první argument konstruktoru \texttt{mk\_addr}, tedy \texttt{base},
-a \texttt{offset}, která vrací druhý argument konstruktoru \texttt{mk\_addr}, tedy \texttt{offset}.
-předstané v ukázce~\ref{list:why-addr-base-offset}.
-
-\begin{listing}[H]
-    \begin{minted}{text}
-    Definition base (v:addr) : Z :=
-      match v with
-        mk_addr x x1 => x
-      end.
-
-    Definition offset (v:addr) : Z :=
-      match v with
-        mk_addr x x1 => x1
-      end.
-    \end{minted}
-    \caption{Definice funkcí pro získání \texttt{base} a \texttt{offset} z paměťového ukazatele}
-    \label{list:why-addr-base-offset}
-\end{listing}
-
-
-TODO: .. popslat global, linked, framed, separated
-
-TODO: .. Pipeline Frama-C -> Why3 -> SMT
 
 \section{RTE (Run-Time Error)}
 \label{sec:frama-c-rte}
 
-
 \section{WP (Weakest Precondition)}
 \label{sec:frama-c-wp}
 
-
 \section{Paměťové modely}
-\label{sec:frama-c-mem}
+\label{sec:frama-c-pametove-modely}
 
 % TODO: objasnit co znamená ...chovají vzhledem k paměti...
+
 Paměťové modely jsou důležitou součástí analýzy programů,
 protože umožňují definovat, jakým způsobem se programy chovají
 vzhledem k paměti a jakým způsobem manipulují s daty.
@@ -388,7 +644,7 @@ která zajišťuje, že každá logická proměnná má přiřazenou hodnotu pou
 Hoareův paměťový model reprezentuje proměnné a jejich hodnoty v různých časech
 pomocí několika různých logických proměnných, na které lze odkazovat pomocí
 ACLS anotace \texttt{\textbackslash at}.
-Tato anotace, její použití a význam byly podrobněji popsány v kapitole~\ref{subsec:anotace-at-a-casove-body}.
+Tato anotace, její použití a význam byly podrobněji popsány v kapitole~\ref{subsec:acsl-anotace-at-a-casove-body}.
 
 Následující příklad~\ref{list:ssa-example} popisuje velmi jednoduchou funkci,
 která přijímá jeden parametr $x$ typu \texttt{int} (celé číslo) a provádí na něm dvě operace.
@@ -766,3 +1022,4 @@ Ukazatel (pointer) je ve Frama\mbox{-}C reprezentován jako dvojice
 %nat Integer model without bounds (no overflow assumed).
 %float Use floating-point operations.
 %real Use mathematical reals instead of floating point.
+
