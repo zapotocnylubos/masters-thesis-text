@@ -72,7 +72,7 @@ Ukázka~\ref{list:acsl-example} zobrazuje příklad zdrojového kódu ve kterém
 \end{listing}
 
 V návaznosti na kapitolu~\ref{ch:metoda-nejslabsiho-predpokladu},
-ve které byla teoreticky popsána metodou nejslabšího předpokladu,
+ve které byla teoreticky popsána metoda nejslabšího předpokladu,
 nyní navážeme a představíme ACSL anotace umožňující zápis specifikací a vlastností programů,
 které společně se zdrojovým kódem zpracovává WP (Weakest Precondition) plugin Frama\mbox{-}C\@.
 
@@ -84,18 +84,18 @@ Zjednodušená Hoareova trojice pro příklad z ukázky~\ref{list:acsl-example} 
     \{ x > 0 \} \ (x = x + 1; return \  x + 1) \ \{ result == x + 2 \}
 \end{equation*}
 
-Anotace \texttt{\textbackslash requires} se používá k vyjádření předpokladů
+Anotace \texttt{requires} se používá k vyjádření předpokladů
 u kterých předpokládáme, že jsou splněny před provedením funkce.
-Syntakticky je možné použít \texttt{\textbackslash requires} pouze v kontraktech funkcí.
+Syntakticky je možné použít \texttt{requires} pouze v kontraktech funkcí.
 
-Anotace \texttt{\textbackslash ensures} se používá k vyjádření následků,
+Anotace \texttt{ensures} se používá k vyjádření následků,
 které budou platit, za předpokladu úspěšného provedení důkazu, po provedení funkce.
-Syntakticky je možné použít \texttt{\textbackslash ensures} pouze v kontraktech funkcí.
+Syntakticky je možné použít \texttt{ensures} pouze v kontraktech funkcí.
 
-Anotace \texttt{\textbackslash requires} a \texttt{\textbackslash ensures}
+Anotace \texttt{requires} a \texttt{ensures}
 jsou přímou aplikací Hoareovy logiky na funkcích v jazyce C\@.
-Předpoklady z Hoareovy logiky jsou vyjádřeny pomocí klauzule \texttt{\textbackslash requires},
-následky pomocí klauzule \texttt{\textbackslash ensures} a příkaz (program) je vyjádřen jako tělo funkce.
+Předpoklady z Hoareovy logiky jsou vyjádřeny pomocí klauzule \texttt{requires},
+následky pomocí klauzule \texttt{ensures} a příkaz (program) je vyjádřen jako tělo funkce.
 
 Frama\mbox{-}C převádí kód napsaný v jazyce C společně s ACSL anotacemi do formálního jazyka WhyML,
 který je součástí platformy Why3 a poskytuje podporu pro specifikaci vlastností programů
@@ -156,7 +156,7 @@ která specifikuje, že pro každé $i$ v intervalu $[0, n)$ platí,
 Použití existenčního kvantifikátoru \texttt{\textbackslash exists} je podobné,
 ale místo toho, aby vyžadoval splnění vlastnosti pro všechny hodnoty,
 umožňuje vyjádřit, že existuje alespoň jeden prvek, pro který je daná vlastnost splněna.
-Příklad~\ref{list:acsl-exists} zobrazuje anotaci funnkce pro hledání minimální hodnoty v poli celých (nezáporných) čísel.
+Příklad~\ref{list:acsl-exists} zobrazuje anotaci funkce pro hledání minimální hodnoty v poli celých (nezáporných) čísel.
 Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku v poli.
 
 \begin{listing}[H]
@@ -266,7 +266,7 @@ Invariant je vlastnost, která musí být splněna před spuštěním cyklu,
 na konci každé iterace cyklu a také po ukončení cyklu.
 Pokud invariant nespecifikujeme, jako například v ukázce~\ref{list:loop-no-invariant},
 poté pomocí metody nejslabšího předpokladu nelze prokázat,
-že cyklus skončí a že proměnná \texttt{n} bude mít hodnotu.
+že cyklus skončí a že proměnná \texttt{n} bude mít požadovanou hodnotu 0.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -338,20 +338,22 @@ První vlastnost je automaticky generovaná podmínka konečnosti cyklu, kterou 
 Konečnost cyklů bude popsána na konci této kapitoly.
 
 Druhá vlastnost je naše očekávaná vlastnost (\texttt{assert n == 0}),
-kterou nemohl zádný z použitých SMT řešičů dokázat,
-jelikož jedinou informaci o výsledné proměnné \texttt{n} je,
-že je menší nebo rovna nule (\texttt{n == n\_1} a \texttt{n\_1 <= 0}).
+kterou nemohl zádný z použitých SMT řešičů dokázat.
+Jediná informace, kterou SMT řešiče o proměnné \texttt{n} mají,
+je, že je menší nebo rovna nule (\texttt{n\_1 <= 0}) a platí, že \texttt{n == n\_1}.
 
 % TODO: dokázat -> prokázat?
 
 Přidáním správného invariantu cyklu do kódu~\ref{list:loop-with-invariant}
 popisující změny v proměnné \texttt{n} během iterací cyklu
-a spuštění nové analýzy~\ref{list:loop-with-invariant-output} získáváme již správný výsledek
-a to konkrétně v několika krocích:
+a spuštěním nové analýzy~\ref{list:loop-with-invariant-output}
+získáváme již správný výsledek a to konkrétně v několika krocích:
 
 \begin{itemize}
-    \item Prokázání platnosti invariantu \texttt{0 <= n} před spuštěním cyklu (Establishment of Invariant).
-    \item Prokázání platnosti invariantu \texttt{0 <= n} na konci každé iterace cyklu (Preservation of Invariant).
+    \item Prokázání platnosti invariantu \texttt{0 <= n} \\
+          před spuštěním cyklu (Establishment of Invariant).
+    \item Prokázání platnosti invariantu \texttt{0 <= n} \\
+          na konci každé iterace cyklu (Preservation of Invariant).
     \item Prokázání očekávané vlastnosti \texttt{assert n == 0}.
 \end{itemize}
 
@@ -371,43 +373,21 @@ a to konkrétně v několika krocích:
     \begin{minted}{text}
     Goal Termination-condition (generated) in 'loop_invariant':
     ...
-
     ---
-
     Goal Establishment of Invariant (file loop-invariant.c, line 6):
     Assume {
-      Type: is_sint32(n).
-      (* Pre-condition *)
-      Have: 0 <= n.
-      (* Pre-condition *)
-      Have: 0 <= n.
+      ...
     }
     Prove: 0 <= n.
     Prover Qed returns Valid
-
     ---
-
     Goal Preservation of Invariant (file loop-invariant.c, line 6):
     Assume {
-      Type: is_sint32(n) /\ is_sint32(n_1) /\ is_sint32(n_2) /\ is_sint32(n_3).
-      (* Pre-condition *)
-      Have: 0 <= n_3.
-      (* Pre-condition *)
-      Have: 0 <= n_3.
-      (* Invariant *)
-      Have: 0 <= n_3.
-      (* Invariant *)
-      Have: 0 <= n_2.
-      (* Then *)
-      Have: 0 < n_2.
-      Have: n_2 = n_1.
-      Have: (1 + n) = n_1.
+      ...
     }
     Prove: 0 <= n.
     Prover Qed returns Valid
-
     ---
-
     Goal Assertion (file loop-invariant.c, line 11):
     Assume {
       Type: is_sint32(n) /\ is_sint32(n_1) /\ is_sint32(n_2).
@@ -431,12 +411,12 @@ a to konkrétně v několika krocích:
 \end{listing}
 
 Interní Qed zjednodušovač prokázal platnost invariantu před spuštěním cyklu a také platnost invariantu na konci každé iterace cyklu,
-Následně vidímě, že externí SMT řešič Alt-Ergo prokázal platnost tvrzení \texttt{assert n == 0}.
+Následně externí SMT řešič Alt-Ergo prokázal platnost tvrzení \texttt{assert n == 0}.
 
 Předchozí analýza cyklu bez invariantu skončila neúspěšně,
 protože systém měl pouze informaci o tom, že proměnná \texttt{n} je menší nebo rovna nule,
 což nestačilo k dokázání očekáváné rovnosti s nulou.
-Přidáním invaritanu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace,
+Přidáním invariantu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace,
 konkrétně o tom, že proměnná \texttt{n} je nezáporná (větší nebo rovna nule) po ukončení cyklu (z definice invariantu cyklu).
 Systém tedy měl nyní k dipozici informace o dvou nerovnostech:
 
@@ -447,7 +427,7 @@ Systém tedy měl nyní k dipozici informace o dvou nerovnostech:
 
 Spojením těchto dvou nerovností SMT řešič Alt-Ergo mohl prokázat,
 že proměnná \texttt{n} musí být rovna nule,
-což je vlastnost, kterou jsme chtěli prokázat pomocí \texttt{assert n == 0}.
+což je vlastnost, kterou jsme chtěli ověřit pomocí \texttt{assert n == 0}.
 
 Poslední vlastnost, kterou v programu potřebujeme doplnit a dokázat je podmínka konečnosti cyklu.
 Konečnost cyklů se definuje pomocí variantu cyklu (\texttt{loop variant}),
@@ -457,9 +437,71 @@ který se musí s každou iterací cyklu zmenšovat.
 nebo výraz \texttt{n - i} v případě cyklu, který iteruje od nuly do n.
 V obou případech tento výraz s každou iterací klesá,
 a v případě potvrzení platnosti tohoto variantu lze o cyklu říci,
-že je konečný a skončí po konečném počtu iterací.
+že skončí po konečném počtu iterací.
+Přidání variantu cyklu do kódu~\ref{list:loop-with-variant}
+a výsledek nové analýzy~\ref{list:loop-with-variant-output} indikují sedm úspěšně prokázaných vlastností.
 
 
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        loop invariant n >= 0;
+        loop variant n;
+    */
+    while (n > 0) {
+    ...
+    \end{minted}
+    \caption{Ukázka cyklu s invariantem a variantem}
+    \label{list:loop-with-variant}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    [kernel] Parsing loop-variant.c (with preprocessing)
+    ...
+    [wp] Proved goals:    7 / 7
+
+    ------------------------------------------------------------
+      Function loop_invariant
+    ------------------------------------------------------------
+
+    Goal Preservation of Invariant (file loop-variant.c, line 6):
+    Assume { ... }
+    Prove: 0 <= n.
+    Prover Qed returns Valid
+
+    ---
+
+    Goal Establishment of Invariant (file loop-variant.c, line 6):
+    Assume { ... }
+    Prove: 0 <= n.
+    Prover Qed returns Valid
+
+    ---
+
+    Goal Assertion (file loop-variant.c, line 12):
+    Assume { ... }
+    Prove: n = 0.
+    Prover Alt-Ergo 2.5.3 returns Valid (11ms) (7)
+    Prover CVC4 1.8 returns Valid (28ms) (6804)
+
+    ---
+
+    Goal Decreasing of Loop variant at loop (file loop-variant.c, line 9):
+    Assume { ... }
+    Prove: n < n_1.
+    Prover Qed returns Valid
+
+    ---
+
+    Goal Positivity of Loop variant at loop (file loop-variant.c, line 9):
+    Assume { ... }
+    Prove: 0 <= n.
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Výstup analýzy cyklu s invariantem a variantem}
+    \label{list:loop-with-variant-output}
+\end{listing}
 
 
 \subsection{Ukazatele a paměťové bloky}
