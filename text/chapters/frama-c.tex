@@ -375,16 +375,12 @@ získáváme již správný výsledek a to konkrétně v několika krocích:
     ...
     ---
     Goal Establishment of Invariant (file loop-invariant.c, line 6):
-    Assume {
-      ...
-    }
+    Assume { ... }
     Prove: 0 <= n.
     Prover Qed returns Valid
     ---
     Goal Preservation of Invariant (file loop-invariant.c, line 6):
-    Assume {
-      ...
-    }
+    Assume { ... }
     Prove: 0 <= n.
     Prover Qed returns Valid
     ---
@@ -410,14 +406,14 @@ získáváme již správný výsledek a to konkrétně v několika krocích:
     \label{list:loop-with-invariant-output}
 \end{listing}
 
-Interní Qed zjednodušovač prokázal platnost invariantu před spuštěním cyklu a také platnost invariantu na konci každé iterace cyklu,
+Interní Qed zjednodušovač prokázal platnost invariantu před spuštěním cyklu a také platnost invariantu na konci každé iterace cyklu.
 Následně externí SMT řešič Alt-Ergo prokázal platnost tvrzení \texttt{assert n == 0}.
 
 Předchozí analýza cyklu bez invariantu skončila neúspěšně,
 protože systém měl pouze informaci o tom, že proměnná \texttt{n} je menší nebo rovna nule,
 což nestačilo k dokázání očekáváné rovnosti s nulou.
-Přidáním invariantu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace,
-konkrétně o tom, že proměnná \texttt{n} je nezáporná (větší nebo rovna nule) po ukončení cyklu (z definice invariantu cyklu).
+Přidáním invariantu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace.
+Konkrétně o tom, že proměnná \texttt{n} je nezáporná (větší nebo rovna nule) po ukončení cyklu (z definice invariantu cyklu).
 Systém tedy měl nyní k dipozici informace o dvou nerovnostech:
 
 \begin{itemize}
@@ -431,16 +427,23 @@ což je vlastnost, kterou jsme chtěli ověřit pomocí \texttt{assert n == 0}.
 
 Poslední vlastnost, kterou v programu potřebujeme doplnit a dokázat je podmínka konečnosti cyklu.
 Konečnost cyklů se definuje pomocí variantu cyklu (\texttt{loop variant}),
-a jedná se o výraz,
-který se musí s každou iterací cyklu zmenšovat.
+a jedná se o výraz, který se musí splňovat následující dvě podmínky:
+
+\begin{itemize}
+    \item Musí být kladný nebo nulový na začátku každé iterace cyklu.
+    \item Musí se s každou iterací cyklu zmenšit.
+\end{itemize}
+
+Variant cyklu může být záporný, ale pouze po ukončení cyklu~\cite{ACSLSpec}.
 Často lze využít iterační proměnné jako například \texttt{i} v případě cyklu pracujícího od nejvyššího indexu k nule
 nebo výraz \texttt{n - i} v případě cyklu, který iteruje od nuly do n.
 V obou případech tento výraz s každou iterací klesá,
 a v případě potvrzení platnosti tohoto variantu lze o cyklu říci,
 že skončí po konečném počtu iterací.
-Přidání variantu cyklu do kódu~\ref{list:loop-with-variant}
-a výsledek nové analýzy~\ref{list:loop-with-variant-output} indikují sedm úspěšně prokázaných vlastností.
-
+Přidáním variantu cyklu do kódu~\ref{list:loop-with-variant}
+lze získat výsledek analýzy~\ref{list:loop-with-variant-output} indikují sedm úspěšně prokázaných vlastností.
+Tato úprava zajistí možnost provedení důkazu konečnosti cyklu
+a také prokázání očekávané vlastnosti \texttt{assert n == 0}.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -461,94 +464,52 @@ a výsledek nové analýzy~\ref{list:loop-with-variant-output} indikují sedm ú
     ...
     [wp] Proved goals:    7 / 7
 
-    ------------------------------------------------------------
+    ---------------------------
       Function loop_invariant
-    ------------------------------------------------------------
+    ---------------------------
 
-    Goal Preservation of Invariant (file loop-variant.c, line 6):
+    Goal Preservation of Invariant
+      (file loop-variant.c, line 6):
     Assume { ... }
     Prove: 0 <= n.
     Prover Qed returns Valid
 
     ---
 
-    Goal Establishment of Invariant (file loop-variant.c, line 6):
+    Goal Establishment of Invariant
+      (file loop-variant.c, line 6):
     Assume { ... }
     Prove: 0 <= n.
     Prover Qed returns Valid
 
     ---
 
-    Goal Assertion (file loop-variant.c, line 12):
-    Assume { ... }
-    Prove: n = 0.
-    Prover Alt-Ergo 2.5.3 returns Valid (11ms) (7)
-    Prover CVC4 1.8 returns Valid (28ms) (6804)
-
-    ---
-
-    Goal Decreasing of Loop variant at loop (file loop-variant.c, line 9):
+    Goal Decreasing of Loop variant at loop
+      (file loop-variant.c, line 9):
     Assume { ... }
     Prove: n < n_1.
     Prover Qed returns Valid
 
     ---
 
-    Goal Positivity of Loop variant at loop (file loop-variant.c, line 9):
+    Goal Positivity of Loop variant at loop
+      (file loop-variant.c, line 9):
     Assume { ... }
     Prove: 0 <= n.
     Prover Qed returns Valid
+
+    ---
+
+    Goal Assertion
+      (file loop-variant.c, line 12):
+    Assume { ... }
+    Prove: n = 0.
+    Prover Alt-Ergo 2.5.3 returns Valid (11ms) (7)
+    Prover CVC4 1.8 returns Valid (28ms) (6804)
     \end{minted}
     \caption{Výstup analýzy cyklu s invariantem a variantem}
     \label{list:loop-with-variant-output}
 \end{listing}
-
-
-\subsection{Ukazatele a paměťové bloky}
-\label{subsec:acsl-anotace-ukazatele-a-pametove-bloky}
-
-TODO: pointery a validita, separace
-
-Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
-jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}.
-Paměťovou adresu lze instancovat pomocí konstruktoru \texttt{mk\_addr},
-který přijímá dva celočíselné argumenty.
-Prvním argumentem je \texttt{base}, což je základní adresa paměťového bloku,
-a druhým argumentem je \texttt{offset}, což je relativní offset v bytech od základní adresy.
-
-\begin{listing}[H]
-    \begin{minted}{text}
-    type addr = { base : int ; offset : int }
-    \end{minted}
-    \caption{Definice paměťového ukazatele v jazyce WhyML}
-    \label{list:why-addr}
-\end{listing}
-
-ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
-Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset},
-které jsou ve WhyML následně přeloženy do funkcí \texttt{base},
-která vrací první argument konstruktoru \texttt{mk\_addr}, tedy \texttt{base},
-a \texttt{offset}, která vrací druhý argument konstruktoru \texttt{mk\_addr}, tedy \texttt{offset}.
-předstané v ukázce~\ref{list:why-addr-base-offset}.
-
-\begin{listing}[H]
-    \begin{minted}{text}
-    Definition base (v:addr) : Z :=
-      match v with
-        mk_addr x x1 => x
-      end.
-
-    Definition offset (v:addr) : Z :=
-      match v with
-        mk_addr x x1 => x1
-      end.
-    \end{minted}
-    \caption{Definice funkcí pro získání \texttt{base} a \texttt{offset} z paměťového ukazatele}
-    \label{list:why-addr-base-offset}
-\end{listing}
-
-
-TODO: .. popslat global, linked, framed, separated
 
 \subsection{Anotace \texttt{\textbackslash assigns}}
 \label{subsec:acsl-anotace-assigns}
@@ -640,12 +601,10 @@ Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
     \end{itemize}
 \end{itemize}
 
-ACSL definuje pamětový ukazatel (pointer) jako dvojici \texttt{(base, offset)},
-kde \texttt{base} je základní adresa paměťového bloku a \texttt{offset} je relativní počet bytů
-od základní adresy.
-Například v poli celých čí
-
-TODO: rict, ze v poli maji vsechny prvky stejnou base, ale jiny offset
+%ACSL definuje pamětový ukazatel (pointer) jako dvojici \texttt{(base, offset)},
+%kde \texttt{base} je základní adresa paměťového bloku a \texttt{offset} je relativní počet bytů
+%od základní adresy.
+%Například v poli celých čí
 
 
 TODO: ghost konstrukty
@@ -674,6 +633,8 @@ protože umožňují definovat, jakým způsobem se programy chovají
 vzhledem k paměti a jakým způsobem manipulují s daty.
 
 Paměťové modely popisují způsob popisu operace na
+
+TODO
 
 \subsection{Hoareův paměťový model}
 \label{subsec:hoareuv-pametovy-model}
@@ -1001,18 +962,13 @@ tedy, že správně rozhoduje o platnosti (valid) dotazu na hodnotu proměnné $
 Zároveň zde vidíme popis lokálních proměnných ve tvaru \texttt{global(L\_<name>\_<vid>)},
 kde \texttt{<name>} je název proměnné a \texttt{<vid>} je unikátní identifikátor proměnné
 generovaný CIL (C Intermediate Language) překladačem z interní struktury \texttt{varinfo}~\cite{FCPluginDevSignoles2024}.
-Funkce \texttt{global} je funkce pro získání adresy proměnné v paměti~\cite{BlanchardWP2024}.
+Funkce \texttt{global} je funkce pro získání adresy proměnné v paměti~\cite{BlanchardWP2024}
+a více bude popsána v následující kapitole~\ref{sec:ukazatele-a-pametove-bloky}.
 
-TODO: referencovat Why3 a WhyML sekci ze zacatku kapitoly
+TODO: nejake ukonceni pam. modelu?
 
-
-
-
-Ukazatel (pointer) je ve Frama\mbox{-}C reprezentován jako dvojice
-
-
-\subsection{Referenční paměťový model}
-\label{subsec:referencni-pametovy-model}
+%\subsection{Referenční paměťový model}
+%\label{subsec:referencni-pametovy-model}
 
 % TODO: jo?
 % -wp-model <model+...>  Memory model selection. Available selectors:
@@ -1029,11 +985,359 @@ Ukazatel (pointer) je ve Frama\mbox{-}C reprezentován jako dvojice
 % ====
 %\subsection{Problémy paměťových modelů}
 
+\section{Ukazatele a paměťové bloky}
+\label{sec:ukazatele-a-pametove-bloky}
+
+TODO: pointery a validita, separace
+
+Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
+jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}
+společně s definicí konstanty \texttt{null} reprezentující nulový ukazatel.
+Tato datová struktura se skládá ze dvou celočíselných hodnot.
+První hodnotou je základní adresa paměťového bloku \texttt{base}
+a druhou hodnotou je \texttt{offset}, reprezentující relativní posun v bytech od základní adresy.
+
+% TODO: je to vlastne posun o pocet bunek pameti?
+
+% TODO: což -> ??
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    type addr = { base : int ; offset : int }
+
+    constant null: addr = { base = 0 ; offset = 0 }
+    \end{minted}
+    \caption{Definice paměťového ukazatele v jazyce WhyML}
+    \label{list:why-addr}
+\end{listing}
+
+ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
+Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset}.
+Tyto funkce jsou ve WhyML definovány pomocí funkcí \texttt{base} a \texttt{offset},
+zobrazených v ukázce~\ref{list:why-addr-base-offset},
+které přijimají jeden parametr \texttt{addr} (paměťový ukazatel)
+a vracejí příslušné hodnoty \texttt{base} a \texttt{offset} z datové struktury \texttt{addr}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    let f_base = Lang.extern_f ~library ~result:Qed.Logic.Int
+        ~link:(Qed.Engine.F_subst ("base", "%1.base")) "base"
+
+    let base addr = e_fun f_base [ addr ]
+
+    ...
+
+    let f_offset = Lang.extern_f ~library ~result:Qed.Logic.Int
+        ~link:(Qed.Engine.F_subst ("offset", "%1.offset")) "offset"
+
+    let offset addr = e_fun f_offset [ addr ]
+    \end{minted}
+    \caption{Definice funkcí pro získání \texttt{base} a \texttt{offset} z paměťového ukazatele}
+    \label{list:why-addr-base-offset}
+\end{listing}
+
+Paměťová adresa má tři hlavní konstruktory,
+konkrétně \texttt{global}, \texttt{shift} a \texttt{mk\_addr}.
+
+Konstruktor \texttt{global} je použit pro reprezentaci paměťové adresy bez offsetu
+a jeho definice je zobrazená v ukázce~\ref{list:why-pointer-constructors}.
+Frama\mbox{-}C používá konstruktor \texttt{global} nejčastěji
+pro reprezentaci referencí (ukazatelů) na globální a lokální proměnné a nebo parametry funkcí.
+V důkazech jsme viděli použít konstruktoru \texttt{global} na místech,
+ve kterých se v původním zdrojovém kódu nachází získávání adresy proměnných pomocí operátoru \texttt{\&},
+například
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    function global (b: int) : addr = { base = b ; offset = 0 }
+    \end{minted}
+    \caption{Definice WhyML konstruktoru \texttt{global} pro paměťový ukazatel}
+    \label{list:why-pointer-constructors}
+\end{listing}
+
+Výhodou použití funkce \texttt{global} je automatické přidání informace SMT řešičům o tom,
+že daná adresa byla transformována pomocí injektivní funkce~\cite{BlanchardWP2024}
+a tedy platí, že
+
+\begin{equation*}
+    \forall x, y : global(x) = global(y) \implies x = y
+\end{equation*}
+
+% TODO: doopravdy bude?
+
+Tato vlastnost, bude využita v pozdějších důkazech v kapitole~\ref{sec:oddelena-pamet},
+které pracují na pricnipu oddělené paměti.
+
+Konstruktor \texttt{shift} zobrazený ve výpisu~\ref{list:why-pointer-constructors-shift}
+je použit na konstrukci paměťového ukazatele s offsetem.
+Jedná se pouze o jednoduchý konstruktor, bez dalšího zpracování adresy.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    function shift (p: addr) (k: int) : addr =
+      { p with offset = p.offset + k }
+    \end{minted}
+    \caption{Definice WhyML konstruktoru \texttt{shift} pro paměťový ukazatel}
+    \label{list:why-pointer-constructors-shift}
+\end{listing}
+
+Nejčastěji používaný je ale konstruktor \texttt{mk\_addr} zobrazený ve výpisu~\ref{list:why-pointer-constructors},
+který kombinuje vlastnosti konstruktoru \texttt{global} pro aplikaci prostého mapovaní
+základní paměťové adresy a konstruktoru \texttt{shift} pro přidání offsetu.
+
+%TODO: rict, ze v poli maji vsechny prvky stejnou base, ale jiny offset
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    let mk_addr base offset = shift (global base) offset
+    \end{minted}
+    \caption{Definice WhyML konstruktoru \texttt{mk\_addr} pro paměťový ukazatel}
+    \label{list:why-pointer-constructor-mk-addr}
+\end{listing}
+
+Frama\mbox{-}C definuje specíální mapovací strukturu \texttt{malloc},
+jejíž definice je zobrazená ve výpisu~\ref{list:why-malloc},
+která pro každý alokovaný blok, identifikovaný svoji základní (base) adresou
+uchovává délku bloku v bytech.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    type malloc = map int int
+    \end{minted}
+    \caption{Definice struktury pro reprezentaci alokovaného bloku paměti}
+    \label{list:why-malloc}
+\end{listing}
+
+ACSL definuje zabudované funkce pro kontrolu platnosti paměťového ukazatele.
+Pro kontrolu, zdali je paměťový ukazatel platný pro čtení hodnoty z paměti
+lze použít funkci \texttt{\textbackslash valid\_read}.
+Pokud je paměťový ukazatel platný i pro zápisy do paměti,
+lze použít funkci \texttt{\textbackslash valid}.
+Tyto funkce jsou ve WhyML definovány pomocí predikátů \texttt{valid\_rw} a \texttt{valid\_rd},
+které jsou zobrazeny ve výpisu~\ref{list:why-pointer-valid}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    predicate valid_rd (m: malloc) (p: addr) (n: int) =
+      n > 0 -> (
+        0 <> p.base
+        /\ 0 <= p.offset
+        /\ p.offset + n <= m[p.base]
+    )
+
+    predicate valid_rw (m: malloc) (p: addr) (n: int) =
+      n > 0 -> (
+        0 < p.base
+        /\ 0 <= p.offset
+        /\ p.offset + n <= m[p.base]
+      )
+    \end{minted}
+    \caption{Definice predikátů pro kontrolu platnosti paměťového ukazatele}
+    \label{list:why-pointer-valid}
+\end{listing}
+
+Oba predikáty přijímají tři parametry,
+prvním je struktura \texttt{malloc} reprezentující alokované paměťové bloky,
+druhým je paměťový ukazatel \texttt{addr}
+a třetím je celočíselná hodnota \texttt{n} reprezentující počet čtených nebo zapisovaných bytů.
+
+Platný ukazatel pro čtení hodnoty z paměti je tedy takový,
+který má nenulovou základní adresu (\texttt{p.base > 0}),
+kladný nebo nulový offset (\texttt{p.offset >= 0})
+a čtení \texttt{n} bajtů z paměti od tohoto ukazatele je z stejného paměťového bloku jako daný ukazatel
+(\texttt{p.offset + n <= m[p.base]}), kde \texttt{m[p.base]} je délka bloku paměti
+reprezentovaná základní adresou \texttt{p.base}.
+
+Platnost \texttt{valid} ukazatele automaticky implikuje platnost \texttt{valid\_rd}, ale ne naopak.
+Například řetězcové literály (string literals) jsou reprezentovány jako paměťové ukazatele,
+jejich základní adresa je záporná a offset je nezáporný~\cite{ACSLSpec}.
+Pomocí ukazatelů do řetězcových literálů je možné pouze číst znaky,
+nikoliv je zapisovat (přepisovat), jak je vidět z výpisu~\ref{list:why-string-literal}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    lemma valid_string:
+      forall m: malloc. forall p: addr.
+        p.base < 0 -> 0 <= p.offset < m[p.base] ->
+          (valid_rd m p 1 /\ not (valid_rw m p 1))
+    \end{minted}
+    \caption{Definice paměťového ukazatele pro řetězcové literály}
+    \label{list:why-string-literal}
+\end{listing}
+
+Predikát \texttt{linked} slouží pro označení pamětové mapy,
+ve které jsou alokovány proměnné.
+Využítí jsme viděli v předchozí kapitole~\ref{subsec:typovy-pametovy-model}
+ve výpisu~\ref{list:typed-pointer-valid-example-result}, kde pomocí
+\texttt{linked(Malloc\_0)} je označena paměťová mapa,
+ve které je alokována loklání proměnná $x$,
+do které se pomocí ukazatele $p$ zapisuje hodnota~1.
+
+Frama\mbox{-}C a ACSL mají pouze limitovanou podporu pro alokaci paměti pomocí standardní knihovny jazyka C.
+Například použitím funkce pro alokaci paměti \texttt{malloc} nezískáme platný ukazatel pro čtení nebo zápis do paměti,
+jak demonstruje ukázka~\ref{list:malloc-invalid-pointer}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    #include <stdlib.h>
+
+    void test_malloc() {
+      int *pi = (int *)malloc(sizeof(int));
+        if (pi == NULL) {
+            return;
+        }
+        //@ assert \valid(pi);
+    }
+    \end{minted}
+    \caption{Ukázka nekompletní funkčnosti alokace paměti pomocí \texttt{malloc}}
+    \label{list:malloc-invalid-pointer}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file allocation-problem.c, line 8):
+    FRAMAC_SHARE/libc/stdlib.h:427: warning from wp:
+     - Warning: Ignored Hypothesis
+       Reason: Allocation, initialization and danglingness not yet implemented
+     - Warning: Hide \result
+       Reason: Cast with incompatible pointers types (source: sint8*) (target: sint32*)
+    Assume { ... }
+    Prove: valid_rw(Malloc_0, pi_0, 1).
+    Prover Alt-Ergo 2.5.3 returns Timeout (2s)
+    Prover CVC4 1.8 returns Unknown
+    Prover Z3 4.8.12 returns Unknown
+    \end{minted}
+    \caption{Výstup analýzy pomocí typového paměťového modelu}
+    \label{list:malloc-invalid-pointer-result}
+\end{listing}
+
+Výstup analýzy~\ref{list:malloc-invalid-pointer-result} ukazuje,
+že Frama\mbox{-}C nedokáže prokázat platnost ukazatele \texttt{pi}.
+Tento fundamentální problém zamezuje plnohodnotnému využití dynamické alokace paměti
+při důkazech správnosti programu pomocí Frama\mbox{-}C\@.
+Program musí být napsán tak,
+aby v parametrech funkcí byly předávány ukazatele na již alokované proměnné,
+pole nebo struktury.
+
+Tedy například místo implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu
+zobrazené v ukázce~\ref{list:prepend-malloc} pomocí alokace paměti pomocí \texttt{malloc},
+je nutné použít již alokované proměnné a předat je jako parametry funkce, jak zobrazuje ukázka~\ref{list:prepend}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    List *prepend(List *head, int value) {
+        List *new_node = (List *)malloc(sizeof(List));
+        new_node->value = value;
+        new_node->next = head;
+        return new_node;
+    }
+    \end{minted}
+    \caption{Ukázka alokace paměti pomocí \texttt{malloc}}
+    \label{list:prepend-malloc}
+\end{listing}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    List *prepend(List *head, List *new_node) {
+        new_node->next = head;
+        return new_node;
+    }
+    \end{minted}
+    \caption{Ukázka předání již alokované paměti jako parametru funkce}
+    \label{list:prepend}
+\end{listing}
+
+S tímto principem přichází několik problematických částí pro důkazy korektnosti programu.
+Například situace, kdy přidávaný uzel (ukazatel na něj) je již obsažen v seznamu,
+což může zapříčinit zacyklení spojového seznamu.
+
+Pokud by bylo zajištěno, že přidávaný uzel není obsažen v seznamu,
+pak by bylo dokončit důkaz korektnosti funkce \texttt{prepend} bez jakýchkoliv úprav.
+Vlastnost, že uzel není obsažen v seznamu je možné specifikovat pomocí predikátu \texttt{\textbackslash separated},
+jehož definice, výhody a nevýhody této metody jsou podrobně popsány v následující kapitole~\ref{sec:oddelena-pamet}.
+
+
 \section{Oddělená paměť}
 \label{sec:oddelena-pamet}
 
-\section{Protipříklady}
-\label{sec:frama-c-counterexamples}
+
+TODO: intro k oddělené paměti
+
+Frama\mbox{-}C používá pro reprezentaci oddělené paměti strukturu \texttt{region},
+
+TODO Predikát \texttt{region} je použit pro označení paměťové mapy,
+
+TODO Predikát \texttt{framed}
+
+TODO Predikát \texttt{linked}
+
+TODO: .. popsat region, framed, separated
+
+TODO: prvky jednoho pole (se stejnou base) jsou od sebe oddělené
+
+\section{Dyanimické datové struktury}
+\label{sec:dynamicke-datove-struktury}
+
+Dynamické rekurzivní datové struktury jako například spojové seznamy,
+stromy a grafy jsou v jazyce C reprezentovány pomocí ukazatelů na struktury.
+Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{list:linked-list}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    typedef struct list {
+        struct list *next;
+        int value;
+    } List;
+    \end{minted}
+    \caption{Definice spojového seznamu v jazyce C}
+    \label{list:linked-list}
+\end{listing}
+
+Por účely dúkazů se bude hodit predikát \texttt{reachable},
+zobrazený v ukázce~\ref{list:linked-list-reachabibility},
+který určuje, zdali je uzel \texttt{node} dosažitelný z uzlu \texttt{root}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      inductive reachable{L}(List *root, List *node) {
+        case root_reachable{L}:
+          \forall List *root;
+            reachable(root, root);
+
+        case next_reachable{L}:
+          \forall List *root, *node;
+            \valid(root) &&
+              reachable(root->next, node) ==>
+                reachable(root, node);
+      }
+    */
+    \end{minted}
+    \caption{Definice induktivního predikátu pro dosažitelnost uzlu v seznamu}
+    \label{list:linked-list-reachabibility}
+\end{listing}
+
+Pomocí predikátu \texttt{reachable} je možné definovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
+Pokud je spojový seznam konečný, pak pro něj musí platit, že je možné v rámci procházení seznamu
+dospět k poslednímu uzlu seznamu, který ukazuje na \texttt{NULL} (v ACSL \texttt{\textbackslash null}).
+Tato definice je zobrazena v ukázce~\ref{list:linked-list-finite}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      predicate finite{L}(List *root) = reachable{L}(root, \null);
+    */
+    \end{minted}
+    \caption{Definice predikátu konečnosti spojového seznamu}
+    \label{list:linked-list-finite}
+\end{listing}
+
+Frama\mbox{-}C nepodporuje plné využít dynamické alokace pomocí standardní knihovny jazyka C~\cite{C11Standard}.
+
+%\section{Protipříklady}
+%\label{sec:frama-c-counterexamples}
+
+% TODO: pridat nedelitelnou mezeru tak, aby nebyly jedno-znaky na konci radku samy
 
 %why3 config detect
 %Found prover Alt-Ergo version 2.5.3, OK.
