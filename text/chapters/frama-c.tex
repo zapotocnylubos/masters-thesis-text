@@ -109,6 +109,31 @@ jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
 Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
 který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
 
+TODO: pridat info, ze Why3 nepodporuje nejnovejsi verze SMT resicu
+%Prover Alt-Ergo version 2.6.1 is not recognized.
+%Known versions for this prover: ^2\.5\.[2-9]$.
+%Prover CVC4 OK 1.8 (archived)
+%Prover CVC5 version 1.2.1 is not recognized.
+%Known versions for this prover: ^1\.0\.[0-9]+$.
+%Prover Z3 version 4.14.1 is not recognized.
+%Known versions for this prover: ^4\.8\.[7-9]$, ^4\.8\.1[0-9]+$,
+
+%Found prover Alt-Ergo version 2.5.4, OK.
+%Found prover Alt-Ergo version 2.5.4 (alternative: BV)
+%Found prover Alt-Ergo version 2.5.4 (alternative: counterexamples)
+%Found prover CVC5 version 1.0.9 (alternative: strings+counterexamples)
+%Found prover CVC5 version 1.0.9 (alternative: strings)
+%Found prover CVC5 version 1.0.9 (alternative: counterexamples)
+%Found prover CVC5 version 1.0.9, OK.
+%Found prover CVC4 version 1.8 (alternative: strings+counterexamples)
+%Found prover CVC4 version 1.8 (alternative: strings)
+%Found prover CVC4 version 1.8 (alternative: counterexamples)
+%Found prover CVC4 version 1.8, OK.
+%Found prover Z3 version 4.8.17 (alternative: counterexamples)
+%Found prover Z3 version 4.8.17, OK.
+%Found prover Z3 version 4.8.17 (alternative: noBV)
+%14 prover(s) added
+
 % TODO: jsou ..použity.. -> používá?
 
 Frama\mbox{-}C definuje několik základních axiomů, lemmat, predikátů, funkcí a typů,
@@ -1407,17 +1432,124 @@ TODO: vice uvodu a proc jsou tyto postupy potreba
 \subsection{Separace paměti}
 \label{subsec:separace-pameti}
 
+ACLS definuje predikát \texttt{\textbackslash separated},
+který lze použít pro označení dvou nebo více paměťových míst,
+které se nepřekrývají.
+Pokud tedy platí \texttt{\textbackslash separated(a, b)},
+pro dva ukazatele \texttt{a} a \texttt{b},
+znamená to, že úpravyv paměti odkazované ukazatelem \texttt{a}
+nebudou mít vliv na paměť odkazovanou ukazatelem \texttt{b}.
+Jedná se o postup jak zamezit takzvanému \textit{aliasingu}~\cite{ACSLSpec}.
+
+Predikát \texttt{\textbackslash separated} má variabinlní počet parametrů,
+lze ho tedy použít pro označení více než dvou paměťových míst, například
+\texttt{\textbackslash separated(a, b, c, d)}.
+
+Zároveň je možné předat parametr jako množinu paměťových míst.
+Pokud definujeme predikát jako \texttt{\textbackslash separated(a, \{b, c\})},
+znamená to, že ukazatel \texttt{a} je oddělený od všech ukazatelů v množině \texttt{\{b, c\}},
+ale paměťové místa \texttt{b} a \texttt{c} nemusí být oddělené mezi sami sebou.
+
+ACSL také umožňuje zápis množiny pomocí univerzálního kvantifikátoru,
+který je zobrazen v ukázce~\ref{list:linked-list-axiom-prepend}.
+Tento zápis je blízký matematickém zápisu a popisuje podmínku spuštění funkce,
+která zaručuje, že funkce bude spuštěna s ukazatelem \texttt{new\_node},
+který odkazuje na paměťové místo oddělené od všech uzlů v seznamu.
+
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        requires \separated(new_node, {
-            node | List *node; reachable(head, node)
-        });
+      ...
+      requires \separated(new_node, {
+        node | List *node; reachable(head, node)
+      });
+      ...
     */
+    List *prepend(List *head, List *new_node) {
+      ...
+    }
     \end{minted}
     \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
     \label{list:linked-list-axiom-prepend}
 \end{listing}
+
+Kompletní kód pro přidání prvku na začátek spojového seznamu
+s využítím přístupu s oddělenou pamětí je zobrazen v ukázce~\ref{list:linked-list-separated-prepend}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      requires \valid(head);
+      requires finite(head);
+
+      requires \valid(new_node);
+      requires \separated(new_node, {
+        node | List *node; reachable(head, node)
+      });
+
+      ensures finite(\result);
+    */
+    List *prepend(List *head, List *new_node) {
+        new_node->next = head;
+        return new_node;
+    }
+    \end{minted}
+    \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
+    \label{list:linked-list-separated-prepend}
+\end{listing}
+
+Tato metoda správně popisuje vstupní podmínky a umožňuje důkaz korektnosti funkce \texttt{prepend},
+ale pouze pro malé vstupy.
+Přidáním podmínky typu \texttt{\textbackslash requires length(head) <= X;},
+kde \texttt{X} označuje celé kladné číslo,
+získáme funkci se zúženým rozsahem vstupních hodnot.
+Následující tabulka zobrazuje úspěšnost dokázání korektnosti funkce \texttt{prepend}
+pro různé SMT řešiče pro různé délky seznamu a čas potřebný pro dokázání korektnosti.
+Maximální výpočetní čas pro SMT řešiče je nastaven na 2 minuty, pokud SMT řešiče
+nestihnou dokázat korektnost funkce do této doby, vrátí výsledek \texttt{Timeout},
+označený v tabulce písmenem \texttt{T}.
+SMT řešiče mají nastavený paměťový limit v základním nastavením na 1GB, pokud překročí tento limit,
+vrátí výsledek \texttt{Out of memory}, označený v tabulce písmenem \texttt{O}.
+Řešič může také vracet výsledek \texttt{Unknown}, označený písmenem \texttt{U},
+značící to, že SMT řešiče nedokáže pracovat s daným problémem.
+
+Všechny testy byly provedeny pomocí příkazu zobrazeného v ukázce~\ref{list:run-linked-list-benchmark},
+který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 a Z3 s časovým limitem 120 sekund.
+
+\begin{listing}[H]
+    \begin{minted}{console}
+        frama-c -wp -wp-prover alt-ergo,cvc4,cvc5,z3 \
+            -wp-cache none \
+            -wp-timeout 120 \
+            -wp-run-all-provers \
+            -wp-print \
+            ll.c
+    \end{minted}
+    \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
+    \label{list:run-linked-list-benchmark}
+\end{listing}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        Délka seznamu & Alt-Ergo & CVC4 & CVC5 & Z3 \\
+        \hline
+        <=0  & Valid (17ms)  & Valid (45ms) & Valid (53ms)  & (U) \\
+        <=1  & Valid (17.2s) & (O)          & Valid (75ms)  & (U) \\
+        <=2  & Valid (18.8s) & (O)          & Valid (113ms) & (U) \\
+        <=3  & (T)           & (O)          & Valid (151ms) & (U) \\
+        <=4  & (T)           & (O)          & Valid (220ms) & (U) \\
+        <=5  & (T)           & (O)          & Valid (435ms) & (U) \\
+        <=10 & (T)           & (O)          & Valid (3.9s)  & (U) \\
+        <=13 & (T)           & (O)          & Valid (1m)    & (U) \\
+        <=15 & (T)           & (O)          & (O)           & (U) \\
+        \hline
+    \end{tabular}
+    \caption{Úspěšnost dokázání korektnosti funkce prepend pro různé SMT řešiče}
+    \label{tab:prepend-smt-success}
+\end{table}
+
 
 
 \begin{listing}[H]
@@ -1485,7 +1617,7 @@ Pokud je prvek na indexu $i$, pak levý potomek je na indexu $2i + 1$ a pravý p
 Rodičovský prvek je na indexu $\lfloor \frac{i - 1}{2} \rfloor$.
 V binární haldě nemůže nastat situace s prázdným nepoužitým uzlem a pole se tedy vždy plní korektně
 od nejnižšího indexu po nejvyšší.
-Obecné stromy by s tímto principem nemohli být serializovány,
+Obecné stromy by s tímto principem nemohly být serializovány,
 protože je možné, že některé uzly budou prázdné a nebudou mít žádného potomka.
 Řešením se nabízí nepoužívat jednoduchou serializaci prvků stromu do pole,
 ale používat rozšířenou strukturu v serializovaném poli, která nám určuje, zdali je
@@ -1501,6 +1633,9 @@ Nevýhoda serializace obecných stormů do pole je ta, že řídké stromy budou
 násobně více paměti než je potřeba.
 V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsahující řetězec \texttt{n} pravých uzlů,
 by serailizované pole reprezentující tento strom mělo velikost $2^n - 1$ s $2^n - n$ neplatnými uzly.
+Další nevýhoda serializace stromových struktu spočívá v složitosi
+tvořených predikátů a vlastností stromu.
+Serializací ztrácíme lokalitu problému a musíme lokálnost převést na práci s indexy v poli.
 
 
 
