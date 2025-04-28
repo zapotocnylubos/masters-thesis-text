@@ -1293,9 +1293,13 @@ Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{li
     \label{list:linked-list}
 \end{listing}
 
-Por účely dúkazů se bude hodit predikát \texttt{reachable},
+Pro účely důkazů s spojovým seznamem je vhodné vytvořit predikát \texttt{reachable},
 zobrazený v ukázce~\ref{list:linked-list-reachabibility},
 který určuje, zdali je uzel \texttt{node} dosažitelný z uzlu \texttt{root}.
+Jedná se o induktivní definici,
+kde základní pravidlo říká, že každý uzel je dosažitelný sám ze sebe (\texttt{reachable(root, root)}).
+Druhé pravidlo (indukce) říká, že pokud je nějaký uzel \texttt{node} dosažitelný z uzlu \texttt{root->next},
+musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{root->next}).
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1317,7 +1321,7 @@ který určuje, zdali je uzel \texttt{node} dosažitelný z uzlu \texttt{root}.
     \label{list:linked-list-reachabibility}
 \end{listing}
 
-Pomocí predikátu \texttt{reachable} je možné definovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
+Pomocí predikátu \texttt{reachable} je možné dále zadefinovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
 Pokud je spojový seznam konečný, pak pro něj musí platit, že je možné v rámci procházení seznamu
 dospět k poslednímu uzlu seznamu, který ukazuje na \texttt{NULL} (v ACSL \texttt{\textbackslash null}).
 Tato definice je zobrazena v ukázce~\ref{list:linked-list-finite}.
@@ -1325,14 +1329,184 @@ Tato definice je zobrazena v ukázce~\ref{list:linked-list-finite}.
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-      predicate finite{L}(List *root) = reachable{L}(root, \null);
+      predicate finite{L}(List *root) =
+        reachable{L}(root, \null);
     */
     \end{minted}
     \caption{Definice predikátu konečnosti spojového seznamu}
     \label{list:linked-list-finite}
 \end{listing}
 
-Frama\mbox{-}C nepodporuje plné využít dynamické alokace pomocí standardní knihovny jazyka C~\cite{C11Standard}.
+Dále budeme potřebovat logickou funkci na výpočet délky spojového seznamu,
+která je definována v ukázce~\ref{list:linked-list-length}.
+Výpočet délky spojového seznamu má smysl počítat pouze pro konečné seznamy,
+proto je funkce \texttt{length} definována pouze pro konečné seznamy.
+Délka prázdného seznamu je definována na 0, následuje induktivní pravidlo,
+které popisuje, že konečné seznamy mají délku o 1 větší než délka jejich podseznamu.
+Následuje axiom, který říká, že délka seznamu je vždy nezáporná,
+což zjednodušuje důkazní postupy pro některé SMT řešiče
+a v přítích podkapitolách budeme pomocí této logické funkce
+omezovat vstupní předpoklady, například, že délka seznamu nebude větší než nějaké mez.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      axiomatic Length {
+        logic integer length{L}(List *head);
+
+        axiom length_null{L}:
+          length(\null) == 0;
+
+        axiom length_list{L}:
+          \forall List *head;
+            \valid_read(head)
+            && finite(head) ==>
+              length(head) == 1 + length(head->next);
+
+        axiom length_nonnegative{L}:
+          \forall List *l;
+            finite(l)
+              ==> length(l) >= 0;
+      }
+    */
+    \end{minted}
+    \caption{Definice predikátu konečnosti spojového seznamu}
+    \label{list:linked-list-finite}
+\end{listing}
+
+Následující tři podkapitoly popisují možné způsoby
+pro důkaz korektnosti programů pracujících s dynamickými rekurzivními datovými strukturami.
+Každý postup má své výhody a nevýhody.
+Demonstrace důkazů proběhne na jednoduché operaci přidání prvku na začátek spojového seznamu,
+ale princip těchto postupů je použitelný i na složitější operace.
+
+TODO: pridat info o zaveru, kde bude debata o stromech/AVL stromech
+
+TODO: vice uvodu a proc jsou tyto postupy potreba
+
+
+\subsection{Axiomatický přístup}
+\label{subsec:axiomaticky-pristup}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        axiomatic PrependLemma {
+            axiom prepend_keeps_finite{L1, L2}:
+                \forall List *head, *new_node;
+                    \at(new_node->next, L2) == head
+                    && finite{L1}(head) ==>
+                      finite{L2}(new_node);
+        }
+    */
+    \end{minted}
+    \caption{Axiomatická definice pro zachování konečnosti spojového seznamu při přidání prvku}
+    \label{list:linked-list-axiom-prepend}
+\end{listing}
+
+\subsection{Separace paměti}
+\label{subsec:separace-pameti}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        requires \separated(new_node, {
+            node | List *node; reachable(head, node)
+        });
+    */
+    \end{minted}
+    \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
+    \label{list:linked-list-axiom-prepend}
+\end{listing}
+
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+        requires !reachable(head, new_node);
+    */
+    \end{minted}
+    \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
+    \label{list:linked-list-axiom-prepend}
+\end{listing}
+
+\subsection{Serializační přístup}
+\label{subsec:serializacni-pristup}
+
+Serializační metodu pro spojový seznam použili
+Allan Blanchard, Nikolai Kosmatov a Frédéric Loulergue
+v článku Ghosts for Lists: A Critical Module of Contiki Verified in Frama-C
+z roku 2018~\cite{FCGhostsForLists}.
+Podobný, ale implicitní přístup k serializaci datové struktury binární haldy
+byl zvolen v autorově bakalářské práci z roku 2022~\cite{ZapotocnyBinarniHalda}.
+
+Serializační metoda se snaží předejít problémům s axiomatickým přístupem
+a zároveň limitacím oddělené paměti.
+Jak jsme v minulých podkapitolách viděli,
+axiomatický přístup je velmi silný, ale neumožňuje odvodit vlastnosti programu z programu samotného,
+pouze dokážeme potvrdit, že program splňuje postup, který axiom definuje, ale nemáme možnost ověřit,
+zdali je tento postup doopravdy správný.
+Metoda s oddělenou paměti v případě dynamických rekurzivních datových struktur neumožnuje
+neomezeně (nebo alespoň uspokojivě velké) vstupy a již na malých vstupech SMT řešiče pracují velmi dlouho na dokázání vlastnotí,
+dojde jim paměť nebo automatick oznamují, že tento problém neumí vyřešit.
+
+Serializační metoda se snaží předejít těmto problémům, ale stále zachovávat princip oddělené paměti.
+Princip je ten, že v průběhu výpočtu a operacích se spojovým seznamem si udržujeme serializovanou
+strukturu spojového seznamu v jednoduchém poli.
+Pole má totiž tu vlastnost, že všechny jeho prvky jsou autoamticky oddělené,
+nebo spíše, není důvod uvažovat, že by prvky ve stejném paměťovém bloku mohli být neoddělené.
+
+Spojové seznamy lze serializovat do pole reprezentujícího spojový seznam.
+Principu této serializace je zobrazen v ukázce~\ref{list:linked-list-serialization}.
+Dynamické prvky seznamu jsou seřazeny do pole a toto pole je průběžně aktualizováno
+při každé operaci se seznamem.
+Výhoda serialize do pole je ta, že důkazní postupy pro pole jsou jenoduché
+a hlavně jednoduše pochopitelné pro SMT řešiče.
+Neváhoda je ta, že pro velké seznamy je potřeba udržovat dvojnásobné množství paměti,
+a při úpravách ve spojovém seznamu, jako je například přidání prvku na začátek seznamu,
+musíme přesunout všechny prvky v serializovaném poli o jeden prvek doprava.
+Původní operace přidání prvku do spojového seznamu je lineární,
+ale udržování serializovaného pole je lineární operace.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/list-serialized}
+    \caption{
+        Vizualize serializace spojového seznamu. \\
+        Převzato z článku Ghosts for Lists: A Critical Module of Contiki Verified in Frama\mbox{-}C~\cite{FCGhostsForLists}.
+    }
+    \label{fig:list-serialized}
+\end{figure}
+
+Serializace stromu, ve speciálním případě binární haldy
+lze provést pomocí mapování prvků stromu do indexů pole dle následujícího vzorce.
+
+Pokud je prvek na indexu $i$, pak levý potomek je na indexu $2i + 1$ a pravý potomek je na indexu $2i + 2$.
+Rodičovský prvek je na indexu $\lfloor \frac{i - 1}{2} \rfloor$.
+V binární haldě nemůže nastat situace s prázdným nepoužitým uzlem a pole se tedy vždy plní korektně
+od nejnižšího indexu po nejvyšší.
+Obecné stromy by s tímto principem nemohli být serializovány,
+protože je možné, že některé uzly budou prázdné a nebudou mít žádného potomka.
+Řešením se nabízí nepoužívat jednoduchou serializaci prvků stromu do pole,
+ale používat rozšířenou strukturu v serializovaném poli, která nám určuje, zdali je
+platný nebo ne.
+Indexace prvků v poli by tímto přístupem byla zachována,
+pouze program používající tuto strukturu by musel při každém přístupu na prvek stromu
+zkontrolovat, zdali je prvek platný nebo ne.
+O takto serializovaných stromech by bylo jednoduché provádět důkazy,
+jelikož všechny prvky v poli jsou oddělené a tedy splňují podmínku oddělené paměti.
+Predikáty popisující vlastnosti stromu by také obsahovali kontrolu, zdali je daný prvek v poli platný nebo ne.
+
+Nevýhoda serializace obecných stormů do pole je ta, že řídké stromy budou zabírat
+násobně více paměti než je potřeba.
+V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsahující řetězec \texttt{n} pravých uzlů,
+by serailizované pole reprezentující tento strom mělo velikost $2^n - 1$ s $2^n - n$ neplatnými uzly.
+
+
+
+
+
+
 
 %\section{Protipříklady}
 %\label{sec:frama-c-counterexamples}
