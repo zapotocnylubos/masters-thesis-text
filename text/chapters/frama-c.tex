@@ -197,8 +197,8 @@ Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku 
       ...
       ensures
         \exists integer i;
-           0 <= i < n
-             ==> arr[i] == \result;
+          0 <= i < n
+            ==> arr[i] == \result;
     */
     int find_min(int *arr, int n) {
     }
@@ -644,12 +644,12 @@ je možné pomocí anotace \texttt{\textbackslash at(\dots, L0)} a \texttt{\text
 \begin{listing}[H]
     \begin{minted}{C}
     void calc(int x) {
-        L0:
-        x++;
-        L1:
-        x += 2;
-        //@ assert x >= \at(x, L0) + 3;
-        //@ assert x >= \at(x, L1) + 2;
+      L0:
+      x++;
+      L1:
+      x += 2;
+      //@ assert x >= \at(x, L0) + 3;
+      //@ assert x >= \at(x, L1) + 2;
     }
     \end{minted}
     \caption{Ukázka uživatelského návěští v Frama-C}
@@ -766,9 +766,9 @@ tedy původní hodnotu parametru funkce.
 \begin{listing}[H]
     \begin{minted}{C}
     void calc(int x) {
-        x++;
-        x += 2;
-        //@ assert x >= \at(x, Pre) + 3;
+      x++;
+      x += 2;
+      //@ assert x >= \at(x, Pre) + 3;
     }
     \end{minted}
     \caption{Zdrojový kód pro ukázku Single Static Assignment}
@@ -838,11 +838,11 @@ která přiřazuje hodnotu 1 do proměnné $x$ pomocí ukazatele $p$.
 \begin{listing}[H]
     \begin{minted}{C}
     void calc() {
-        int x = 0;
-        int *p = &x;
+      int x = 0;
+      int *p = &x;
 
-        *p = 1;
-        //@ assert x == 0;
+      *p = 1;
+      //@ assert x == 0;
     }
     \end{minted}
     \caption{Nesprávné použití Hoareova paměťového modelu na kód s ukazateli}
@@ -945,11 +945,11 @@ a na operace s paměťovým modelem pomocí příkazu~\ref{list:typed-assign-exa
 \begin{listing}[H]
     \begin{minted}{C}
     void calc(int *p) {
-        *p = -1;
-        *p = 0;
-        *p = 1;
-        *p = 2;
-        //@ assert *p == 2;
+      *p = -1;
+      *p = 0;
+      *p = 1;
+      *p = 2;
+      //@ assert *p == 2;
     }
     \end{minted}
     \caption{Ukázka modifikace paměti pomocí typového paměťového modelu}
@@ -1013,11 +1013,11 @@ Analýzu programu provedeme pomocí příkazu~\ref{list:typed-pointer-valid-exam
 \begin{listing}[H]
     \begin{minted}{C}
     void calc() {
-        int x = 0;
-        int *p = &x;
+      int x = 0;
+      int *p = &x;
 
-        *p = 1;
-        //@ assert x == 1;
+      *p = 1;
+      //@ assert x == 1;
     }
     \end{minted}
     \caption{Správné použití typového paměťového modelu na kód s ukazateli}
@@ -1349,13 +1349,13 @@ nebude úspěšný.
 \begin{listing}[H]
     \begin{minted}{C}
     List *prepend(List *head, int value) {
-        List *new_node = (List *)malloc(sizeof(List));
-        if (new_node == NULL) {
-            return NULL;
-        }
-        new_node->value = value;
-        new_node->next = head;
-        return new_node;
+      List *new_node = (List *)malloc(sizeof(List));
+      if (new_node == NULL) {
+        return NULL;
+      }
+      new_node->value = value;
+      new_node->next = head;
+      return new_node;
     }
     \end{minted}
     \caption{Ukázka alokace paměti pomocí \texttt{malloc}}
@@ -1372,8 +1372,8 @@ a zápisem do dané paměti platnost ukazatele nebude zpochybňena.
 \begin{listing}[H]
     \begin{minted}{C}
     List *prepend(List *head, List *new_node) {
-        new_node->next = head;
-        return new_node;
+      new_node->next = head;
+      return new_node;
     }
     \end{minted}
     \caption{Ukázka předání již alokované paměti jako parametru funkce}
@@ -1406,8 +1406,8 @@ Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{li
 \begin{listing}[H]
     \begin{minted}{C}
     typedef struct list {
-        struct list *next;
-        int value;
+      struct list *next;
+      int value;
     } List;
     \end{minted}
     \caption{Definice spojového seznamu v jazyce C}
@@ -1731,8 +1731,8 @@ s využítím přístupu s oddělenou pamětí je zobrazen v ukázce~\ref{list:l
       ensures finite(\result);
     */
     List *prepend(List *head, List *new_node) {
-        new_node->next = head;
-        return new_node;
+      new_node->next = head;
+      return new_node;
     }
     \end{minted}
     \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
@@ -1798,11 +1798,10 @@ Ko
 
 TODO dovysvetlit
 
-
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        requires !reachable(head, new_node);
+      requires !reachable(head, new_node);
     */
     \end{minted}
     \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
