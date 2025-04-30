@@ -1270,7 +1270,7 @@ které mají zápornou základní adresu (\texttt{p.base < 0}).
 Platnost \texttt{\textbackslash valid} automaticky implikuje platnost \texttt{\textbackslash valid\_read},
 ale ne naopak.
 Například za pomoci ukazatelů do řetězcových literálů je možné číst znaky,
-ale ne je (přepisovat).
+ale ne je přepisovat.
 Tuto skutečnost popisuje následující lemma z výpisu~\ref{list:why-string-literal}.
 
 \begin{listing}[H]
@@ -1319,6 +1319,7 @@ jak demonstruje ukázka~\ref{list:malloc-invalid-pointer}.
      - Warning: Ignored Hypothesis
        Reason: Allocation, initialization
          and danglingness not yet implemented
+     allocation-problem.c:4: warning from Typed Model:
      - Warning: Hide \result
        Reason: Cast with incompatible pointers types
          (source: sint8*) (target: sint32*)
@@ -1336,7 +1337,74 @@ Výstup analýzy~\ref{list:malloc-invalid-pointer-result} ukazuje,
 že Frama\mbox{-}C nedokáže prokázat platnost ukazatele \texttt{pi}.
 Tento fundamentální problém zamezuje plnohodnotnému využití dynamické alokace paměti
 při důkazech správnosti programů pomocí Frama\mbox{-}C\@.
-Program musí být napsán tak,
+
+Jednou z cest, jak tento problém obejít,
+je částečné aplikovat axiomatický přístupu k alokaci paměti.
+V několika důkazech jsme již viděli použití funkce \texttt{assert},
+která vždy zasahuje do probíhajícího důkazu a na daném místě kontroluje platnost předané vlastnosti.
+Existují ještě přidružené funkce \texttt{check} a \texttt{admit},
+kde \texttt{check} funguje na stejném principu jako \texttt{assert},
+ale neblokuje průběh důkazu.
+Funkce \texttt{admit} se naopak vůbec nesnaží dokázat danou vlastnost,
+ale axiomaticky této vlastnosti věří, přidává ji do kontextu pro další kroky důkazu
+a pokračuje v důkazu dále~\cite{ACSLSpec}.
+Aplikací funkce \texttt{admit} na predikát \texttt{\textbackslash valid(pi)}
+můžeme přidat malý axiom o platnosti ukazatele \texttt{pi} ihned po kontrole,
+zdali alokační funkce \texttt{malloc} nevrátila hodnotu \texttt{NULL},
+jak je zobrazeno v ukázce~\ref{list:malloc-admit}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    #include <stdlib.h>
+
+    void test_malloc() {
+      int *pi = (int *)malloc(sizeof(int));
+        if (pi == NULL) {
+            return;
+        }
+        //@ admit \valid(pi);
+        //@ assert \valid(pi);
+    }
+    \end{minted}
+    \caption{Ukázka alokace paměti pomocí \texttt{malloc} s použitím \texttt{admit}}
+    \label{list:malloc-admit}
+\end{listing}
+
+Výstup analýzy~\ref{list:malloc-admit-result} ukazuje,
+že Frama\mbox{-}C stále nedokáže plnohodnotně pracovat s alokací paměti
+a ve výsledku analýzy máme stále varování o neúplnosti analýzy,
+ale na rozdíl od předchozí analýzy již Frama\mbox{-}C dokáže pracovat
+s nově alokovaným ukazatele pomocí přidaného axiomu \texttt{admit} na predikát \texttt{\textbackslash valid(pi)}
+a výsledek analyzy je označen jako platný (valid).
+Výsledný důkaz zvládl dokonce prokázat interní Qed zjednodušovač.
+
+Více axiomatický přístup k důkazům popisuje kapitola~\ref{subsec:axiomaticky-pristup}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    Goal Assertion (file allocation-fix-admit.c, line 9):
+    FRAMAC_SHARE/libc/stdlib.h:427: warning from wp:
+     - Warning: Ignored Hypothesis
+       Reason: Allocation, initialization
+         and danglingness not yet implemented
+    allocation-fix-admit.c:4: warning from Typed Model:
+     - Warning: Hide \result
+       Reason: Cast with incompatible pointers types
+         (source: sint8*) (target: sint32*)
+    Assume {
+      ...
+      (* Admit *)
+      Have: valid_rw(Malloc_0, pi_0, 1).
+    }
+    Prove: valid_rw(Malloc_0, pi_0, 1).
+    Prover Qed returns Valid
+    \end{minted}
+    \caption{Výstup analýzy s alokací paměti pomocí \texttt{malloc} s použitím \texttt{admit}}
+    \label{list:malloc-admit-result}
+\end{listing}
+
+V případě, že použití axiomatického přístupu není možné nebo vhodné,
+program musí být napsán tak,
 aby v parametrech funkcí byly předávány ukazatele na již alokované proměnné,
 pole a nebo struktury.
 
@@ -1382,7 +1450,7 @@ a zápisem do dané paměti platnost ukazatele nebude zpochybňena.
 
 S tímto principem přichází ale několik problematických částí pro důkazy korektnosti programu.
 Například situace, kdy přidávaný uzel (ukazatel na něj) je již obsažen v seznamu.
-Provedením funkce \texttt{prepend} na tento uzel,
+Provedením funkce \texttt{prepend} na tomto uzlu
 by vytvořilo cyklickou strukturu spojového seznamu,
 což by vedlo k porušení vlastnosti konečnosti spojového seznamu.
 Bylo by také pravděpodobné, že některé z původně dosažitelných uzlů
@@ -1434,9 +1502,9 @@ musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{ro
 
         case next_reachable:
           \forall List *root, *node;
-            \valid(root) &&
-              reachable(root->next, node) ==>
-                reachable(root, node);
+            \valid(root)
+            && reachable(root->next, node) ==>
+              reachable(root, node);
       }
     */
     \end{minted}
@@ -1444,9 +1512,14 @@ musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{ro
     \label{list:linked-list-reachabibility}
 \end{listing}
 
+Definice predikátu \texttt{reachable}, konkrétně první pravidlo,
+nelimituje ukazatele, na které se pravidlo vztahuje
+a tedy i prázdný seznam (\texttt{\textbackslash null}) je dosažitelný sám ze sebe.
+Tato vlastnost je důležitá pro definici konečnosti prázdného seznamu, která bude popsána níže.
+
 Pomocí predikátu \texttt{reachable} je možné dále zadefinovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
-Pokud je spojový seznam konečný, pak pro něj musí platit, že je možné v rámci procházení seznamu
-dospět k nějakému uzlu v seznamu,
+Pokud je spojový seznam konečný, pak pro něj musí platit,
+že existuje nějaký uzel \texttt{node},
 jehož následník (\texttt{next}) je ukazatel na \texttt{NULL} (v ACSL \texttt{\textbackslash null})
 a nebo je seznam kompletně prázdný.
 Tato definice je zobrazena v ukázce~\ref{list:linked-list-finite}.
