@@ -57,14 +57,14 @@ Ukázka~\ref{list:acsl-example} zobrazuje příklad zdrojového kódu ve kterém
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        requires x > 0;
-        assigns \result;
-        ensures \result == x + 2;
+      requires x > 0;
+      assigns \result;
+      ensures \result == x + 2;
     */
     int increment(int x) {
-        x = x + 1;
-        //@ assert x > 1;
-        return x + 1;
+      x = x + 1;
+      //@ assert x > 1;
+      return x + 1;
     }
     \end{minted}
     \caption{Ukázka anotací v jazyce C pomocí ACSL}
@@ -78,7 +78,7 @@ které společně se zdrojovým kódem zpracovává WP (Weakest Precondition) pl
 
 Ukázka~\ref{list:acsl-example} představila funkci \texttt{increment},
 která definuje předpoklad a následek pomocí klíčových slov \texttt{requires} a \texttt{ensures}.
-Zjednodušená Hoareova trojice pro příklad z ukázky~\ref{list:acsl-example} by vypadala následovně:
+Zjednodušená Hoareova trojice pro tuto funkci by vypadala následovně:
 
 \begin{equation*}
     \{ x > 0 \} \ (x = x + 1; return \  x + 1) \ \{ result == x + 2 \}
@@ -140,6 +140,8 @@ Frama\mbox{-}C definuje několik základních axiomů, lemmat, predikátů, funk
 které jsou použity v rámci generování WhyML kódu~\cite{FCGitWhy} a
 některé ukázky v následujících kapitolách budou pro úplnost doplněny o tyto definice jazyce WhyML\@.
 
+% TODO: je to v teto sekci?
+
 \subsection{Obecný a existenční kvantifikátor}
 \label{subsec:anotace-kvantifikatory}
 
@@ -158,16 +160,21 @@ Zde je definována vlastnost prvků v poli celých čísel \texttt{arr} o veliko
 která specifikuje, že pro každé $i$ v intervalu $[0, n)$ platí,
 že hodnota $arr[i]$ (prvek pole) je větší nebo rovna nule (pole obsahuje pouze nezáporné hodnoty).
 
+Predikát \texttt{\textbackslash valid} zajišťuje,
+že ukazatel \texttt{arr} ukazuje na platnou paměťovou oblast
+a \texttt{(0..n-1)} specifikuje rozsah platných indexů tohoto pole.
+Platnost ukazatelů popisuje kapitola~\ref{sec:ukazatele-a-pametove-bloky}.
+
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        requires \valid(arr);
-        requires n > 0;
+      requires \valid(arr + (0..n-1));
+      requires n > 0;
 
-        requires
-            \forall integer i;
-                0 <= i < n
-                    ==> 0 <= arr[i];
+      requires
+        \forall integer i;
+          0 <= i < n
+            ==> 0 <= arr[i];
     */
     int find_min(int *arr, int n) {
     }
@@ -187,11 +194,11 @@ Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku 
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        ...
-        ensures
-            \exists integer i;
-                0 <= i < n
-                    ==> arr[i] == \result;
+      ...
+      ensures
+        \exists integer i;
+           0 <= i < n
+             ==> arr[i] == \result;
     */
     int find_min(int *arr, int n) {
     }
@@ -223,15 +230,15 @@ jehož hodnota je rovna výsledku funkce a zároveň splňuje vlastnost,
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        ...
+      ...
 
-        ensures
-            \exists integer i;
-                0 <= i < n
-                    ==> arr[i] == \result
-                    && \forall integer j;
-                        0 <= j < n
-                            ==> arr[i] <= arr[j];
+      ensures
+        \exists integer i;
+          0 <= i < n
+            ==> arr[i] == \result
+            && \forall integer j;
+              0 <= j < n
+                ==> arr[i] <= arr[j];
     */
     int find_min(int *arr, int n) {
     }
@@ -240,6 +247,10 @@ jehož hodnota je rovna výsledku funkce a zároveň splňuje vlastnost,
     \label{list:acsl-exists-forall}
 \end{listing}
 
+Pro dokončení důkazu funkce \texttt{find\_min} je nutné přidat do kódu cyklus,
+který bude procházet polem a hledat minimální prvek.
+Anotace a důkazy cyklů popisuje následující kapitola~\ref{subsec:acsl-cykly},
+na jejímž konci dokončíme důkaz funkce \texttt{find\_min}.
 
 \subsection{Cykly}
 \label{subsec:acsl-cykly}
@@ -253,15 +264,15 @@ který Frama\mbox{-}C provádí automaticky během předzpracování.
 \begin{listing}[H]
     \begin{minted}{C}
     for (init; condition; increment) {
-        body;
+      body;
     }
 
     // ekvivalentní zápis
 
     init;
     while (condition) {
-        body;
-        increment;
+      body;
+      increment;
     }
     \end{minted}
     \caption{Ekvivalentní zápis cyklu \texttt{for} pomocí \texttt{while}}
@@ -271,14 +282,14 @@ který Frama\mbox{-}C provádí automaticky během předzpracování.
 \begin{listing}[H]
     \begin{minted}{C}
     do {
-        body;
+      body;
     } while (condition);
 
     // ekvivalentní zápis
 
     while (1) {
-        body;
-        if (!condition) break;
+      body;
+      if (!condition) break;
     }
     \end{minted}
     \caption{Ekvivalentní zápis cyklu \texttt{do-while} pomocí \texttt{while}}
@@ -296,13 +307,13 @@ poté pomocí metody nejslabšího předpokladu nelze prokázat,
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        requires n >= 0;
+      requires n >= 0;
     */
     void loop_invariant(int n) {
-        while (n > 0) {
-            n--;
-        }
-        //@ assert n == 0;
+      while (n > 0) {
+        n--;
+      }
+      //@ assert n == 0;
     }
     \end{minted}
     \caption{Ukázka cyklu bez invariantu}
@@ -311,7 +322,7 @@ poté pomocí metody nejslabšího předpokladu nelze prokázat,
 
 \begin{listing}[H]
     \begin{minted}{console}
-    frama-c -wp -wp-prover alt-ergo,cvc4,z3
+    frama-c -wp -wp-prover alt-ergo,cvc4,z3 \
       -wp-no-let -wp-print no-loop-invariant.c
     \end{minted}
     \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
@@ -358,10 +369,8 @@ poté pomocí metody nejslabšího předpokladu nelze prokázat,
 
 Spuštěním příkazu~\ref{list:loop-no-invariant-command} získáme výsledek analýzy~\ref{list:loop-no-invariant-output},
 který ukazuje, že proběhl pokus o dokázání dvou vlastností.
-
 První vlastnost je automaticky generovaná podmínka konečnosti cyklu, kterou uživatel musí vyplnit.
 Konečnost cyklů bude popsána na konci této kapitoly.
-
 Druhá vlastnost je naše očekávaná vlastnost (\texttt{assert n == 0}),
 kterou nemohl zádný z použitých SMT řešičů dokázat.
 Jediná informace, kterou SMT řešiče o proměnné \texttt{n} mají,
@@ -385,7 +394,7 @@ získáváme již správný výsledek a to konkrétně v několika krocích:
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        loop invariant n >= 0;
+      loop invariant n >= 0;
     */
     while (n > 0) {
     ...
@@ -473,8 +482,8 @@ a také prokázání očekávané vlastnosti \texttt{assert n == 0}.
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        loop invariant n >= 0;
-        loop variant n;
+      loop invariant n >= 0;
+      loop variant n;
     */
     while (n > 0) {
     ...
@@ -536,6 +545,74 @@ a také prokázání očekávané vlastnosti \texttt{assert n == 0}.
     \label{list:loop-with-variant-output}
 \end{listing}
 
+Anotace \texttt{\textbackslash loop assigns} se používá k určení proměnných,
+které mohou být změněny během vykonávání cyklu.
+
+Pomocí invariantů konstruktů z této kapitoly
+je možné prokázat vlastnosti cyklů a dokončit důkaz funkce \texttt{find\_min}
+z předchozí kapitoly~\ref{subsec:anotace-kvantifikatory}.
+V následující ukázce~\ref{list:find-min-complete} je zobrazen
+kompletní anotace a kód funkce \texttt{find\_min} včetně anotací pro cyklus.
+Přidané invarianty cyklu popisují následující vlastnosti:
+
+\begin{itemize}
+    \item Invariant \texttt{1 <= i <= n} zajišťuje, že proměnná \texttt{i} nabývá hodnot z intervalu $[1, n]$.
+    \item Invariant \texttt{\textbackslash forall integer j; 0 <= j < i ==> min <= arr[j]} zajišťuje,
+          že proměnná \texttt{min} je menší nebo rovna všem prvkům pole $arr$,
+          které byly prozkoumány do aktuální iterace cyklu a jedná se tedy o aktuálně nejmenší prvek.
+    \item Variant \texttt{n - i} zajišťuje, že cyklus skončí po konečném počtu iterací.
+          Cyklus pracuje ve vzestupném směru (od 1 do n),
+          a tedy s každou iterací klesá hodnota výrazu \texttt{n - i}.
+    \item Anotace \texttt{\textbackslash loop assigns} určuje proměnné, které mohou být změněny během vykonávání cyklu.
+          V tomto případě se jedná pouze o iterační proměnnou \texttt{i} a proměnnou \texttt{min},
+          která je aktualizována v případě, že je nalezen nový menší prvek.
+\end{itemize}
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      requires \valid(arr + (0..n-1));
+      requires n > 0;
+
+      requires
+        \forall integer i;
+          0 <= i < n
+            ==> 0 <= arr[i];
+
+      ensures
+        \exists integer i;
+          0 <= i < n
+            ==> arr[i] == \result
+              && \forall integer j;
+                0 <= j < n
+                  ==> arr[i] <= arr[j];
+    */
+    int find_min(int *arr, int n) {
+      int min = arr[0];
+
+      /*@
+        loop invariant 1 <= i <= n;
+        loop invariant
+          \forall integer j;
+            0 <= j < i
+              ==> min <= arr[j];
+        loop assigns i, min;
+        loop variant n - i;
+      */
+      for (int i = 1; i < n; i++) {
+        if (arr[i] < min) {
+          min = arr[i];
+        }
+      }
+
+      return min;
+    }
+    \end{minted}
+    \caption{Dokončení funkce \texttt{find\_min} pomocí invariantu a variantu cyklu}
+    \label{list:find-min-complete}
+\end{listing}
+
+
 \subsection{Anotace \texttt{\textbackslash assigns}}
 \label{subsec:acsl-anotace-assigns}
 
@@ -544,7 +621,7 @@ které mohou být změněny během vykonávání funkce.
 Tato anotace je součástí následku spuštění funkce
 a indikuje volajícímu, které paměťové oblasti mohly být změněny.
 
-TODO: dodelat
+TODO: dodelat?
 
 
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
@@ -626,27 +703,34 @@ Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
     \end{itemize}
 \end{itemize}
 
-%ACSL definuje pamětový ukazatel (pointer) jako dvojici \texttt{(base, offset)},
-%kde \texttt{base} je základní adresa paměťového bloku a \texttt{offset} je relativní počet bytů
-%od základní adresy.
-%Například v poli celých čí
+Časové body lze využívat i v některých predikátech a logických funkcích.
 
+\subsection{Ghost konstrukty}
+\label{subsec:acsl-ghost-konstrukty}
 
-TODO: ghost konstrukty
+TODO: ghost konstrukty?
 
 \subsection{Predikáty a logické funkce}
 \label{subsec:acsl-predikaty-a-logicke-funkce}
 
-TODO: kvantifikátory, predikáty, logické funkce
+TODO: kvantifikátory, predikáty, logické funkce?
 
 % TODO: uživatelům -> programátorům?
-
 
 \section{RTE (Run-Time Error)}
 \label{sec:frama-c-rte}
 
+TODO základní popis
+
+\section{Kouřové testy (Smoke tests)}
+\label{sec:frama-c-smoke-tests}
+
+TODO základní popis
+
 \section{WP (Weakest Precondition)}
 \label{sec:frama-c-wp}
+
+TODO je potřeba?
 
 \section{Paměťové modely}
 \label{sec:frama-c-pametove-modely}
@@ -657,9 +741,7 @@ Paměťové modely jsou důležitou součástí analýzy programů,
 protože umožňují definovat, jakým způsobem se programy chovají
 vzhledem k paměti a jakým způsobem manipulují s daty.
 
-Paměťové modely popisují způsob popisu operace na
-
-TODO
+TODO kompletnejsi uvod
 
 \subsection{Hoareův paměťový model}
 \label{subsec:hoareuv-pametovy-model}
@@ -807,13 +889,8 @@ které obsahují ukazatele, dynamickou paměť a aliasing.
 Představíme si zjednodušený paměťový model a následně tento model rozšíříme na typový paměťový model,
 který je použitý ve Frama\mbox{-}C\@.
 
-
-TODO
-
 % TODO: sjednotit pritomny/oznamovaci jayk jako
 % TODO: je reprezentována -> reprezentujeme? (nebo naopak?)
-
-
 % TODO odlišuje -> liší?
 
 Zjednodušený paměťový model se odlišuje od Hoareova paměťového modelu tím,
@@ -846,6 +923,8 @@ a je navržen tak, že pro každý primitivní typ v jazyce C existuje odpovída
 Například ukazatel typu \texttt{int*} bude zapisovat a číst hodnoty z paměťové mapy $Mint$,
 ukazatel typu \texttt{char*} bude zapisovat a číst hodnoty z paměťové mapy $Mchar$ a tak dále.
 
+% TODO: bajt/byte?
+
 Takto navržený typový paměťový model explicitně odděluje paměťová místa rozdílných typů,
 což nemusí vždy odpovídat skutečnému chování programu,
 protože v jazyce C je možné například z paměti přečíst první byte typu \texttt{int}
@@ -854,7 +933,7 @@ Tento způsob přístupu k paměti je sice v jazyce C povolen,
 ale Frama\mbox{-}C a typový paměťový model tento způsob přístupu k paměti nepodporují
 a stejně jako Hoareův paměťový model mohou na programech s těmito přístupy k paměti poskytovat neplatné výsledky.
 Oddělení paměti a návaznost na důkazy správnosti programu s ukazateli
-podrobně popisuje následující kapitola~\ref{sec:oddelena-pamet}.
+podrobně popisuje následující kapitola~\ref{subsec:oddelena-pamet}.
 
 Následující kód~\ref{list:typed-assign-example} ukazuje jednoduchou funkci,
 která zapisuje hodnotu do paměti na kterou ukazuje ukazatel $p$ typu \texttt{int*}.
@@ -1013,16 +1092,13 @@ TODO: nejake ukonceni pam. modelu?
 \section{Ukazatele a paměťové bloky}
 \label{sec:ukazatele-a-pametove-bloky}
 
-TODO: pointery a validita, separace
-
-Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá strukturu \texttt{addr},
-jejíž definice je zobrazena ve výpisu~\ref{list:why-addr}
-společně s definicí konstanty \texttt{null} reprezentující nulový ukazatel.
+Frama\mbox{-}C pro důkazy s paměťovými ukazateli používá interně strukturu \texttt{addr},
+jejíž definice v jazyce WhyML je zobrazena ve výpisu~\ref{list:why-addr}
+společně s definicí ACSL konstanty \texttt{\textbackslash null},
+reprezentující nulový ukazatel~\cite{FCGitWhy}.
 Tato datová struktura se skládá ze dvou celočíselných hodnot.
 První hodnotou je základní adresa paměťového bloku \texttt{base}
-a druhou hodnotou je \texttt{offset}, reprezentující relativní posun v bytech od základní adresy.
-
-% TODO: je to vlastne posun o pocet bunek pameti?
+a druhou hodnotou je \texttt{offset}, reprezentující relativní posun v bytech od základní adresy~\cite{BlanchardWP2024}.
 
 % TODO: což -> ??
 
@@ -1039,7 +1115,7 @@ a druhou hodnotou je \texttt{offset}, reprezentující relativní posun v bytech
 ACSL definuje zabudované funkce pro získání základní adresy a offsetu z paměťového ukazatele.
 Konkrétně \texttt{\textbackslash base\_addr} a \texttt{\textbackslash offset}.
 Tyto funkce jsou ve WhyML definovány pomocí funkcí \texttt{base} a \texttt{offset},
-zobrazených v ukázce~\ref{list:why-addr-base-offset},
+zobrazených ve výpisu~\ref{list:why-addr-base-offset},
 které přijimají jeden parametr \texttt{addr} (paměťový ukazatel)
 a vracejí příslušné hodnoty \texttt{base} a \texttt{offset} z datové struktury \texttt{addr}.
 
@@ -1061,22 +1137,21 @@ a vracejí příslušné hodnoty \texttt{base} a \texttt{offset} z datové struk
     \label{list:why-addr-base-offset}
 \end{listing}
 
-Paměťová adresa má tři hlavní konstruktory,
+Datová struktura \texttt{addr} je konstruována na úrovni WhyML pomocí tří konstruktorů,
 konkrétně \texttt{global}, \texttt{shift} a \texttt{mk\_addr}.
 
 Konstruktor \texttt{global} je použit pro reprezentaci paměťové adresy bez offsetu
-a jeho definice je zobrazená v ukázce~\ref{list:why-pointer-constructors}.
-Frama\mbox{-}C používá konstruktor \texttt{global} nejčastěji
+a jeho definice je zobrazená ve výpisu~\ref{list:why-pointer-constructors}.
+Frama\mbox{-}C používá tento konstruktor nejčastěji
 pro reprezentaci referencí (ukazatelů) na globální a lokální proměnné a nebo parametry funkcí.
 V důkazech jsme viděli použít konstruktoru \texttt{global} na místech,
-ve kterých se v původním zdrojovém kódu nachází získávání adresy proměnných pomocí operátoru \texttt{\&},
-například
+ve kterých se v původním zdrojovém kódu nachází získávání adresy proměnných pomocí operátoru \texttt{\&}.
 
 \begin{listing}[H]
     \begin{minted}{text}
     function global (b: int) : addr = { base = b ; offset = 0 }
     \end{minted}
-    \caption{Definice WhyML konstruktoru \texttt{global} pro paměťový ukazatel}
+    \caption{Definice konstruktoru \texttt{global} pro paměťový ukazatel ve WhyML}
     \label{list:why-pointer-constructors}
 \end{listing}
 
@@ -1088,21 +1163,24 @@ a tedy platí, že
     \forall x, y : global(x) = global(y) \implies x = y
 \end{equation*}
 
-% TODO: doopravdy bude?
-
-Tato vlastnost, bude využita v pozdějších důkazech v kapitole~\ref{sec:oddelena-pamet},
+Tato vlastnost, bude využita v pozdějších důkazech v kapitole~\ref{subsec:oddelena-pamet},
 které pracují na pricnipu oddělené paměti.
+% TODO: doopravdy bude?
 
 Konstruktor \texttt{shift} zobrazený ve výpisu~\ref{list:why-pointer-constructors-shift}
 je použit na konstrukci paměťového ukazatele s offsetem.
-Jedná se pouze o jednoduchý konstruktor, bez dalšího zpracování adresy.
+Jedná se pouze o jednoduchý konstruktor bez jakékoliv další logiky,
+Tento konstruktor lze používat opakovaně pro přidání offsetu k základní adrese paměťového ukazatele,
+výsledný ukazatel bude mít offset nastavený na součet offsetu původního ukazatele
+a offsetu přidaného pomocí parametru konstruktoru \texttt{k}.
+% TODO: jak resit spatne renderovani dvou 'ff', ze se prekryvaji?
 
 \begin{listing}[H]
     \begin{minted}{text}
     function shift (p: addr) (k: int) : addr =
       { p with offset = p.offset + k }
     \end{minted}
-    \caption{Definice WhyML konstruktoru \texttt{shift} pro paměťový ukazatel}
+    \caption{Definice konstruktoru \texttt{shift} pro paměťový ukazatel ve WhyML}
     \label{list:why-pointer-constructors-shift}
 \end{listing}
 
@@ -1116,30 +1194,42 @@ základní paměťové adresy a konstruktoru \texttt{shift} pro přidání offse
     \begin{minted}{text}
     let mk_addr base offset = shift (global base) offset
     \end{minted}
-    \caption{Definice WhyML konstruktoru \texttt{mk\_addr} pro paměťový ukazatel}
+    \caption{Definice konstruktoru \texttt{mk\_addr} pro paměťový ukazatel ve WhyML}
     \label{list:why-pointer-constructor-mk-addr}
 \end{listing}
 
-Frama\mbox{-}C definuje specíální mapovací strukturu \texttt{malloc},
+Frama\mbox{-}C definuje speciální mapovací strukturu \texttt{malloc},
 jejíž definice je zobrazená ve výpisu~\ref{list:why-malloc},
 která pro každý alokovaný blok, identifikovaný svoji základní (base) adresou
-uchovává délku bloku v bytech.
+uchovává délku tohoto bloku v bytech.
 
 \begin{listing}[H]
     \begin{minted}{text}
     type malloc = map int int
     \end{minted}
-    \caption{Definice struktury pro reprezentaci alokovaného bloku paměti}
+    \caption{Definice struktury pro reprezentaci alokované paměti}
     \label{list:why-malloc}
 \end{listing}
 
 ACSL definuje zabudované funkce pro kontrolu platnosti paměťového ukazatele.
-Pro kontrolu, zdali je paměťový ukazatel platný pro čtení hodnoty z paměti
-lze použít funkci \texttt{\textbackslash valid\_read}.
-Pokud je paměťový ukazatel platný i pro zápisy do paměti,
-lze použít funkci \texttt{\textbackslash valid}.
-Tyto funkce jsou ve WhyML definovány pomocí predikátů \texttt{valid\_rw} a \texttt{valid\_rd},
-které jsou zobrazeny ve výpisu~\ref{list:why-pointer-valid}.
+Kontrola platnosti paměťového ukazatele pro čtení hodnoty z paměti (dereference ukazatele),
+je reprezentována predikátem \texttt{\textbackslash valid\_read}
+definovaným WhyML predikátem \texttt{valid\_rd} ve výpisu~\ref{list:why-pointer-valid-read}.
+Za předpokladu čtení alespoň jednoho bytu z paměti (\texttt{n > 0}) musí platit,
+že základní adresa paměťového ukazatele je nenulová (\texttt{p.base <> 0}),
+protože nulová adresa paměti je rezervována pro reprezentaci nulového ukazatele (\texttt{\textbackslash null}),
+jehož dereference způsobí chybu segmentace paměti (segmentation fault).
+Paměťové bloky se zápornou základní adresou (\texttt{p.base < 0}) jsou rezervovány pro reprezentaci
+řetězcových literálů (string literals)~\cite{ACSLSpec}, ze kterých je povoleno pouze číst.
+Kladné základní adresy paměťových bloků (\texttt{p.base > 0}) jsou použity pro
+všechny ostatní alokované paměťové bloky.
+Dále definujeme jako platné ukazatele pouze ukazatele, které mají kladný offset (\texttt{p.offset >= 0}).
+Poslední pravidlo, který musí pro platný ukazatel platit je,
+že čtením \texttt{n} bytů z paměti od tohoto ukazatele stále zůstaneme v rámci stejného paměťového bloku,
+do které daný ukazatel ukazuje (\texttt{p.offset + n <= m[p.base]}),
+kde \texttt{m[p.base]} je délka bloku paměti do kterého daný ukazatel ukazuje.
+
+% TODO: zustaneme -> zustavame?
 
 \begin{listing}[H]
     \begin{minted}{text}
@@ -1149,7 +1239,23 @@ které jsou zobrazeny ve výpisu~\ref{list:why-pointer-valid}.
         /\ 0 <= p.offset
         /\ p.offset + n <= m[p.base]
     )
+    \end{minted}
+    \caption{Definice predikátu pro kontrolu platnosti paměťového ukazatele pro čtení}
+    \label{list:why-pointer-valid-read}
+\end{listing}
 
+ACSL predikát \texttt{\textbackslash valid},
+definovaným WhyML predikátem \texttt{valid\_rw} zobrazeném ve výpisu~\ref{list:why-pointer-valid},
+je použit pro kontrolu platnosti paměťového ukazatele,
+který podporuje jak čtení tak zápis do paměti.
+Skládá se témeř ze stejných podmínek jako predikát pro platnost paměťového ukazatele pro čtení.
+Jediný rozdíl je v první podmínce, která kontroluje,
+že základní adresa ukazatele odkazuje do paměťového bloku s kladnou adresou (\texttt{p.base > 0}).
+Nelze tedy zapisovat například do řetězcových literálů,
+které mají zápornou základní adresu (\texttt{p.base < 0}).
+
+\begin{listing}[H]
+    \begin{minted}{text}
     predicate valid_rw (m: malloc) (p: addr) (n: int) =
       n > 0 -> (
         0 < p.base
@@ -1157,27 +1263,15 @@ které jsou zobrazeny ve výpisu~\ref{list:why-pointer-valid}.
         /\ p.offset + n <= m[p.base]
       )
     \end{minted}
-    \caption{Definice predikátů pro kontrolu platnosti paměťového ukazatele}
+    \caption{Definice predikátu pro kontrolu platnosti paměťového ukazatele pro čtení a zápis}
     \label{list:why-pointer-valid}
 \end{listing}
 
-Oba predikáty přijímají tři parametry,
-prvním je struktura \texttt{malloc} reprezentující alokované paměťové bloky,
-druhým je paměťový ukazatel \texttt{addr}
-a třetím je celočíselná hodnota \texttt{n} reprezentující počet čtených nebo zapisovaných bytů.
-
-Platný ukazatel pro čtení hodnoty z paměti je tedy takový,
-který má nenulovou základní adresu (\texttt{p.base > 0}),
-kladný nebo nulový offset (\texttt{p.offset >= 0})
-a čtení \texttt{n} bajtů z paměti od tohoto ukazatele je z stejného paměťového bloku jako daný ukazatel
-(\texttt{p.offset + n <= m[p.base]}), kde \texttt{m[p.base]} je délka bloku paměti
-reprezentovaná základní adresou \texttt{p.base}.
-
-Platnost \texttt{valid} ukazatele automaticky implikuje platnost \texttt{valid\_rd}, ale ne naopak.
-Například řetězcové literály (string literals) jsou reprezentovány jako paměťové ukazatele,
-jejich základní adresa je záporná a offset je nezáporný~\cite{ACSLSpec}.
-Pomocí ukazatelů do řetězcových literálů je možné pouze číst znaky,
-nikoliv je zapisovat (přepisovat), jak je vidět z výpisu~\ref{list:why-string-literal}.
+Platnost \texttt{\textbackslash valid} automaticky implikuje platnost \texttt{\textbackslash valid\_read},
+ale ne naopak.
+Například za pomoci ukazatelů do řetězcových literálů je možné číst znaky,
+ale ne je (přepisovat).
+Tuto skutečnost popisuje následující lemma z výpisu~\ref{list:why-string-literal}.
 
 \begin{listing}[H]
     \begin{minted}{text}
@@ -1186,7 +1280,7 @@ nikoliv je zapisovat (přepisovat), jak je vidět z výpisu~\ref{list:why-string
         p.base < 0 -> 0 <= p.offset < m[p.base] ->
           (valid_rd m p 1 /\ not (valid_rw m p 1))
     \end{minted}
-    \caption{Definice paměťového ukazatele pro řetězcové literály}
+    \caption{Definice lematu pro kontrolu platnosti ukazatele do řetězcového literálu}
     \label{list:why-string-literal}
 \end{listing}
 
@@ -1195,7 +1289,7 @@ ve které jsou alokovány proměnné.
 Využítí jsme viděli v předchozí kapitole~\ref{subsec:typovy-pametovy-model}
 ve výpisu~\ref{list:typed-pointer-valid-example-result}, kde pomocí
 \texttt{linked(Malloc\_0)} je označena paměťová mapa,
-ve které je alokována loklání proměnná $x$,
+ve které je alokována lokální proměnná $x$,
 do které se pomocí ukazatele $p$ zapisuje hodnota~1.
 
 Frama\mbox{-}C a ACSL mají pouze limitovanou podporu pro alokaci paměti pomocí standardní knihovny jazyka C.
@@ -1223,35 +1317,42 @@ jak demonstruje ukázka~\ref{list:malloc-invalid-pointer}.
     Goal Assertion (file allocation-problem.c, line 8):
     FRAMAC_SHARE/libc/stdlib.h:427: warning from wp:
      - Warning: Ignored Hypothesis
-       Reason: Allocation, initialization and danglingness not yet implemented
+       Reason: Allocation, initialization
+         and danglingness not yet implemented
      - Warning: Hide \result
-       Reason: Cast with incompatible pointers types (source: sint8*) (target: sint32*)
+       Reason: Cast with incompatible pointers types
+         (source: sint8*) (target: sint32*)
     Assume { ... }
     Prove: valid_rw(Malloc_0, pi_0, 1).
     Prover Alt-Ergo 2.5.3 returns Timeout (2s)
     Prover CVC4 1.8 returns Unknown
     Prover Z3 4.8.12 returns Unknown
     \end{minted}
-    \caption{Výstup analýzy pomocí typového paměťového modelu}
+    \caption{Výstup analýzy s alokací paměti pomocí \texttt{malloc}}
     \label{list:malloc-invalid-pointer-result}
 \end{listing}
 
 Výstup analýzy~\ref{list:malloc-invalid-pointer-result} ukazuje,
 že Frama\mbox{-}C nedokáže prokázat platnost ukazatele \texttt{pi}.
 Tento fundamentální problém zamezuje plnohodnotnému využití dynamické alokace paměti
-při důkazech správnosti programu pomocí Frama\mbox{-}C\@.
+při důkazech správnosti programů pomocí Frama\mbox{-}C\@.
 Program musí být napsán tak,
 aby v parametrech funkcí byly předávány ukazatele na již alokované proměnné,
-pole nebo struktury.
+pole a nebo struktury.
 
-Tedy například místo implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu
-zobrazené v ukázce~\ref{list:prepend-malloc} pomocí alokace paměti pomocí \texttt{malloc},
-je nutné použít již alokované proměnné a předat je jako parametry funkce, jak zobrazuje ukázka~\ref{list:prepend}.
+Například implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu
+za pomocí volání funkce \texttt{malloc} zobrazené v ukázce~\ref{list:prepend-malloc} je nevhodné,
+jelikož následující predikáty budou požadovat platnost ukazatele \texttt{new\_node},
+což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \texttt{prepend}
+nebude úspěšný.
 
 \begin{listing}[H]
     \begin{minted}{C}
     List *prepend(List *head, int value) {
         List *new_node = (List *)malloc(sizeof(List));
+        if (new_node == NULL) {
+            return NULL;
+        }
         new_node->value = value;
         new_node->next = head;
         return new_node;
@@ -1260,6 +1361,13 @@ je nutné použít již alokované proměnné a předat je jako parametry funkce
     \caption{Ukázka alokace paměti pomocí \texttt{malloc}}
     \label{list:prepend-malloc}
 \end{listing}
+
+Přepsáním funkce \texttt{prepend} tak,
+aby byla alokována paměť mimo funkci \texttt{prepend} a předána jako parametr,
+zobrazené v ukázce~\ref{list:prepend},
+je možné tento problém částečně vyřešit.
+Platnost ukazatele \texttt{new\_node} bude zajištěna pomocí předpokladu
+a zápisem do dané paměti platnost ukazatele nebude zpochybňena.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1272,39 +1380,27 @@ je nutné použít již alokované proměnné a předat je jako parametry funkce
     \label{list:prepend}
 \end{listing}
 
-S tímto principem přichází několik problematických částí pro důkazy korektnosti programu.
-Například situace, kdy přidávaný uzel (ukazatel na něj) je již obsažen v seznamu,
-což může zapříčinit zacyklení spojového seznamu.
+S tímto principem přichází ale několik problematických částí pro důkazy korektnosti programu.
+Například situace, kdy přidávaný uzel (ukazatel na něj) je již obsažen v seznamu.
+Provedením funkce \texttt{prepend} na tento uzel,
+by vytvořilo cyklickou strukturu spojového seznamu,
+což by vedlo k porušení vlastnosti konečnosti spojového seznamu.
+Bylo by také pravděpodobné, že některé z původně dosažitelných uzlů
+nacházejících se v seznamu za uzlem \texttt{new\_node}
+by již dosažitelné nebyly.
+Kvůli tomuto by nebylo ani možné dokázat platnost tvrzení,
+které by popisovalo, že se obsah seznamu rozšířil o jeden prvek.
 
-Pokud by bylo zajištěno, že přidávaný uzel není obsažen v seznamu,
-pak by bylo dokončit důkaz korektnosti funkce \texttt{prepend} bez jakýchkoliv úprav.
+Pokud by bylo zajištěno, že přidávaný uzel v seznamu obsažen není,
+bylo by možné dokončit důkaz korektnosti funkce \texttt{prepend} bez velkých problémů.
 Vlastnost, že uzel není obsažen v seznamu je možné specifikovat pomocí predikátu \texttt{\textbackslash separated},
-jehož definice, výhody a nevýhody této metody jsou podrobně popsány v následující kapitole~\ref{sec:oddelena-pamet}.
+jehož definici, výhody a nevýhody jsou podrobně popsány v následující kapitole~\ref{subsec:oddelena-pamet}.
 
-
-\section{Oddělená paměť}
-\label{sec:oddelena-pamet}
-
-
-TODO: intro k oddělené paměti
-
-Frama\mbox{-}C používá pro reprezentaci oddělené paměti strukturu \texttt{region},
-
-TODO Predikát \texttt{region} je použit pro označení paměťové mapy,
-
-TODO Predikát \texttt{framed}
-
-TODO Predikát \texttt{linked}
-
-TODO: .. popsat region, framed, separated
-
-TODO: prvky jednoho pole (se stejnou base) jsou od sebe oddělené
-
-\section{Dyanimické datové struktury}
+\section{Dynamické datové struktury}
 \label{sec:dynamicke-datove-struktury}
 
 Dynamické rekurzivní datové struktury jako například spojové seznamy,
-stromy a grafy jsou v jazyce C reprezentovány pomocí ukazatelů na struktury.
+stromy a nebo grafy jsou v jazyce C reprezentovány pomocí ukazatelů na struktury.
 Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{list:linked-list}.
 
 \begin{listing}[H]
@@ -1318,23 +1414,25 @@ Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{li
     \label{list:linked-list}
 \end{listing}
 
-Pro účely důkazů s spojovým seznamem je vhodné vytvořit predikát \texttt{reachable},
+Pro účely důkazů se spojovým seznamem je vhodné vytvořit predikát \texttt{reachable},
 zobrazený v ukázce~\ref{list:linked-list-reachabibility},
 který určuje, zdali je uzel \texttt{node} dosažitelný z uzlu \texttt{root}.
 Jedná se o induktivní definici,
-kde základní pravidlo říká, že každý uzel je dosažitelný sám ze sebe (\texttt{reachable(root, root)}).
-Druhé pravidlo (indukce) říká, že pokud je nějaký uzel \texttt{node} dosažitelný z uzlu \texttt{root->next},
+kde základní pravidlo říká,
+že každý uzel je dosažitelný sám ze sebe (\texttt{reachable(root, root)}).
+Druhé pravidlo (indukční krok) říká,
+že pokud je nějaký uzel \texttt{node} dosažitelný z uzlu \texttt{root->next},
 musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{root->next}).
 
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-      inductive reachable{L}(List *root, List *node) {
-        case root_reachable{L}:
+      inductive reachable(List *root, List *node) {
+        case root_reachable:
           \forall List *root;
             reachable(root, root);
 
-        case next_reachable{L}:
+        case next_reachable:
           \forall List *root, *node;
             \valid(root) &&
               reachable(root->next, node) ==>
@@ -1348,14 +1446,16 @@ musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{ro
 
 Pomocí predikátu \texttt{reachable} je možné dále zadefinovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
 Pokud je spojový seznam konečný, pak pro něj musí platit, že je možné v rámci procházení seznamu
-dospět k poslednímu uzlu seznamu, který ukazuje na \texttt{NULL} (v ACSL \texttt{\textbackslash null}).
+dospět k nějakému uzlu v seznamu,
+jehož následník (\texttt{next}) je ukazatel na \texttt{NULL} (v ACSL \texttt{\textbackslash null})
+a nebo je seznam kompletně prázdný.
 Tato definice je zobrazena v ukázce~\ref{list:linked-list-finite}.
 
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-      predicate finite{L}(List *root) =
-        reachable{L}(root, \null);
+      predicate finite(List *root) =
+        reachable(root, \null);
     */
     \end{minted}
     \caption{Definice predikátu konečnosti spojového seznamu}
@@ -1370,80 +1470,221 @@ Délka prázdného seznamu je definována na 0, následuje induktivní pravidlo,
 které popisuje, že konečné seznamy mají délku o 1 větší než délka jejich podseznamu.
 Následuje axiom, který říká, že délka seznamu je vždy nezáporná,
 což zjednodušuje důkazní postupy pro některé SMT řešiče
-a v přítích podkapitolách budeme pomocí této logické funkce
-omezovat vstupní předpoklady, například, že délka seznamu nebude větší než nějaké mez.
+a v následujících kapitolách budeme pomocí této logické funkce
+omezovat vstupní předpoklady, například, že délka seznamu nebude větší než nějaká mez.
+
+% TODO: odstranit vsude zbytecne {L}?
 
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
       axiomatic Length {
-        logic integer length{L}(List *head);
+        logic integer length(List *head);
 
-        axiom length_null{L}:
+        axiom length_null:
           length(\null) == 0;
 
-        axiom length_list{L}:
+        axiom length_list:
           \forall List *head;
             \valid_read(head)
             && finite(head) ==>
               length(head) == 1 + length(head->next);
 
-        axiom length_nonnegative{L}:
+        axiom length_nonnegative:
           \forall List *l;
             finite(l)
               ==> length(l) >= 0;
       }
     */
     \end{minted}
-    \caption{Definice predikátu konečnosti spojového seznamu}
-    \label{list:linked-list-finite}
+    \caption{Definice výpočetní funkce pro délku spojového seznamu}
+    \label{list:linked-list-length}
 \end{listing}
 
-Následující tři podkapitoly popisují možné způsoby
-pro důkaz korektnosti programů pracujících s dynamickými rekurzivními datovými strukturami.
+Následující tři kapitoly popisují možné způsoby,
+jak lze psát kód a specifikace pro důkaz korektnosti programů pracujících
+s dynamickými rekurzivními datovými strukturami.
 Každý postup má své výhody a nevýhody.
 Demonstrace důkazů proběhne na jednoduché operaci přidání prvku na začátek spojového seznamu,
 ale princip těchto postupů je použitelný i na složitější operace.
 
-TODO: pridat info o zaveru, kde bude debata o stromech/AVL stromech
-
 TODO: vice uvodu a proc jsou tyto postupy potreba
 
+TODO: pridat info o zaveru, kde bude debata o stromech/AVL stromech
 
 \subsection{Axiomatický přístup}
 \label{subsec:axiomaticky-pristup}
 
+Axiomatický přístup je jedním z možných způsobů,
+jak prokázat korektnost programů pracujících s dynamickými rekurzivními datovými strukturami.
+Jedná se o přístup,
+který se snaží definovat vlastnosti datových struktur pomocí axiomů,
+které popisují vlastnosti těchto datových struktur a operací nad nimi.
+
+Následující axiom \texttt{prepend\_keeps\_finite} zobrazený ve výpisu~\ref{list:linked-list-axiom-prepend}
+popisuje vlastnost programu pro přidání prvku na začátek spojového seznamu.
+Axiom pracuje s dvěma časovými body \texttt{L1} a \texttt{L2},
+kde \texttt{L1} je časový bod před provedením operace
+a \texttt{L2} je časový bod po provedení operace.
+Axiom popisuje relaci mezi prvním prvekm seznamu \texttt{head} a nově přidávaným prvkem \texttt{new\_node}.
+Za předpokladu, že \texttt{head} a \texttt{new\_node} jsou platné ukazatele
+a \texttt{head} odkazuje na konečný spojový seznam,
+tak pokud po provedení operace \texttt{prepend} bude \texttt{new\_node->next} ukazovat na \texttt{head},
+musí být spojový seznam začínající na \texttt{new\_node} také konečný.
+
 \begin{listing}[H]
     \begin{minted}{C}
     /*@
-        axiomatic PrependLemma {
-            axiom prepend_keeps_finite{L1, L2}:
-                \forall List *head, *new_node;
-                    \at(new_node->next, L2) == head
-                    && finite{L1}(head) ==>
-                      finite{L2}(new_node);
-        }
+      axiomatic PrependLemma {
+        axiom prepend_keeps_finite{L1, L2}:
+          \forall List *head, *new_node;
+            \valid{L1}(head)
+            && \valid{L1}(new_node)
+            && finite{L1}(head)
+            && \at(new_node->next, L2) == head ==>
+              finite{L2}(new_node);
+      }
     */
     \end{minted}
     \caption{Axiomatická definice pro zachování konečnosti spojového seznamu při přidání prvku}
     \label{list:linked-list-axiom-prepend}
 \end{listing}
 
-\subsection{Separace paměti}
-\label{subsec:separace-pameti}
+Používání axiomů je velmi efektivní pro SMT řešiče,
+protože axiom je definován jako tvrzení, které je vždy pravdivé a stačí pouze dokázat,
+že kód provádí stejné kroky, jaké jsou popsané v axiomu.
+Zavedením axiomů do důkazů ale zvyšujeme riziko zavedení nepřesností,
+které mohou vést k úspěšnému, ale nesprávnému důkazu.
+Například předchozí axiom~\ref{list:linked-list-axiom-prepend} správně popisuje
+program pro přidání prvku na začátek spojového seznamu,
+ale již nezachycuje pravidlo, že uzel \texttt{new\_node} nesmí být již obsažen v seznamu.
+Opravený axiom pro přidávání prvku do spojového seznamu
+je zobrazený ve výpisu~\ref{list:linked-list-axiom-prepend-fixed}.
+a přidává podmínku využívající predikát \texttt{reachable},
+konkrétně jeho negaci \texttt{!reachable(head, new\_node)}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      axiomatic PrependLemma {
+        axiom prepend_keeps_finite{L1, L2}:
+          \forall List *head, *new_node;
+            \valid{L1}(head)
+            && \valid{L1}(new_node)
+            && finite{L1}(head)
+            && !reachable{L1}(head, new_node)
+            && \at(new_node->next, L2) == head ==>
+              finite{L2}(new_node);
+      }
+    */
+    \end{minted}
+    \caption{Opravená axiomatická definice pro zachování konečnosti spojového seznamu při přidání prvku}
+    \label{list:linked-list-axiom-prepend-fixed}
+\end{listing}
+
+Axiomatický přístup lze tedy považovat za potenciálně nebezpečný,
+jelikož se spoléhá na korektní a plnohodnotnou definici axiomů,
+jejichž platnost musí být dokázána mimo Frama\mbox{-}C a tedy i mimo SMT řešiče.
+
+\subsection{Oddělená paměť}
+\label{subsec:oddelena-pamet}
+
+Metoda oddělené paměti (separation analaysis) je technika,
+kterou lze použít pro analýzu a důkazy korektnosti programů
+s ukazateli na dynamicky alokované paměťové bloky.
+Zároveň přináší možnost odstranění nežádoucího aliasingu
+objektů v paměti.
+Tato technika také umožňuje popisovat stav dynamických datových struktur,
+jako například, že nějaký prvek není součástí datové struktury
+za pomoci porovnávání paměťových bloků výpočtem takzvané paměťové stopy (memory footprint).
+
+Paměťová stopa datové struktury je množina paměťových bloků (jejich základních adres),
+které se v dané datové struktuře nacházejí.
+Například pro spojový seznam je jeho paměťová stopa množina
+obsahující všechny základní pamětové adresy všech uzlů v daném seznamu.
+
+Analýzou průniku dvou paměťových stop je možné určit,
+zdali se dané dané struktury sdílejí některé prvky nebo ne.
+Pro určení příslušnosti prvku do datové struktury pojového seznamu
+je tedy monžé sestavit jednoprvkovou množinu se základní adresou daného prvku
+a porovnat ji s paměťovou stopou spojového seznamu.
+Pokud je průnik těchto množin prázdný,
+znamená to, že prvek není součástí spojového seznamu.
+
+Frama\mbox{-}C kategorizuje paměťové ukazatele do takzvaných regionů.
+Mapovací funkce \texttt{region} rozděluje ukazatele podle jejich základní adresy do regionů.
+Region je indentifikován pomocí celého čísla a rozlišují se následovně:
+
+\begin{itemize}
+    \item Region < 0: řetězcové literály
+    \item Region 0: globální proměnné (kromě řetězcových literálů)
+    \item Region 1: parametry funkcí (formální proměnné)
+    \item Region 2: lokální proměnné
+    \item Region > 2: čerstvě alokované paměťové bloky (pomocí alokačních funkcí)
+\end{itemize}
+
+Pro SMT řešiče je následovně triviálně jednoduché rozhodnout o oddělenosti dvou paměťových bloků,
+pokud mají různé regiony.
+Platí totiž, že
+
+\begin{equation*}
+    \forall x, y : region(x) \neq region(y) \implies x \neq y
+\end{equation*}
+
+TODO Predikát \texttt{framed} + ukazka, heap assumptions
+
+TODO Predikát \texttt{linked}
+
+Pokud ukazatel reprezentuje pole,
+je zaručeno, že všechny prvky jsou od sebe oddělené.
+Důkazy pracující pouze s jedním polem tedy nemusejí řešit aliasing
+a tedy ani zajišťovat oddělenost paměti.
 
 ACLS definuje predikát \texttt{\textbackslash separated},
 který lze použít pro označení dvou nebo více paměťových míst,
 které se nepřekrývají.
 Pokud tedy platí \texttt{\textbackslash separated(a, b)},
 pro dva ukazatele \texttt{a} a \texttt{b},
-znamená to, že úpravyv paměti odkazované ukazatelem \texttt{a}
+znamená to, že úpravy paměti odkazované ukazatelem \texttt{a}
 nebudou mít vliv na paměť odkazovanou ukazatelem \texttt{b}.
 Jedná se o postup jak zamezit takzvanému \textit{aliasingu}~\cite{ACSLSpec}.
+Definice tohoto predikátu ve WhyML je zobrazená v ukázce~\ref{list:why-separated},
+ve které parametr \texttt{p} reprezentuje ukazatel na paměťové místo,
+\texttt{lp} je délka paměťového bloku, na který ukazatel \texttt{p} odkazuje,
+\texttt{q} je druhý ukazatel na paměťové místo a \texttt{lq} je délka paměťového bloku,
+na který ukazatel \texttt{q} odkazuje.
 
-Predikát \texttt{\textbackslash separated} má variabinlní počet parametrů,
+\begin{listing}[H]
+    \begin{minted}{text}
+    predicate separated (p: addr) (lp: int) (q: addr) (lq: int) =
+      lp <= 0 \/ lq <= 0
+      \/ p.base <> q.base
+      \/ q.offset + lq <= p.offset
+      \/ p.offset + lp <= q.offset
+    \end{minted}
+    \caption{Definice predikátu pro oddělenou paměť \texttt{\textbackslash separated}}
+    \label{list:why-separated}
+\end{listing}
+
+Predikát \texttt{separated} popisuje čtyři disjunktivní podmínky,
+při kterých jsou dva ukazatele považovány za oddělené
+a tedy při splnění alespoň jedné z těchto podmínek
+jsou ukazatele považovány za oddělené.
+Podmínky popisují následující situace:
+
+\begin{itemize}
+    \item Délka paměťového bloku ukazatele \texttt{p} je menší nebo rovna 0
+    \item Délka paměťového bloku ukazatele \texttt{q} je menší nebo rovna 0
+    \item Základní adresa ukazatele \texttt{p} je jiná než základní adresa ukazatele \texttt{q}
+    \item Ukazatel \texttt{p} začíná za koncem paměťového bloku ukazatele \texttt{q}
+    \item Ukazatel \texttt{q} začíná za koncem paměťového bloku ukazatele \texttt{p}
+\end{itemize}
+
+ACSL predikát \texttt{\textbackslash separated} má variabinlní počet parametrů,
 lze ho tedy použít pro označení více než dvou paměťových míst, například
 \texttt{\textbackslash separated(a, b, c, d)}.
+Tento variadický zápis s $n$ parametry
+je následně přeložen na konjunkci $\frac{n(n-2)}{2}$ predikátů typu \texttt{separated(a, b)}.
 
 Zároveň je možné předat parametr jako množinu paměťových míst.
 Pokud definujeme predikát jako \texttt{\textbackslash separated(a, \{b, c\})},
@@ -1550,6 +1791,12 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
     \label{tab:prepend-smt-success}
 \end{table}
 
+Tabulka~\ref{tab:prepend-smt-success} indikuje zvyšující se složitost dokázání korektnosti funkce \texttt{prepend}
+při zvyšující se délce seznamu.
+Tento fenomén je způsoben tím, jak Frama\mbox{-}C generuje vstupy pro SMT řešiče z predikátu \texttt{\textbackslash separated}.
+Ko
+
+TODO dovysvetlit
 
 
 \begin{listing}[H]
@@ -1561,6 +1808,7 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
     \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
     \label{list:linked-list-axiom-prepend}
 \end{listing}
+
 
 \subsection{Serializační přístup}
 \label{subsec:serializacni-pristup}
@@ -1574,7 +1822,7 @@ byl zvolen v autorově bakalářské práci z roku 2022~\cite{ZapotocnyBinarniHa
 
 Serializační metoda se snaží předejít problémům s axiomatickým přístupem
 a zároveň limitacím oddělené paměti.
-Jak jsme v minulých podkapitolách viděli,
+Jak jsme v minulých kapitolách viděli,
 axiomatický přístup je velmi silný, ale neumožňuje odvodit vlastnosti programu z programu samotného,
 pouze dokážeme potvrdit, že program splňuje postup, který axiom definuje, ale nemáme možnost ověřit,
 zdali je tento postup doopravdy správný.
@@ -1589,7 +1837,7 @@ Pole má totiž tu vlastnost, že všechny jeho prvky jsou autoamticky oddělen�
 nebo spíše, není důvod uvažovat, že by prvky ve stejném paměťovém bloku mohli být neoddělené.
 
 Spojové seznamy lze serializovat do pole reprezentujícího spojový seznam.
-Principu této serializace je zobrazen v ukázce~\ref{list:linked-list-serialization}.
+Principu této serializace je zobrazen v ukázce~\ref{fig:linked-list-serialization}.
 Dynamické prvky seznamu jsou seřazeny do pole a toto pole je průběžně aktualizováno
 při každé operaci se seznamem.
 Výhoda serialize do pole je ta, že důkazní postupy pro pole jsou jenoduché
@@ -1607,7 +1855,7 @@ ale udržování serializovaného pole je lineární operace.
         Vizualize serializace spojového seznamu. \\
         Převzato z článku Ghosts for Lists: A Critical Module of Contiki Verified in Frama\mbox{-}C~\cite{FCGhostsForLists}.
     }
-    \label{fig:list-serialized}
+    \label{fig:linked-list-serialization}
 \end{figure}
 
 Serializace stromu, ve speciálním případě binární haldy
@@ -1678,3 +1926,8 @@ Serializací ztrácíme lokalitu problému a musíme lokálnost převést na pr�
 %float Use floating-point operations.
 %real Use mathematical reals instead of floating point.
 
+
+
+
+TODO: rozdil mezi FC a Stainless -> counterexamples je prioprietarni plugin v FC a pouze pro alt-ergo
+% https://www.frama-c.com/fc-plugins/counter-examples.html
