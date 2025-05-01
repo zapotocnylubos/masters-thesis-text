@@ -2016,36 +2016,36 @@ Serializační metodu pro spojový seznam použili
 Allan Blanchard, Nikolai Kosmatov a Frédéric Loulergue
 v článku Ghosts for Lists: A Critical Module of Contiki Verified in Frama-C
 z roku 2018~\cite{FCGhostsForLists}.
-Podobný, ale implicitní přístup k serializaci datové struktury binární haldy
+Implicitní přístup k serializaci datové struktury binární haldy
 byl zvolen v autorově bakalářské práci z roku 2022~\cite{ZapotocnyBinarniHalda}.
 
 Serializační metoda se snaží předejít problémům s axiomatickým přístupem
 a zároveň limitacím oddělené paměti.
 Jak jsme v minulých kapitolách viděli,
-axiomatický přístup je velmi silný, ale neumožňuje odvodit vlastnosti programu z programu samotného,
-pouze dokážeme potvrdit, že program splňuje postup, který axiom definuje, ale nemáme možnost ověřit,
-zdali je tento postup doopravdy správný.
-Metoda s oddělenou paměti v případě dynamických rekurzivních datových struktur neumožnuje
-neomezeně (nebo alespoň uspokojivě velké) vstupy a již na malých vstupech SMT řešiče pracují velmi dlouho na dokázání vlastnotí,
-dojde jim paměť nebo automatick oznamují, že tento problém neumí vyřešit.
+axiomatický přístup je velmi silný, ale neumožňuje odvodit vlastnosti programu z programu samotného.
+Je možné pouze potvrdit, že program splňuje postup, který axiom definuje,
+ale již nemáme možnost ověřit, zdali je tento postup doopravdy správný.
+Metoda s oddělenou pamětí v případě dynamických rekurzivních datových struktur neumožnuje
+neomezeně (nebo alespoň uspokojivě velké) vstupy a již na malých vstupech SMT řešiče pracují velmi dlouho na dokázání vlastností,
+dojde jim paměť nebo automaticky oznamují, že tento problém neumí vyřešit.
 
-Serializační metoda se snaží předejít těmto problémům, ale stále zachovávat princip oddělené paměti.
-Princip je ten, že v průběhu výpočtu a operacích se spojovým seznamem si udržujeme serializovanou
-strukturu spojového seznamu v jednoduchém poli.
-Pole má totiž tu vlastnost, že všechny jeho prvky jsou autoamticky oddělené,
-nebo spíše, není důvod uvažovat, že by prvky ve stejném paměťovém bloku mohli být neoddělené.
+Serializační metoda se snaží předejít těmto problémům, ale zachovat princip oddělené paměti.
+Princip této metody spočívá v udržování serializované podoby datové struktury
+v jednoduchém poli po celou dobu běhu programu.
+Uložení struktury v poli je výhodné, protože je zaručeno,
+že jeho prvky jsou automaticky od sebe odděleny – jinými slovy,
+není třeba se obávat, že by se položky datové struktuře překrývaly (odebrání aliasingu).
+Rozhodnutí o oddělenosti paměti datové struktury a například nového prvku
+je následně velmi jednoduché – stačí prokázat platnost pouze jednoho predikátu \texttt{\textbackslash separated}.
 
-Spojové seznamy lze serializovat do pole reprezentujícího spojový seznam.
-Principu této serializace je zobrazen v ukázce~\ref{fig:linked-list-serialization}.
-Dynamické prvky seznamu jsou seřazeny do pole a toto pole je průběžně aktualizováno
-při každé operaci se seznamem.
-Výhoda serialize do pole je ta, že důkazní postupy pro pole jsou jenoduché
-a hlavně jednoduše pochopitelné pro SMT řešiče.
-Neváhoda je ta, že pro velké seznamy je potřeba udržovat dvojnásobné množství paměti,
-a při úpravách ve spojovém seznamu, jako je například přidání prvku na začátek seznamu,
-musíme přesunout všechny prvky v serializovaném poli o jeden prvek doprava.
-Původní operace přidání prvku do spojového seznamu je lineární,
-ale udržování serializovaného pole je lineární operace.
+Spojové seznamy lze serializovat do pole.
+Princip této serializace je graficky zobrazen na obrázku~\ref{fig:linked-list-serialization}.
+Jednotlivé uzly jsou seřazeny do pole, které se při každé operaci se seznamem průběžně aktualizuje.
+Výhodou tohoto přístupu je, že důkazní postupy pro pole jsou velmi jednoduché a snadno pochopitelné pro SMT řešiče.
+Nevýhodou je však zvýšená paměťová náročnost (minimálně dvojnásobná)
+a nutnost aktualizovat serializované pole při každé operaci se seznamem.
+Například vložení prvku do spojového seznamu má konstantní složitost,
+ale údržba serializovaného pole je lineární operace.
 
 \begin{figure}[H]
     \centering
@@ -2057,35 +2057,39 @@ ale udržování serializovaného pole je lineární operace.
     \label{fig:linked-list-serialization}
 \end{figure}
 
-Serializace stromu, ve speciálním případě binární haldy
+Serializace stromu, ve speciálním případě binární haldy,
 lze provést pomocí mapování prvků stromu do indexů pole dle následujícího vzorce.
-
 Pokud je prvek na indexu $i$, pak levý potomek je na indexu $2i + 1$ a pravý potomek je na indexu $2i + 2$.
 Rodičovský prvek je na indexu $\lfloor \frac{i - 1}{2} \rfloor$.
 V binární haldě nemůže nastat situace s prázdným nepoužitým uzlem a pole se tedy vždy plní korektně
 od nejnižšího indexu po nejvyšší.
 Obecné stromy by s tímto principem nemohly být serializovány,
 protože je možné, že některé uzly budou prázdné a nebudou mít žádného potomka.
-Řešením se nabízí nepoužívat jednoduchou serializaci prvků stromu do pole,
-ale používat rozšířenou strukturu v serializovaném poli, která nám určuje, zdali je
-platný nebo ne.
+Řešení, může být například nepoužívat jednoduchou serializaci prvků stromu do pole,
+ale používat rozšířenou strukturu v serializovaném poli, která bude určovat,
+zdali je daný prvek platný nebo ne.
 Indexace prvků v poli by tímto přístupem byla zachována,
-pouze program používající tuto strukturu by musel při každém přístupu na prvek stromu
+pouze důkazy používající tuto strukturu by musely při každém přístupu na prvek stromu
 zkontrolovat, zdali je prvek platný nebo ne.
-O takto serializovaných stromech by bylo jednoduché provádět důkazy,
+Na takto serializovaných stromech by bylo jednoduché provádět důkazy,
 jelikož všechny prvky v poli jsou oddělené a tedy splňují podmínku oddělené paměti.
-Predikáty popisující vlastnosti stromu by také obsahovali kontrolu, zdali je daný prvek v poli platný nebo ne.
+Predikáty popisující vlastnosti stromu by museli ale obsahovat kontrolu,
+zdali je daný prvek v poli platný nebo ne.
+
+% TODO: nebo ne -> a nebo ne?
 
 Nevýhoda serializace obecných stormů do pole je ta, že řídké stromy budou zabírat
-násobně více paměti než je potřeba.
+násobně více paměti, než je potřeba.
 V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsahující řetězec \texttt{n} pravých uzlů,
-by serailizované pole reprezentující tento strom mělo velikost $2^n - 1$ s $2^n - n$ neplatnými uzly.
+by serializované pole reprezentující tento strom mělo velikost $2^n - 1$ s $2^n - n$ neplatnými uzly.
 Další nevýhoda serializace stromových struktu spočívá v složitosi
 tvořených predikátů a vlastností stromu.
 Serializací ztrácíme lokalitu problému a musíme lokálnost převést na práci s indexy v poli.
 
 
+TODO: přidat více myšlenek o ztrátě lokálnosti
 
+TODO: přídat příklad serializace binárního stromu do pole? (ne AVL)
 
 
 
