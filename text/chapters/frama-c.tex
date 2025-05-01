@@ -1069,6 +1069,8 @@ generovaný CIL (C Intermediate Language) překladačem z interní struktury \te
 Funkce \texttt{global} je funkce pro získání adresy proměnné v paměti~\cite{BlanchardWP2024}
 a více bude popsána v následující kapitole~\ref{sec:ukazatele-a-pametove-bloky}.
 
+TODO: read-after-write problematika?
+
 TODO: nejake ukonceni pam. modelu?
 
 %\subsection{Referenční paměťový model}
@@ -1374,11 +1376,10 @@ Výstup analýzy~\ref{list:malloc-admit-result} ukazuje,
 že Frama\mbox{-}C stále nedokáže plnohodnotně pracovat s alokací paměti
 a ve výsledku analýzy máme stále varování o neúplnosti analýzy,
 ale na rozdíl od předchozí analýzy již Frama\mbox{-}C dokáže pracovat
-s nově alokovaným ukazatele pomocí přidaného axiomu \texttt{admit} na predikát \texttt{\textbackslash valid(pi)}
-a výsledek analyzy je označen jako platný (valid).
-Výsledný důkaz zvládl dokonce prokázat interní Qed zjednodušovač.
+s nově alokovaným ukazatelem pomocí přidaného axiomu \texttt{admit} na predikát \texttt{\textbackslash valid(pi)}
+a výsledek analýzy je označen jako platný (valid) interním Qed zjednodušovačem.
 
-Více axiomatický přístup k důkazům popisuje kapitola~\ref{subsec:axiomaticky-pristup}.
+Axiomatický přístup k důkazům více popisuje kapitola~\ref{subsec:axiomaticky-pristup}.
 
 \begin{listing}[H]
     \begin{minted}{text}
@@ -1430,10 +1431,10 @@ nebude úspěšný.
     \label{list:prepend-malloc}
 \end{listing}
 
-Přepsáním funkce \texttt{prepend} tak,
-aby byla alokována paměť mimo funkci \texttt{prepend} a předána jako parametr,
-zobrazené v ukázce~\ref{list:prepend},
-je možné tento problém částečně vyřešit.
+Částečně tento problém lze řešit přepsáním funkce \texttt{prepend} tak,
+aby alokace paměťi proběhla mimo funkci \texttt{prepend}
+a ukazatel na paměť byl pouze předán jako parametr,
+jak zobrazuje ukázka~\ref{list:prepend}.
 Platnost ukazatele \texttt{new\_node} bude zajištěna pomocí předpokladu
 a zápisem do dané paměti platnost ukazatele nebude zpochybňena.
 
@@ -1458,6 +1459,8 @@ nacházejících se v seznamu za uzlem \texttt{new\_node}
 by již dosažitelné nebyly.
 Kvůli tomuto by nebylo ani možné dokázat platnost tvrzení,
 které by popisovalo, že se obsah seznamu rozšířil o jeden prvek.
+
+% TODO: odstranit kvůli?
 
 Pokud by bylo zajištěno, že přidávaný uzel v seznamu obsažen není,
 bylo by možné dokončit důkaz korektnosti funkce \texttt{prepend} bez velkých problémů.
@@ -1490,7 +1493,7 @@ kde základní pravidlo říká,
 že každý uzel je dosažitelný sám ze sebe (\texttt{reachable(root, root)}).
 Druhé pravidlo (indukční krok) říká,
 že pokud je nějaký uzel \texttt{node} dosažitelný z uzlu \texttt{root->next},
-musí být dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{root->next}).
+musí být také dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{root->next}).
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1517,7 +1520,7 @@ nelimituje ukazatele, na které se pravidlo vztahuje
 a tedy i prázdný seznam (\texttt{\textbackslash null}) je dosažitelný sám ze sebe.
 Tato vlastnost je důležitá pro definici konečnosti prázdného seznamu, která bude popsána níže.
 
-Pomocí predikátu \texttt{reachable} je možné dále zadefinovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
+Pomocí predikátu \texttt{reachable} je možné zadefinovat vlastnost konečnosti (bezcykličnosti) spojového seznamu.
 Pokud je spojový seznam konečný, pak pro něj musí platit,
 že existuje nějaký uzel \texttt{node},
 jehož následník (\texttt{next}) je ukazatel na \texttt{NULL} (v ACSL \texttt{\textbackslash null})
@@ -1539,12 +1542,13 @@ Dále budeme potřebovat logickou funkci na výpočet délky spojového seznamu,
 která je definována v ukázce~\ref{list:linked-list-length}.
 Výpočet délky spojového seznamu má smysl počítat pouze pro konečné seznamy,
 proto je funkce \texttt{length} definována pouze pro konečné seznamy.
-Délka prázdného seznamu je definována na 0, následuje induktivní pravidlo,
-které popisuje, že konečné seznamy mají délku o 1 větší než délka jejich podseznamu.
-Následuje axiom, který říká, že délka seznamu je vždy nezáporná,
-což zjednodušuje důkazní postupy pro některé SMT řešiče
-a v následujících kapitolách budeme pomocí této logické funkce
-omezovat vstupní předpoklady, například, že délka seznamu nebude větší než nějaká mez.
+Délka prázdného seznamu je definována na 0.
+Indukční pravidlo popisuje, že konečné seznamy mají délku o 1 větší než je délka jejich podseznamu.
+Pomocný axiom popisuje, že délka seznamu je vždy nezáporná,
+což zjednodušuje důkazní postupy pro některé SMT řešiče.
+Následujících kapitoly budou pomocí této logické funkce
+omezovat vstupní předpoklady, například,
+že délka seznamu nebude větší než definovaná mez.
 
 % TODO: odstranit vsude zbytecne {L}?
 
@@ -1590,9 +1594,9 @@ TODO: pridat info o zaveru, kde bude debata o stromech/AVL stromech
 
 Axiomatický přístup je jedním z možných způsobů,
 jak prokázat korektnost programů pracujících s dynamickými rekurzivními datovými strukturami.
-Jedná se o přístup,
-který se snaží definovat vlastnosti datových struktur pomocí axiomů,
-které popisují vlastnosti těchto datových struktur a operací nad nimi.
+Vlastnosti programů a nebo datových struktu jsou definovány pomocí axiomů,
+které popisují některé vlastnosti a účelem Frama\mbox{-}C je prokázat,
+že daný zdrojový kód provadí operace popsané v těchto axiomech.
 
 Následující axiom \texttt{prepend\_keeps\_finite} zobrazený ve výpisu~\ref{list:linked-list-axiom-prepend}
 popisuje vlastnost programu pro přidání prvku na začátek spojového seznamu.
@@ -1631,7 +1635,7 @@ které mohou vést k úspěšnému, ale nesprávnému důkazu.
 Například předchozí axiom~\ref{list:linked-list-axiom-prepend} správně popisuje
 program pro přidání prvku na začátek spojového seznamu,
 ale již nezachycuje pravidlo, že uzel \texttt{new\_node} nesmí být již obsažen v seznamu.
-Opravený axiom pro přidávání prvku do spojového seznamu
+Opravený axiom pro přidání prvku do spojového seznamu
 je zobrazený ve výpisu~\ref{list:linked-list-axiom-prepend-fixed}.
 a přidává podmínku využívající predikát \texttt{reachable},
 konkrétně jeho negaci \texttt{!reachable(head, new\_node)}.
@@ -1677,16 +1681,16 @@ Například pro spojový seznam je jeho paměťová stopa množina
 obsahující všechny základní pamětové adresy všech uzlů v daném seznamu.
 
 Analýzou průniku dvou paměťových stop je možné určit,
-zdali se dané dané struktury sdílejí některé prvky nebo ne.
+zdali dané struktury sdílejí některé prvky nebo ne.
 Pro určení příslušnosti prvku do datové struktury pojového seznamu
-je tedy monžé sestavit jednoprvkovou množinu se základní adresou daného prvku
+je tedy možné sestavit jednoprvkovou množinu se základní adresou daného prvku
 a porovnat ji s paměťovou stopou spojového seznamu.
 Pokud je průnik těchto množin prázdný,
 znamená to, že prvek není součástí spojového seznamu.
 
 Frama\mbox{-}C kategorizuje paměťové ukazatele do takzvaných regionů.
 Mapovací funkce \texttt{region} rozděluje ukazatele podle jejich základní adresy do regionů.
-Region je indentifikován pomocí celého čísla a rozlišují se následovně:
+Region je indentifikován pomocí celého čísla a rozlišují se následující regiony:
 
 \begin{itemize}
     \item Region < 0: řetězcové literály
@@ -1696,7 +1700,7 @@ Region je indentifikován pomocí celého čísla a rozlišují se následovně:
     \item Region > 2: čerstvě alokované paměťové bloky (pomocí alokačních funkcí)
 \end{itemize}
 
-Pro SMT řešiče je následovně triviálně jednoduché rozhodnout o oddělenosti dvou paměťových bloků,
+Pro SMT řešiče je následovně jednoduché rozhodnout o oddělenosti dvou paměťových bloků,
 pokud mají různé regiony.
 Platí totiž, že
 
@@ -1708,6 +1712,8 @@ TODO Predikát \texttt{framed} + ukazka, heap assumptions
 
 TODO Predikát \texttt{linked}
 
+TODO Predikát \texttt{cinits}
+
 Pokud ukazatel reprezentuje pole,
 je zaručeno, že všechny prvky jsou od sebe oddělené.
 Důkazy pracující pouze s jedním polem tedy nemusejí řešit aliasing
@@ -1716,10 +1722,12 @@ a tedy ani zajišťovat oddělenost paměti.
 ACLS definuje predikát \texttt{\textbackslash separated},
 který lze použít pro označení dvou nebo více paměťových míst,
 které se nepřekrývají.
-Pokud tedy platí \texttt{\textbackslash separated(a, b)},
-pro dva ukazatele \texttt{a} a \texttt{b},
-znamená to, že úpravy paměti odkazované ukazatelem \texttt{a}
-nebudou mít vliv na paměť odkazovanou ukazatelem \texttt{b}.
+
+% TODO: sjednotit ukazuje -> odkazuje?
+
+Pokud platí \texttt{\textbackslash separated(a, b)} pro dva ukazatele \texttt{a} a \texttt{b},
+znamená to, že úpravy paměti pomocí ukazatele \texttt{a}
+nebudou mít vliv na paměť reprezentovanou ukazatelem \texttt{b}.
 Jedná se o postup jak zamezit takzvanému \textit{aliasingu}~\cite{ACSLSpec}.
 Definice tohoto predikátu ve WhyML je zobrazená v ukázce~\ref{list:why-separated},
 ve které parametr \texttt{p} reprezentuje ukazatel na paměťové místo,
@@ -1740,24 +1748,22 @@ na který ukazatel \texttt{q} odkazuje.
 \end{listing}
 
 Predikát \texttt{separated} popisuje čtyři disjunktivní podmínky,
-při kterých jsou dva ukazatele považovány za oddělené
-a tedy při splnění alespoň jedné z těchto podmínek
-jsou ukazatele považovány za oddělené.
-Podmínky popisují následující situace:
+při kterých jsou dva ukazatele považovány za oddělené.
+Při splnění alespoň jedné z následujících podmínek
+jsou ukazatele považovány za oddělené:
 
 \begin{itemize}
-    \item Délka paměťového bloku ukazatele \texttt{p} je menší nebo rovna 0
-    \item Délka paměťového bloku ukazatele \texttt{q} je menší nebo rovna 0
+    \item Délka paměťového bloku ukazatele \texttt{p} nebo \texttt{q} je menší nebo rovna 0
     \item Základní adresa ukazatele \texttt{p} je jiná než základní adresa ukazatele \texttt{q}
     \item Ukazatel \texttt{p} začíná za koncem paměťového bloku ukazatele \texttt{q}
     \item Ukazatel \texttt{q} začíná za koncem paměťového bloku ukazatele \texttt{p}
 \end{itemize}
 
-ACSL predikát \texttt{\textbackslash separated} má variabinlní počet parametrů,
+ACSL predikát \texttt{\textbackslash separated} má variabilní počet parametrů,
 lze ho tedy použít pro označení více než dvou paměťových míst, například
 \texttt{\textbackslash separated(a, b, c, d)}.
 Tento variadický zápis s $n$ parametry
-je následně přeložen na konjunkci $\frac{n(n-2)}{2}$ predikátů typu \texttt{separated(a, b)}.
+je následně přeložen na konjunkci $\frac{n(n-2)}{2}$ predikátů typu \texttt{separated(a, b)}~\cite{Correnson2018Separated}.
 
 Zároveň je možné předat parametr jako množinu paměťových míst.
 Pokud definujeme predikát jako \texttt{\textbackslash separated(a, \{b, c\})},
@@ -1766,9 +1772,12 @@ ale paměťové místa \texttt{b} a \texttt{c} nemusí být oddělené mezi sami
 
 ACSL také umožňuje zápis množiny pomocí univerzálního kvantifikátoru,
 který je zobrazen v ukázce~\ref{list:linked-list-axiom-prepend}.
-Tento zápis je blízký matematickém zápisu a popisuje podmínku spuštění funkce,
-která zaručuje, že funkce bude spuštěna s ukazatelem \texttt{new\_node},
+Tento zápis je blízký matematickém zápisu a popisuje předpoklad funkce,
+který zaručuje, že funkce bude spuštěna s ukazatelem \texttt{new\_node},
 který odkazuje na paměťové místo oddělené od všech uzlů v seznamu.
+Univerální kvantifikátor je zde implicitní.
+Výsledná množina je sestavena ze všech uzlů v seznamu,
+které jsou dosažitelné z uzlu \texttt{head}.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1812,22 +1821,26 @@ s využítím přístupu s oddělenou pamětí je zobrazen v ukázce~\ref{list:l
     \label{list:linked-list-separated-prepend}
 \end{listing}
 
-Tato metoda správně popisuje vstupní podmínky a umožňuje důkaz korektnosti funkce \texttt{prepend},
+Tato metoda správně popisuje vstupní podmínky a umožňuje provodení důkazu korektnosti funkce \texttt{prepend},
 ale pouze pro malé vstupy.
 Přidáním podmínky typu \texttt{\textbackslash requires length(head) <= X;},
 kde \texttt{X} označuje celé kladné číslo,
 získáme funkci se zúženým rozsahem vstupních hodnot.
 Následující tabulka zobrazuje úspěšnost dokázání korektnosti funkce \texttt{prepend}
-pro různé SMT řešiče pro různé délky seznamu a čas potřebný pro dokázání korektnosti.
-Maximální výpočetní čas pro SMT řešiče je nastaven na 2 minuty, pokud SMT řešiče
-nestihnou dokázat korektnost funkce do této doby, vrátí výsledek \texttt{Timeout},
-označený v tabulce písmenem \texttt{T}.
-SMT řešiče mají nastavený paměťový limit v základním nastavením na 1GB, pokud překročí tento limit,
-vrátí výsledek \texttt{Out of memory}, označený v tabulce písmenem \texttt{O}.
+pro různé SMT řešiče a různé délky seznamu společně s časem potřebným pro dokázání korektnosti.
+Maximální výpočetní čas pro SMT řešiče je nastaven na 2 minuty.
+Pokud SMT řešiče nestihnou dokázat korektnost funkce do této doby,
+vrátí výsledek \texttt{Timeout}, který je označený v tabulce písmenem \texttt{T}.
+SMT řešiče mají nastavený paměťový limit v základním nastavení na 1GB\@.
+Pokud překročí tento limit, vrátí výsledek \texttt{Out of memory},
+který je označený v tabulce písmenem \texttt{O}.
 Řešič může také vracet výsledek \texttt{Unknown}, označený písmenem \texttt{U},
-značící to, že SMT řešiče nedokáže pracovat s daným problémem.
+značící situace ve kterých SMT řešič nedokáže rozhodnout,
+zdali je dané tvrzení pravdivé nebo ne.
 
-Všechny testy byly provedeny pomocí příkazu zobrazeného v ukázce~\ref{list:run-linked-list-benchmark},
+% TODO: ukázka -> výpis (někde)
+
+Testy byly provedeny pomocí příkazu zobrazeného ve výpisu~\ref{list:run-linked-list-benchmark},
 který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 a Z3 s časovým limitem 120 sekund.
 
 \begin{listing}[H]
@@ -1837,10 +1850,144 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
             -wp-timeout 120 \
             -wp-run-all-provers \
             -wp-print \
-            ll.c
+            benchmark.c
     \end{minted}
     \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
     \label{list:run-linked-list-benchmark}
+\end{listing}
+
+% TODO: to gitu pridat benchmark.c
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        Délka seznamu & Alt-Ergo & CVC4 & CVC5 & Z3 \\
+        \hline
+        $\leq$ 0  & Valid (17ms)  & Valid (45ms) & Valid (53ms)  & (U) \\
+        $\leq$ 1  & Valid (17.2s) & (O)          & Valid (75ms)  & (U) \\
+        $\leq$ 2  & Valid (18.8s) & (O)          & Valid (113ms) & (U) \\
+        $\leq$ 3  & (T)           & (O)          & Valid (151ms) & (U) \\
+        $\leq$ 4  & (T)           & (O)          & Valid (220ms) & (U) \\
+        $\leq$ 5  & (T)           & (O)          & Valid (435ms) & (U) \\
+        $\leq$ 10 & (T)           & (O)          & Valid (3.9s)  & (U) \\
+        $\leq$ 13 & (T)           & (O)          & Valid (1m)    & (U) \\
+        $\leq$ 15 & (T)           & (O)          & (O)           & (U) \\
+        \hline
+    \end{tabular}
+    \caption{Úspěšnost dokázání korektnosti funkce prepend pomocí predikátu \texttt{\textbackslash separated}}
+    \label{tab:prepend-smt-success}
+\end{table}
+
+Tabulka~\ref{tab:prepend-smt-success} indikuje zvyšující se složitost důkazu korektnosti funkce \texttt{prepend}
+korelující s velikostí seznamu.
+Příčinou tohoto problému je,
+že kombinace predikátu \texttt{separated} s univerzálním kvantifikátorem
+je vysoce neefektivní a náročná jak na výpočetní čas, tak na paměť.
+
+Následující výpis~\ref{list:linked-list-separated-generated-proof}
+zobrazuje vygenerovaný důkaz ve standardu SMT\mbox{-}LIB2
+pro velikost seznamu do 4 prvků (\texttt{<= (L\_length a1) 4}).
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    ;; Goal "wp_goal"
+    (assert
+     (not
+     (forall (
+         (t (Array addr Bool))
+         (t1 (Array Int Int)) (t2 (Array addr addr))
+         (a1 addr) (a2 addr)
+       )
+       (=>
+        (<= (region (base a2)) 0)
+        (=>
+         (<= (region (base a1)) 0)
+         (=>
+          (<= (L_length a1) 4)
+          (=>
+           (linked t1)
+           (=>
+            (framed t2)
+            (=>
+              (cinits t)
+              (=>
+               (valid_rw t1 a2 2)
+               (=>
+                (P_reachable t1 t2 a1 null)
+                (=>
+                 (separated a2 2 a1 2)
+                 (=>
+                  (forall ((a3 addr))
+                   (=>
+                    (P_reachable t1 t2 a1 a3)
+                    (separated a2 2 a3 2)))
+                  (P_reachable
+                   t1
+                   (store t2 (shift a2 0) a2)
+                   a1
+                   null
+                  )
+     )))))))))))))
+    \end{minted}
+    \caption{Opravená specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
+    \label{list:linked-list-separated-generated-proof}
+\end{listing}
+
+Proměnná \texttt{t} (původně \texttt{Init\_x}) je paměťová mapa,
+je mapující struktura, která podle adresy proměnné určuje, zdali je daná proměnná inicializovaná nebo ne.
+Proměnná \texttt{t1} (původně \texttt{Malloc\_x}).
+Proměnná \texttt{t2} je paměťová mapa z typového paměťového modelu nazývaná \texttt{Mptr\_x}.
+Proměnné \texttt{a1} reprezentuje adresu prvku \texttt{head} a \texttt{a2} adresu prvku \texttt{new\_node}.
+
+% TODO: toto ucesat?
+
+Zajímavostí na tomto důkazu je,
+že celá formule je negovaná (\texttt{(not (forall ...))}),
+což je způsobeno tím, že SMT řešiče jsou navrženy tak,
+aby dokazovaly splnitelnost a né platnost.
+Důvod této konstrukce je více popsán v kapitole~\ref{ch:smt}.
+
+
+Oddělelnost paměti by bylo v tomto případě možné definovat
+i pomocí samotného predikátu \texttt{reachable},
+konkrétně zaručením toho, že \texttt{new\_node} není dosažitelný z \texttt{head},
+jak je zobrazeno v ukázce~\ref{list:linked-list-separated-reachable}.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      ...
+      requires !reachable(head, new_node);
+      ...
+    */
+    \end{minted}
+    \caption{Specifikace oddělené paměťi pomocí predikátu \texttt{reachable}}
+    \label{list:linked-list-separated-reachable}
+\end{listing}
+
+Tento posup zajišťuje logické oddělení proměnných podobně jako předchozí příklad.
+Zmeněná část vygenerovaného důkazu je zobrazená v ukázce~\ref{list:linked-list-separated-reachable-proof}.
+Tento postup je ale stejně výpočetně neefektivní, dokonce o něco více než předchozí příklad,
+jak demonstruje tabulka~\ref{tab:prepend-smt-success-reachable}.
+
+\begin{listing}[H]
+    \begin{minted}{text}
+    ...
+      (P_reachable t t1 a null)
+      (=>
+        (not (P_reachable t t1 a1 a))
+        (P_reachable
+          t1
+          (store t2 (shift a2 0) a2)
+          a1
+          null
+        )
+      )
+    ...
+    \end{minted}
+    \caption{Důkaz odělené paměti pomocí predikátu \texttt{reachable}}
+    \label{list:linked-list-separated-reachable-proof}
 \end{listing}
 
 \begin{table}[H]
@@ -1849,38 +1996,18 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
         \hline
         Délka seznamu & Alt-Ergo & CVC4 & CVC5 & Z3 \\
         \hline
-        <=0  & Valid (17ms)  & Valid (45ms) & Valid (53ms)  & (U) \\
-        <=1  & Valid (17.2s) & (O)          & Valid (75ms)  & (U) \\
-        <=2  & Valid (18.8s) & (O)          & Valid (113ms) & (U) \\
-        <=3  & (T)           & (O)          & Valid (151ms) & (U) \\
-        <=4  & (T)           & (O)          & Valid (220ms) & (U) \\
-        <=5  & (T)           & (O)          & Valid (435ms) & (U) \\
-        <=10 & (T)           & (O)          & Valid (3.9s)  & (U) \\
-        <=13 & (T)           & (O)          & Valid (1m)    & (U) \\
-        <=15 & (T)           & (O)          & (O)           & (U) \\
+        $\leq$ 0 & Valid (19ms)  & Valid (42ms) & Valid (55ms)  & (U) \\
+        $\leq$ 1 & Valid (1.3s)  & Valid (42ms) & Valid (69ms)  & (T) \\
+        $\leq$ 2 & (T)           & (O)          & (O)           & (U) \\
+        $\leq$ 3 & (T)           & (U)          & (O)           & (U) \\
+        $\leq$ 4 & (T)           & (U)          & (O)           & (U) \\
         \hline
     \end{tabular}
-    \caption{Úspěšnost dokázání korektnosti funkce prepend pro různé SMT řešiče}
-    \label{tab:prepend-smt-success}
+    \caption{Úspěšnost dokázání korektnosti funkce prepend pomocí predikátu \texttt{reachable}}
+    \label{tab:prepend-smt-success-reachable}
 \end{table}
 
-Tabulka~\ref{tab:prepend-smt-success} indikuje zvyšující se složitost dokázání korektnosti funkce \texttt{prepend}
-při zvyšující se délce seznamu.
-Tento fenomén je způsoben tím, jak Frama\mbox{-}C generuje vstupy pro SMT řešiče z predikátu \texttt{\textbackslash separated}.
-Ko
-
-TODO dovysvetlit
-
-\begin{listing}[H]
-    \begin{minted}{C}
-    /*@
-      requires !reachable(head, new_node);
-    */
-    \end{minted}
-    \caption{Specifikace pro oddělenou paměť při přidání prvku do spojového seznamu}
-    \label{list:linked-list-axiom-prepend}
-\end{listing}
-
+TODO závěr k separační metodě
 
 \subsection{Serializační přístup}
 \label{subsec:serializacni-pristup}
