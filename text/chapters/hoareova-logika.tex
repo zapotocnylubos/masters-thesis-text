@@ -9,9 +9,8 @@ který pro důkaz správnosti programů používá předpoklady (preconditions) 
 Program popisujeme pomocí Hoareovy trojice
 
 \begin{equation*}
-    \{P\} \  Q \  \{R\}
+    \{P\} \  Q \  \{R\},
 \end{equation*}
-
 kde $P$ jsou předpoklady popisující stav systému před provedením programu,
 $Q$ je daný program (příkaz či sekvence příkazů)
 a $R$ jsou následky, které popisují stav systému po provedení tohoto programu.
@@ -50,9 +49,8 @@ Axiom přiřazení je základním pravidlem Hoareovy logiky a nedílnou součás
 Přiřazení je operace obecně zapsaná ve tvaru
 
 \begin{equation*}
-    x \coloneqq f
+    x \coloneqq f,
 \end{equation*}
-
 kde $x$ je proměnná a $f$ je výraz bez vedlejších efektů (side effect),
 který ale může obsahovat proměnnou $x$, například $x \coloneqq x + 1$.
 
@@ -63,7 +61,7 @@ Označíme si $T[x \leftarrow f]$ tvrzení $T$ ve kterém výskyt proměnné $x$
 Poté můžeme definovat axiom přiřazení jako
 
 \begin{equation*}
-    \{ T[x \leftarrow f] \} \  x \coloneqq f \  \{ T \}
+    \{ T[x \leftarrow f] \} \  x \coloneqq f \  \{ T \}.
 \end{equation*}
 
 Tento zápis říká, že pokud je pravdivé tvrzení $T$, ve kterém
@@ -131,22 +129,21 @@ můžeme říci, že složený příkaz $Q_1; Q_2$ splňuje následující tvrze
 \begin{equation*}
     \{ P_1 \} \  Q_1; Q_2 \  \{ R_2 \}
 \end{equation*}
-
 kde $;$ je operátor sekvence příkazů, který říká, že příkaz $Q_1$ bude proveden před příkazem $Q_2$.
 
 Toto pravidlo umožňuje vytvářet složitější příkazy z několika jednodušších příkazů.
-Zároveň je možné rozmyslet, že na sekvenci příkazů $Q_1, Q_2, \cdots, Q_n$
+Zároveň je možné rozmyslet, že na sekvenci příkazů $Q_1, Q_2, \ldots, Q_n$
 lze aplikovat stejné pravidlo skládání, které jsme použili pro dva příkazy
 pomocí asociativity operátoru $;$ a závorek. A tedy platí, že
 
 \begin{equation*}
-    \{ P \} \  Q_1; Q_2; \  \cdots ; Q_n \  \{ R \}
+    \{ P \} \  Q_1; Q_2; \  \ldots ; Q_n \  \{ R \}
 \end{equation*}
 
 je ekvivalentní s
 
 \begin{equation*}
-    \{ P \} \  (Q_1; (Q_2; \  \cdots (Q_{n-1}; Q_n))) \  \{ R \}
+    \{ P \} \  (Q_1; (Q_2; \  \ldots (Q_{n-1}; Q_n))) \  \{ R \}
 \end{equation*}
 
 \section{Pravidlo iterace}
@@ -157,15 +154,14 @@ V Hoareově logice je cyklus reprezentován pomocí pravidla iterace (rule of it
 a využívá $while$ cyklus, který je v programovacích jazycích běžně dostupný a je definován následovně:
 
 \begin{equation*}
-    while \  B \  do \  Q
+    \textbf{while} \  B \  \textbf{do} \  Q
 \end{equation*}
-
 kde $Q$ je tělo cyklu, které se v každé iteraci provádí, dokud je podmínka $B$ pravdivá.
 
 Dále definujeme invariant cyklu $I$, který nám pomůže
 při rozhodování o správnost cyklu a bude popisovat následky provedení cyklu.
 Invariant cyklu je logické tvrzení, které musí být pravdivé před vstupem do cyklu,
-po ukončení každé iterace cyklu a také po ukončení cyklu.
+po ukončení každé iterace cyklu a tedy i po ukončení cyklu.
 
 Formálně můžeme zapsat podmínky pro invariant cyklu $I$ jako
 
@@ -184,7 +180,7 @@ pokud se cyklus spustil (podmínka $B$ byla pravdivá).
 Pokud cyklus neprovedl žádnou iteraci a zároveň máme zaručeno,
 že invariant cyklu $I$ byl pravdivý před vstupem do cyklu,
 triviálně platí, že invariant cyklu $I$ je pravdivý i po ukončení cyklu.
-Zároveň platí, že cyklus se neprovedl, protože podmínka $B$ byl nepravdivá,
+Zároveň platí, že cyklus se neprovedl, protože podmínka $B$ byla nepravdivá.
 
 Pokud cyklus provedl alespoň jednu iteraci a zároveň máme zaručeno,
 že invariant cyklu $I$ je pravdivý po ukončení těla cyklu $Q$,
@@ -194,7 +190,7 @@ Zároven platí, že podmínka $B$ je po ukončení cyklu nepravdivá, jinak by 
 Formálně lze tedy konstrukci $while$ cyklu pomocí Hoareovy logiky zapsat jako
 
 \begin{equation*}
-    I \land \{ B \} \  Q \  \{ I \} \implies \{ I \} \  while \  B \  do \  Q \  \{ \neg B \land I \}
+    I \land \{ B \} \  Q \  \{ I \} \implies \{ I \} \  \textbf{while} \  B \  \textbf{do} \  Q \  \{ \neg B \land I \}
 \end{equation*}
 
 % TODO: St´ale je vˇsak nutn´e dodat invarianty cykl˚u – jejich nalezen´ı je algoritmicky neˇreˇsiteln´e.

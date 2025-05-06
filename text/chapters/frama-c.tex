@@ -28,12 +28,16 @@ které poskytuje uživatelsky přívětivé prostředí pro interakci s celým e
 Grafické prostředí je dostupné hlavně pro operační systémy Linux a Windows.
 Pro uživatele operačního systému macOS je k dispozici pouze příkazová řádka.
 
-Distibuje Frama\mbox{-}C obsahuje mimo jiné také Docker image, které obsahují všechny potřebné závislosti
-pro běh Frama\mbox{-}C a základních pluginů společně s několika SMT řešičemi, jako je Alt-Ergo, CVC4 a Z3.
-Také distribuují GUI variantu imagů a je tedy velmi snadné spustit Frama\mbox{-}C GUI pomocí Dockeru na libovolném operačním systému,
-jako je například macOS nebo Windows.
-Tyto image obsahují minimalistické desktopové prostředí, Frama\mbox{-}C GUI a VNC aplikaci
-umožnující připojení k desktopovému prostředí pomocí webového prohlížeče~\cite{FCDockerGUIMaroneze2021}.
+Distibuce Frama\mbox{-}C obsahuje mimo jiné také Docker image,
+který obsahuje všechny potřebné závislosti pro běh Frama\mbox{-}C\@.
+Součástí image jsou základní pluginy jako například WP, EVA a RTE
+společně s SMT řešičemi Alt-Ergo, CVC4 a Z3.
+Lze využít také GUI variantu image, který se od základního liší
+nainstalovaným grafickým uživatelským rozhraním (GUI) Frama\mbox{-}C,
+minimalistickým desktopovým prostředím a VNC serverem.
+Na tento VNC server se lze připojit pomocí webového prohlížeče
+a lze tedy používat GUI například i na macOS nebo jiných operačních systémech
+bez nutnosti speciálního nastavení nebo instalace~\cite{FCDockerGUIMaroneze2021}.
 
 % TODO: převádí -> převede? jaký čas/rod? (spíš převádí)
 
@@ -44,6 +48,7 @@ Od roku 2016 tato původní verze již není udržována, ale Frama\mbox{-}C st�
 Vlastní předzpracování a použití mezi-interpretace umožňuje Frama\mbox{-}C
 analyzovat zdrojový kód efektivněji a nainstalované pluginy mohou pracovat
 s touto abstraktní reprezentací, upravovat ji nebo dokonce transformovat~\cite{FCKernelMaroneze2024}.
+
 
 \section{ACSL (ANSI/ISO C Specification Language)}
 \label{sec:acsl}
@@ -81,7 +86,7 @@ která definuje předpoklad a následek pomocí klíčových slov \texttt{requir
 Zjednodušená Hoareova trojice pro tuto funkci by vypadala následovně:
 
 \begin{equation*}
-    \{ x > 0 \} \ (x = x + 1; return \  x + 1) \ \{ result == x + 2 \}
+    \{ x > 0 \} \ (x = x + 1; \textbf{return} \  x + 1) \ \{ \textbf{result} == x + 2 \}
 \end{equation*}
 
 Anotace \texttt{requires} se používá k vyjádření předpokladů
@@ -109,30 +114,26 @@ jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
 Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
 který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
 
-TODO: pridat info, ze Why3 nepodporuje nejnovejsi verze SMT resicu
-%Prover Alt-Ergo version 2.6.1 is not recognized.
-%Known versions for this prover: ^2\.5\.[2-9]$.
-%Prover CVC4 OK 1.8 (archived)
-%Prover CVC5 version 1.2.1 is not recognized.
-%Known versions for this prover: ^1\.0\.[0-9]+$.
-%Prover Z3 version 4.14.1 is not recognized.
-%Known versions for this prover: ^4\.8\.[7-9]$, ^4\.8\.1[0-9]+$,
+Jednou nevýhodou platformy Why3 je,
+že nepodporuje všechny nejnovější verze SMT řešičů.
+Následující tabulka~\ref{tab:why3-smt-verze}
+zobrazuje podporované verze SMT řešičů v platformě Why3 společně s jejich nejnovějšími verzemi.
 
-%Found prover Alt-Ergo version 2.5.4, OK.
-%Found prover Alt-Ergo version 2.5.4 (alternative: BV)
-%Found prover Alt-Ergo version 2.5.4 (alternative: counterexamples)
-%Found prover CVC5 version 1.0.9 (alternative: strings+counterexamples)
-%Found prover CVC5 version 1.0.9 (alternative: strings)
-%Found prover CVC5 version 1.0.9 (alternative: counterexamples)
-%Found prover CVC5 version 1.0.9, OK.
-%Found prover CVC4 version 1.8 (alternative: strings+counterexamples)
-%Found prover CVC4 version 1.8 (alternative: strings)
-%Found prover CVC4 version 1.8 (alternative: counterexamples)
-%Found prover CVC4 version 1.8, OK.
-%Found prover Z3 version 4.8.17 (alternative: counterexamples)
-%Found prover Z3 version 4.8.17, OK.
-%Found prover Z3 version 4.8.17 (alternative: noBV)
-%14 prover(s) added
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        SMT řešič & Podporovaná verze & Nejnovější verze \\
+        \hline
+        Alt-Ergo  & 2.5.4             & 2.6.1            \\
+        CVC4      & 1.8               & 1.8              \\
+        CVC5      & 1.0.9             & 1.2.1            \\
+        Z3        & 4.8.17            & 4.14.1           \\
+        \hline
+    \end{tabular}
+    \caption{Podporované verze SMT řešičů v platformě Why3}
+    \label{tab:why3-smt-verze}
+\end{table}
 
 % TODO: jsou ..použity.. -> používá?
 
@@ -210,7 +211,7 @@ Anotace specifikuje, že výsledná hodnota funkce je hodnota některého prvku 
 Nicméně tato anotace sama o sobě specifikuje pouze to, že existuje prvek v poli,
 který má stejnou hodnotu jako návratová hodnota funkce.
 Tato anotace by byla splnitelná i jednoduchým kódem, který vrací první prvek pole (například \texttt{return arr[0]}).
-Jelikož je zajištěno, že $n$ je alespoň 1 (\texttt{requires n > 0}),
+Jelikož je zajištěno, že $n$ je alespoň 1 (\texttt{requires~n~>~0}),
 tak je tento program korektní a splňuje kontrakt funkce.
 
 % TODO: je zobrazeno -> zobrazuje?
@@ -238,7 +239,7 @@ jehož hodnota je rovna výsledku funkce a zároveň splňuje vlastnost,
             ==> arr[i] == \result
             && \forall integer j;
               0 <= j < n
-                ==> arr[i] <= arr[j];
+                ==> \result <= arr[j];
     */
     int find_min(int *arr, int n) {
     }
@@ -255,11 +256,11 @@ na jejímž konci dokončíme důkaz funkce \texttt{find\_min}.
 \subsection{Cykly}
 \label{subsec:acsl-cykly}
 
-Cykly v jazyce C jsou reprezentovány pomocí konstrukcí \texttt{for}, \texttt{while} a \texttt{do-while}.
+Cykly v jazyce C jsou reprezentovány pomocí konstrukcí \texttt{for}, \texttt{while} a nebo \texttt{do-while}.
 Frama\mbox{-}C v rámci předzpracování kódu převádí tyto konstrukce pouze na konstrukci \texttt{while}.
 Následující ukázky~\ref{list:for-transform-while} a~\ref{list:do-while-transform-while}
-ukazují ekvivalentní zápis cyklu \texttt{for} a \texttt{do-while} pomocí cyklu \texttt{while},
-který Frama\mbox{-}C provádí automaticky během předzpracování.
+ukazují ekvivalentní zápis cyklu \texttt{for} a \texttt{do-while} pomocí cyklu \texttt{while}.
+Stejnou transformace cyklů provádí Frama\mbox{-}C automaticky během předzpracování zdrojového kódu.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -385,9 +386,9 @@ získáváme již správný výsledek a to konkrétně v několika krocích:
 
 \begin{itemize}
     \item Prokázání platnosti invariantu \texttt{0 <= n} \\
-          před spuštěním cyklu (Establishment of Invariant).
+    před spuštěním cyklu (Establishment of Invariant).
     \item Prokázání platnosti invariantu \texttt{0 <= n} \\
-          na konci každé iterace cyklu (Preservation of Invariant).
+    na konci každé iterace cyklu (Preservation of Invariant).
     \item Prokázání očekávané vlastnosti \texttt{assert n == 0}.
 \end{itemize}
 
@@ -446,7 +447,7 @@ Následně externí SMT řešič Alt-Ergo prokázal platnost tvrzení \texttt{as
 Předchozí analýza cyklu bez invariantu skončila neúspěšně,
 protože systém měl pouze informaci o tom, že proměnná \texttt{n} je menší nebo rovna nule,
 což nestačilo k dokázání očekáváné rovnosti s nulou.
-Přidáním invariantu \texttt{n >= 0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace.
+Přidáním invariantu \texttt{n~>=~0} do kódu jsme Frama\mbox{-}C poskytli dodatečné informace.
 Konkrétně o tom, že proměnná \texttt{n} je nezáporná (větší nebo rovna nule) po ukončení cyklu (z definice invariantu cyklu).
 Systém tedy měl nyní k dipozici informace o dvou nerovnostech:
 
@@ -477,7 +478,7 @@ a v případě potvrzení platnosti tohoto variantu lze o cyklu říci,
 Přidáním variantu cyklu do kódu~\ref{list:loop-with-variant}
 lze získat výsledek analýzy~\ref{list:loop-with-variant-output} indikují sedm úspěšně prokázaných vlastností.
 Tato úprava zajistí možnost provedení důkazu konečnosti cyklu
-a také prokázání očekávané vlastnosti \texttt{assert n == 0}.
+a také prokázání očekávané vlastnosti \texttt{assert~n~==~0}.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -556,16 +557,17 @@ kompletní anotace a kód funkce \texttt{find\_min} včetně anotací pro cyklus
 Přidané invarianty cyklu popisují následující vlastnosti:
 
 \begin{itemize}
-    \item Invariant \texttt{1 <= i <= n} zajišťuje, že proměnná \texttt{i} nabývá hodnot z intervalu $[1, n]$.
-    \item Invariant \texttt{\textbackslash forall integer j; 0 <= j < i ==> min <= arr[j]} zajišťuje,
-          že proměnná \texttt{min} je menší nebo rovna všem prvkům pole $arr$,
-          které byly prozkoumány do aktuální iterace cyklu a jedná se tedy o aktuálně nejmenší prvek.
+    \item Invariant \texttt{1 <= i <= n} \\
+    zajišťuje, že proměnná \texttt{i} nabývá hodnot z intervalu $[1, n]$.
+    \item Invariant \texttt{\textbackslash forall integer j; 0 <= j < i ==> min <= arr[j]}
+    zajišťuje, že proměnná \texttt{min} je menší nebo rovna všem prvkům pole $arr$,
+    které byly prozkoumány do aktuální iterace cyklu a jedná se tedy o aktuálně nejmenší prvek.
     \item Variant \texttt{n - i} zajišťuje, že cyklus skončí po konečném počtu iterací.
-          Cyklus pracuje ve vzestupném směru (od 1 do n),
-          a tedy s každou iterací klesá hodnota výrazu \texttt{n - i}.
+    Cyklus pracuje ve vzestupném směru (od 1 do n),
+    a tedy s každou iterací klesá hodnota výrazu \texttt{n - i}.
     \item Anotace \texttt{\textbackslash loop assigns} určuje proměnné, které mohou být změněny během vykonávání cyklu.
-          V tomto případě se jedná pouze o iterační proměnnou \texttt{i} a proměnnou \texttt{min},
-          která je aktualizována v případě, že je nalezen nový menší prvek.
+    V tomto případě se jedná pouze o iterační proměnnou \texttt{i} a proměnnou \texttt{min},
+    která je aktualizována v případě, že je nalezen nový menší prvek.
 \end{itemize}
 
 \begin{listing}[H]
@@ -585,7 +587,7 @@ Přidané invarianty cyklu popisují následující vlastnosti:
             ==> arr[i] == \result
               && \forall integer j;
                 0 <= j < n
-                  ==> arr[i] <= arr[j];
+                  ==> \result <= arr[j];
     */
     int find_min(int *arr, int n) {
       int min = arr[0];
@@ -612,7 +614,6 @@ Přidané invarianty cyklu popisují následující vlastnosti:
     \label{list:find-min-complete}
 \end{listing}
 
-
 \subsection{Anotace \texttt{\textbackslash assigns}}
 \label{subsec:acsl-anotace-assigns}
 
@@ -622,7 +623,6 @@ Tato anotace je součástí následku spuštění funkce
 a indikuje volajícímu, které paměťové oblasti mohly být změněny.
 
 TODO: dodelat?
-
 
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
 \label{subsec:acsl-anotace-at-a-casove-body}
@@ -661,47 +661,35 @@ která jsou automaticky generována a jejich časový bod je definován
 standardem podle toho, kde se anotace nachází.
 Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
 
-\begin{itemize}
-    \item \textbf{Pre}
-    \begin{itemize}
-        \item Použitelné pouze v anotacích příkazů, nikoliv v kontraktech funkcí.
-        \item Odkazuje na stav před začátkem funkce, ve které se anotace nachází.
-    \end{itemize}
+\begin{description}
+    \item[Pre]
+    Použitelné pouze v anotacích příkazů, nikoliv v kontraktech funkcí.
+    Odkazuje na stav před začátkem funkce, ve které se anotace nachází.
 
-    \item \textbf{Post}
-    \begin{itemize}
-        \item Použitelné pouze v kontraktech funkcí v klauzulích \texttt{assigns} a \texttt{ensures}.
-        \item Odkazuje na stav po ukončení funkce, ve které se anotace nachází.
-    \end{itemize}
+    \item[Post]
+    Použitelné pouze v kontraktech funkcí v~klauzulích \texttt{assigns} a~\texttt{ensures}.
+    Odkazuje na stav po ukončení funkce, ve které se anotace nachází.
 
-    \item \textbf{Here}
-    \begin{itemize}
-        \item Použitelné v anotacích příkazů i kontraktech funkcí.
-        \item U klauzulí \texttt{requires}, \texttt{assumes}, \texttt{assigns}, \texttt{frees}, \texttt{decreases}, \texttt{terminates} odkazuje na \texttt{Pre} stav.
-        \item U klauzulí \texttt{ensures}, \texttt{allocates} a při ukončení s výjimkou odkazuje na \texttt{Post} stav.
-        \item V ostatních klauzulích odkazuje na aktualní stav v místě, kde se anotace nachází.
-    \end{itemize}
+    \item[Here]
+    Použitelné v anotacích příkazů i kontraktech funkcí.
+    U klauzulí \texttt{requires}, \texttt{assumes}, \texttt{assigns}, \texttt{frees}, \texttt{decreases}, \texttt{terminates} odkazuje na \texttt{Pre} stav.
+    U klauzulí \texttt{ensures}, \texttt{allocates} a~při ukončení s~výjimkou odkazuje na \texttt{Post} stav.
+    V ostatních klauzulích odkazuje na aktuální stav v~místě, kde se anotace nachází.
 
-    \item \textbf{LoopEntry}
-    \begin{itemize}
-        \item Použitelné v anotacích cyklů.
-        \item Odkazuje na stav před provedením prvním iterace cyklu.
-    \end{itemize}
+    \item[LoopEntry]
+    Použitelné v anotacích cyklů.
+    Odkazuje na stav před provedením první iterace cyklu.
 
-    \item \textbf{LoopCurrent}
-    \begin{itemize}
-        \item Použitelné v anotacích cyklů.
-        \item Odkazuje na stav před provedením aktuální iterace cyklu.
-    \end{itemize}
+    \item[LoopCurrent]
+    Použitelné v anotacích cyklů.
+    Odkazuje na stav před provedením aktuální iterace cyklu.
 
-    \item \textbf{Old}
-    \begin{itemize}
-        \item Použitelné v anotacích příkazů i kontraktech funkcí.
-        \item U klauzulí \texttt{assigns} a \texttt{ensures} odkazuje na stav před provedením funkce.
-        \item Oproti \texttt{Pre} lze \texttt{Old} použít i v kontraktech funkcí.
-        \item ACSL definuje \texttt{\textbackslash old(x)} jako syntaktický cukr pro \texttt{\textbackslash at(x, Old)}.
-    \end{itemize}
-\end{itemize}
+    \item[Old]
+    Použitelné v anotacích příkazů i kontraktech funkcí.
+    U klauzulí \texttt{assigns} a~\texttt{ensures} odkazuje na stav před provedením funkce.
+    Oproti \texttt{Pre} lze \texttt{Old} použít i~v~kontraktech funkcí.
+    ACSL definuje \texttt{\textbackslash old(x)} jako syntaktický cukr pro \texttt{\textbackslash at(x, Old)}.
+\end{description}
 
 Časové body lze využívat i v některých predikátech a logických funkcích.
 
@@ -717,20 +705,24 @@ TODO: kvantifikátory, predikáty, logické funkce?
 
 % TODO: uživatelům -> programátorům?
 
+
 \section{RTE (Run-Time Error)}
 \label{sec:frama-c-rte}
 
 TODO základní popis
+
 
 \section{Kouřové testy (Smoke tests)}
 \label{sec:frama-c-smoke-tests}
 
 TODO základní popis
 
+
 \section{WP (Weakest Precondition)}
 \label{sec:frama-c-wp}
 
 TODO je potřeba?
+
 
 \section{Paměťové modely}
 \label{sec:frama-c-pametove-modely}
@@ -998,7 +990,7 @@ Následují další tři přiřazení do paměti pomocí ukazatele $p$,
 kde poslední přiřazení hodnoty $2$ do paměti pomocí ukazatele $p$ je reprezentováno zápisem
 \texttt{Mint\_4[p <- 2] = Mint\_0}.
 Na začátku popisu je založena logická proměnná $x$,
-která je inicializována na hodnotu v paměti $Mint_0$ na adrese $p$ (\texttt{Let x = Mint\_0[p]}).
+která je inicializována na hodnotu v paměti \texttt{Mint\_0} na adrese $p$ (\texttt{Let x = Mint\_0[p]}).
 \texttt{Mint\_0} je paměťová mapa reprezentující poslední přiřazení do paměti pomocí ukazatele $p$.
 Důkaz platnosti \texttt{x == 2} je reprezentován zápisem \texttt{Prove: x = 2}.
 Výsledek analýzy je označen jako platný (valid) pomocí interního Qed zjednodušovače.
@@ -1065,7 +1057,7 @@ Výstup analýzy~\ref{list:typed-pointer-valid-example-result} ukazuje,
 tedy, že správně rozhoduje o platnosti (valid) dotazu na hodnotu proměnné $x$.
 Zároveň zde vidíme popis lokálních proměnných ve tvaru \texttt{global(L\_<name>\_<vid>)},
 kde \texttt{<name>} je název proměnné a \texttt{<vid>} je unikátní identifikátor proměnné
-generovaný CIL (C Intermediate Language) překladačem z interní struktury \texttt{varinfo}~\cite{FCPluginDevSignoles2024}.
+generovaný CIL překladačem z interní struktury \texttt{varinfo}~\cite{FCPluginDevSignoles2024}.
 Funkce \texttt{global} je funkce pro získání adresy proměnné v paměti~\cite{BlanchardWP2024}
 a více bude popsána v následující kapitole~\ref{sec:ukazatele-a-pametove-bloky}.
 
@@ -1090,6 +1082,7 @@ TODO: nejake ukonceni pam. modelu?
 % plugin (preferably use -wp-model="model+...")
 % ====
 %\subsection{Problémy paměťových modelů}
+
 
 \section{Ukazatele a paměťové bloky}
 \label{sec:ukazatele-a-pametove-bloky}
@@ -1124,14 +1117,16 @@ a vracejí příslušné hodnoty \texttt{base} a \texttt{offset} z datové struk
 \begin{listing}[H]
     \begin{minted}{text}
     let f_base = Lang.extern_f ~library ~result:Qed.Logic.Int
-        ~link:(Qed.Engine.F_subst ("base", "%1.base")) "base"
+      ~link:(Qed.Engine.F_subst ("base", "%1.base"))
+      "base"
 
     let base addr = e_fun f_base [ addr ]
 
     ...
 
     let f_offset = Lang.extern_f ~library ~result:Qed.Logic.Int
-        ~link:(Qed.Engine.F_subst ("offset", "%1.offset")) "offset"
+      ~link:(Qed.Engine.F_subst ("offset", "%1.offset"))
+      "offset"
 
     let offset addr = e_fun f_offset [ addr ]
     \end{minted}
@@ -1171,7 +1166,7 @@ které pracují na pricnipu oddělené paměti.
 
 Konstruktor \texttt{shift} zobrazený ve výpisu~\ref{list:why-pointer-constructors-shift}
 je použit na konstrukci paměťového ukazatele s offsetem.
-Jedná se pouze o jednoduchý konstruktor bez jakékoliv další logiky,
+Jedná se pouze o jednoduchý konstruktor bez jakékoliv další logiky.
 Tento konstruktor lze používat opakovaně pro přidání offsetu k základní adrese paměťového ukazatele,
 výsledný ukazatel bude mít offset nastavený na součet offsetu původního ukazatele
 a offsetu přidaného pomocí parametru konstruktoru \texttt{k}.
@@ -1409,11 +1404,22 @@ program musí být napsán tak,
 aby v parametrech funkcí byly předávány ukazatele na již alokované proměnné,
 pole a nebo struktury.
 
-Například implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu
-za pomocí volání funkce \texttt{malloc} zobrazené v ukázce~\ref{list:prepend-malloc} je nevhodné,
-jelikož následující predikáty budou požadovat platnost ukazatele \texttt{new\_node},
-což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \texttt{prepend}
-nebude úspěšný.
+Například implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu,
+jehož definice je zobrazená v ukázce~\ref{list:linked-list},
+za pomocí volání funkce \texttt{malloc} z ukázky~\ref{list:prepend-malloc} je nevhodné.
+Následující predikáty totiž budou požadovat platnost ukazatele \texttt{new\_node},
+což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \texttt{prepend} nebude úspěšný.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    typedef struct list {
+      struct list *next;
+      int value;
+    } List;
+    \end{minted}
+    \caption{Definice spojového seznamu v jazyce C}
+    \label{list:linked-list}
+\end{listing}
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1467,23 +1473,14 @@ bylo by možné dokončit důkaz korektnosti funkce \texttt{prepend} bez velkýc
 Vlastnost, že uzel není obsažen v seznamu je možné specifikovat pomocí predikátu \texttt{\textbackslash separated},
 jehož definici, výhody a nevýhody jsou podrobně popsány v následující kapitole~\ref{subsec:oddelena-pamet}.
 
+
 \section{Dynamické datové struktury}
 \label{sec:dynamicke-datove-struktury}
 
 Dynamické rekurzivní datové struktury jako například spojové seznamy,
 stromy a nebo grafy jsou v jazyce C reprezentovány pomocí ukazatelů na struktury.
-Příkladem může být jednoduchý spojový seznam zobrazený v ukázce~\ref{list:linked-list}.
+Příkladem může být jednoduchý spojový seznam představený v předchozí kapitole v ukázce~\ref{list:linked-list}.
 
-\begin{listing}[H]
-    \begin{minted}{C}
-    typedef struct list {
-      struct list *next;
-      int value;
-    } List;
-    \end{minted}
-    \caption{Definice spojového seznamu v jazyce C}
-    \label{list:linked-list}
-\end{listing}
 
 Pro účely důkazů se spojovým seznamem je vhodné vytvořit predikát \texttt{reachable},
 zobrazený v ukázce~\ref{list:linked-list-reachabibility},
@@ -1763,7 +1760,7 @@ ACSL predikát \texttt{\textbackslash separated} má variabilní počet parametr
 lze ho tedy použít pro označení více než dvou paměťových míst, například
 \texttt{\textbackslash separated(a, b, c, d)}.
 Tento variadický zápis s $n$ parametry
-je následně přeložen na konjunkci $\frac{n(n-2)}{2}$ predikátů typu \texttt{separated(a, b)}~\cite{Correnson2018Separated}.
+je následně přeložen na konjunkci $\binom{n}{2} = \frac{n(n-1)}{2}$ predikátů typu \texttt{separated(a, b)}~\cite{Correnson2018Separated}.
 
 Zároveň je možné předat parametr jako množinu paměťových míst.
 Pokud definujeme predikát jako \texttt{\textbackslash separated(a, \{b, c\})},
@@ -1826,15 +1823,15 @@ ale pouze pro malé vstupy.
 Přidáním podmínky typu \texttt{\textbackslash requires length(head) <= X;},
 kde \texttt{X} označuje celé kladné číslo,
 získáme funkci se zúženým rozsahem vstupních hodnot.
-Následující tabulka zobrazuje úspěšnost dokázání korektnosti funkce \texttt{prepend}
+Následující tabulka~\ref{tab:prepend-smt-success} zobrazuje úspěšnost dokázání korektnosti funkce \texttt{prepend}
 pro různé SMT řešiče a různé délky seznamu společně s časem potřebným pro dokázání korektnosti.
 Maximální výpočetní čas pro SMT řešiče je nastaven na 2 minuty.
 Pokud SMT řešiče nestihnou dokázat korektnost funkce do této doby,
-vrátí výsledek \texttt{Timeout}, který je označený v tabulce písmenem \texttt{T}.
+vrátí výsledek \texttt{Timeout}, který je označený v tabulce písmenem~\texttt{T}.
 SMT řešiče mají nastavený paměťový limit v základním nastavení na 1GB\@.
 Pokud překročí tento limit, vrátí výsledek \texttt{Out of memory},
-který je označený v tabulce písmenem \texttt{O}.
-Řešič může také vracet výsledek \texttt{Unknown}, označený písmenem \texttt{U},
+který je označený v tabulce písmenem~\texttt{O}.
+Řešič může také vracet výsledek \texttt{Unknown}, označený písmenem~\texttt{U},
 značící situace ve kterých SMT řešič nedokáže rozhodnout,
 zdali je dané tvrzení pravdivé nebo ne.
 
@@ -1862,30 +1859,29 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
-        Délka seznamu & Alt-Ergo & CVC4 & CVC5 & Z3 \\
+        Délka seznamu & Alt-Ergo      & CVC4         & CVC5          & Z3  \\
         \hline
-        $\leq$ 0  & Valid (17ms)  & Valid (45ms) & Valid (53ms)  & (U) \\
-        $\leq$ 1  & Valid (17.2s) & (O)          & Valid (75ms)  & (U) \\
-        $\leq$ 2  & Valid (18.8s) & (O)          & Valid (113ms) & (U) \\
-        $\leq$ 3  & (T)           & (O)          & Valid (151ms) & (U) \\
-        $\leq$ 4  & (T)           & (O)          & Valid (220ms) & (U) \\
-        $\leq$ 5  & (T)           & (O)          & Valid (435ms) & (U) \\
-        $\leq$ 10 & (T)           & (O)          & Valid (3.9s)  & (U) \\
-        $\leq$ 13 & (T)           & (O)          & Valid (1m)    & (U) \\
-        $\leq$ 15 & (T)           & (O)          & (O)           & (U) \\
+        $\leq$ 0      & Valid (17ms)  & Valid (45ms) & Valid (53ms)  & (U) \\
+        $\leq$ 1      & Valid (17.2s) & (O)          & Valid (75ms)  & (U) \\
+        $\leq$ 2      & Valid (18.8s) & (O)          & Valid (113ms) & (U) \\
+        $\leq$ 3      & (T)           & (O)          & Valid (151ms) & (U) \\
+        $\leq$ 4      & (T)           & (O)          & Valid (220ms) & (U) \\
+        $\leq$ 5      & (T)           & (O)          & Valid (435ms) & (U) \\
+        $\leq$ 10     & (T)           & (O)          & Valid (3.9s)  & (U) \\
+        $\leq$ 13     & (T)           & (O)          & Valid (1m)    & (U) \\
+        $\leq$ 15     & (T)           & (O)          & (O)           & (U) \\
         \hline
     \end{tabular}
     \caption{Úspěšnost dokázání korektnosti funkce prepend pomocí predikátu \texttt{\textbackslash separated}}
     \label{tab:prepend-smt-success}
 \end{table}
 
-Tabulka~\ref{tab:prepend-smt-success} indikuje zvyšující se složitost důkazu korektnosti funkce \texttt{prepend}
-korelující s velikostí seznamu.
-Příčinou tohoto problému je,
-že kombinace predikátu \texttt{separated} s univerzálním kvantifikátorem
+Tabulka~\ref{tab:prepend-smt-success} indikuje,
+že s rostoucí velikostí seznamu se zvyšuje i náročnost dokazování korektnosti funkce \texttt{prepend}.
+Příčinou tohoto problému je, že kombinace predikátu \texttt{separated} s univerzálním kvantifikátorem
 je vysoce neefektivní a náročná jak na výpočetní čas, tak na paměť.
 
-Následující výpis~\ref{list:linked-list-separated-generated-proof}
+Výpis~\ref{list:linked-list-separated-generated-proof}
 zobrazuje vygenerovaný důkaz ve standardu SMT\mbox{-}LIB2
 pro velikost seznamu do 4 prvků (\texttt{<= (L\_length a1) 4}).
 
@@ -1996,13 +1992,13 @@ jak demonstruje tabulka~\ref{tab:prepend-smt-success-reachable}.
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
-        Délka seznamu & Alt-Ergo & CVC4 & CVC5 & Z3 \\
+        Délka seznamu & Alt-Ergo     & CVC4         & CVC5         & Z3  \\
         \hline
-        $\leq$ 0 & Valid (19ms)  & Valid (42ms) & Valid (55ms)  & (U) \\
-        $\leq$ 1 & Valid (1.3s)  & Valid (42ms) & Valid (69ms)  & (T) \\
-        $\leq$ 2 & (T)           & (O)          & (O)           & (U) \\
-        $\leq$ 3 & (T)           & (U)          & (O)           & (U) \\
-        $\leq$ 4 & (T)           & (U)          & (O)           & (U) \\
+        $\leq$ 0      & Valid (19ms) & Valid (42ms) & Valid (55ms) & (U) \\
+        $\leq$ 1      & Valid (1.3s) & Valid (42ms) & Valid (69ms) & (T) \\
+        $\leq$ 2      & (T)          & (O)          & (O)          & (U) \\
+        $\leq$ 3      & (T)          & (U)          & (O)          & (U) \\
+        $\leq$ 4      & (T)          & (U)          & (O)          & (U) \\
         \hline
     \end{tabular}
     \caption{Úspěšnost dokázání korektnosti funkce prepend pomocí predikátu \texttt{reachable}}
@@ -2083,7 +2079,7 @@ zdali je daný prvek v poli platný nebo ne.
 Nevýhoda serializace obecných stormů do pole je ta, že řídké stromy budou zabírat
 násobně více paměti, než je potřeba.
 V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsahující řetězec \texttt{n} pravých uzlů,
-by serializované pole reprezentující tento strom mělo velikost $2^n - 1$ s $2^n - n$ neplatnými uzly.
+by serializované pole reprezentující tento strom mělo velikost $2^n~-~1$ s~$2^n~-~n$ neplatnými uzly.
 Další nevýhoda serializace stromových struktu spočívá v složitosi
 tvořených predikátů a vlastností stromu.
 Serializací ztrácíme lokalitu problému a musíme lokálnost převést na práci s indexy v poli.
@@ -2092,8 +2088,6 @@ Serializací ztrácíme lokalitu problému a musíme lokálnost převést na pr�
 TODO: přidat více myšlenek o ztrátě lokálnosti
 
 TODO: přídat příklad serializace binárního stromu do pole? (ne AVL)
-
-
 
 
 %\section{Protipříklady}
