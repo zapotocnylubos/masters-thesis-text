@@ -1,7 +1,577 @@
 \chapter{Stainless}
+\label{ch:stainless}
 
 % --genc does not support recursive data types = src/stainless/LinkedList.scala:41:12: Cons and other recursive types are not supported
 
 TODO: Inox
 
 TODO: .. Pipeline Stainless -> Inox -> SMT
+
+\section{Anotace}
+\label{sec:stainless-annotations}
+
+TODO: require
+
+TODO: ensuring
+
+\section{Ověřená implementace AVL stromu}
+\label{sec:stainless-avl}
+
+Datová struktura AVL strom je rozšířením binárního vyhledávacího stromu,
+který zajišťuje, že rozdíl výšek levého a pravého podstromu je maximálně 1.
+
+\cite{Pruvodce22}.
+
+Následující výpis~\ref{lst:stainless-avl-interface} zobrazuje rozhraní AVL stromu.
+Tato datová struktura obsahuje základní operace jako je vkládání, mazání a hledání prvku.
+Jednotlivé funkce jsou korektně implementované a pomocí Stainless je možné ověřit jejich korektnost.
+Třída \texttt{AVLTree} je abstraktní třída, která definuje základní vlastnosti AVL stromu
+a podtřídy \texttt{Node} a \texttt{Leaf} implementují konkrétní chování stromu.
+Zároveň je v kódu často používán pattern matching,
+který umožňuje elegantně zpracovávat různé varianty stromu.
+List (Leaf) je prázdný uzel, který nemá žádné hodnoty a výšku 0.
+Jedná se o prázdný prvek, podobně jako by v jazyce C byl použit \texttt{NULL} ukazatel.
+Nejedná se tedy o poslední platný uzel stromu, ale o zvláštní prvek, který nemá žádnou hodnotu.
+
+\begin{listing}[H]
+    \begin{minted}{scala}
+    import stainless.lang._
+    import stainless.collection._
+    import stainless.annotation._
+
+    def int_max(x: Int, y: Int): Int = ...
+
+    sealed abstract class AVLTree {
+      def content: Set[Int] = ...
+      def height: Int = ...
+      def balanceFactor: Int = ...
+      def hasBinarySearchTreeStructure: Boolean = ...
+      def hasAVLTreeStructure: Boolean = ...
+      def isBalanced: Boolean = ...
+      def isAVLTree: Boolean = ...
+      def contains(x: Int): Boolean = ...
+      def insert(x: Int): AVLTree = ...
+      def delete(x: Int): AVLTree = ...
+    }
+
+    case class Leaf() extends AVLTree
+
+    case class Node
+    (
+      value: Int,
+      left: AVLTree,
+      right: AVLTree,
+      _height: Int
+    ) extends AVLTree {
+      require(_height > 0)
+
+      def min: Int = ...
+      def max: Int = ...
+      def rotateLeft: Node = ...
+      def rotateRight: Node = ...
+      def rotateLeftRight: Node = ...
+      def rotateRightLeft: Node = ...
+      def balance: Node = ...
+    }
+    \end{minted}
+    \caption{Rozhraní AVL stromu}
+    \label{lst:stainless-avl-interface}
+\end{listing}
+
+Tato kapitola postupně popíše jednotlivé funkce a popíše důkazy jejich korektnosti.
+
+Na začátku kódu je jednoduchá funkce \texttt{int\_max}, která vrací větší z dvou čísel.
+Jedná se o pomocnou funkci na celých číslech, která se používá v dalších funkcích.
+
+Ukázka~\ref{lst:stainless-avl-helper} zobrazuje pomocné funkce pro AVL strom.
+První z nich je \texttt{content}, která vrací množinu prvků v AVL stromu.
+Pomocí pattern matchingu se zjistí, zdali aktuálně zpracovávaný uzel je list nebo uzel.
+Pokud je to list, vrátí se prázdná množina.
+V případě uzlu se rekurzivně zavolá funkce \texttt{content} na levém a pravém podstromu
+a spojí se do množiny s hodnotou uloženou v aktuálním uzlu.
+Druhá funkce \texttt{height} vrací výšku stromu.
+Listy stromu mají výšku 0 a uzly mají výšku uloženou v proměnné \texttt{\_height} (čtvrtý argument konstruktoru).
+Třetí funkce \texttt{balanceFactor} vrací vyváženost stromu.
+Listy jsou vždy vyvážené a uzly mají vyváženost počítanou jako rozdíl výšky pravého a levého podstromu.
+V důkazech je použita tato vlastnost pro kontrolu vyváženosti stromu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def content: Set[Int] = this match {
+      case Leaf() => Set.empty
+      case Node(v, l, r, _) => l.content ++ Set(v) ++ r.content
+    }
+
+    def height: Int = this match {
+      case Leaf() => 0
+      case Node(_, _, _, h) => h
+    }
+
+    def balanceFactor: Int = {
+      this match {
+        case Leaf() => 0
+        case Node(_, l, r, _) => r.height - l.height
+      }
+    }
+  \end{minted}
+  \caption{Pomocné funkce pro AVL strom}
+  \label{lst:stainless-avl-helper}
+\end{listing}
+
+Jelikož je AVL strom nadstavbou binárního vyhledávacího stromu,
+je potřeba zajistit, že splňuje všechny vlastnosti binárního vyhledávacího stromu.
+K tomu slouží funkce \texttt{hasBinarySearchTreeStructure} zobrazená ve výpisu~\ref{lst:stainless-avl-bst},
+která kontroluje obsahu stromu.
+Konkrétně, že levý podstrom obsahuje pouze hodnoty menší než hodnota aktuálního uzlu
+a pravý podstrom pouze hodnoty větší než hodnota aktuálního uzlu.
+Listy jsou automaticky označeny jako binární vyhledávací stromy (prázdný strom).
+U uzlů se rekurzivně je nutné rekurzivně ověřit platnost pravidel pro
+binární vyhledávací stromy na levém a pravém podstromu
+a následně porovnat, že hodnoty v levém podstromu jsou menší než hodnota aktuálního uzlu
+a hodnoty v pravém podstromu jsou větší než hodnota aktuálního uzlu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def hasBinarySearchTreeStructure: Boolean = this match {
+      case Leaf() => true
+      case Node(v, l, r, _) => {
+        l.hasBinarySearchTreeStructure &&
+          r.hasBinarySearchTreeStructure &&
+          // Ensure that the AVL has a binary search tree structure
+          forall((x: Int) => l.content.contains(x) ==> x < v) &&
+          forall((x: Int) => r.content.contains(x) ==> x > v)
+      }
+    }
+  \end{minted}
+  \caption{Funkce pro zajištění binárního vyhledávacího stromu}
+  \label{lst:stainless-avl-bst}
+\end{listing}
+
+Funkce \texttt{hasAVLTreeStructure} z výpisu~\ref{lst:stainless-avl-avl}
+popisuje strukturu AVL stromu.
+Tato funkce zajišťuje, že prvky v AVL stromu jsou správně uspořádány,
+konkrétně je omezena hloubka stromu na maximálně \texttt{Int.MaxValue}
+a výška stromu musí být správně vypočítaná.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def hasAVLTreeStructure: Boolean = this match {
+      case Leaf() => true
+      case Node(v, l, r, _) => {
+        l.hasAVLTreeStructure &&
+          r.hasAVLTreeStructure &&
+          // Ensure that the height of the tree at most (at root) is Int.MaxValue
+          l.height < Int.MaxValue &&
+          r.height < Int.MaxValue &&
+          // Ensure that the height of the tree is correct
+          height == 1 + (l.height < r.height match {
+            case true => r.height
+            case false => l.height
+          })
+      }
+    }
+  \end{minted}
+  \caption{Funkce pro zajištění AVL stromu}
+  \label{lst:stainless-avl-avl}
+\end{listing}
+
+
+Funkce \texttt{isBalanced} z výpisu~\ref{lst:stainless-avl-balanced}
+ověřuje, že AVL strom je vyvážený.
+Tato funkce kontroluje, že rozdíl výšek pravého a levého podstromu
+je maximálně 1 (tedy, že je v intervalu [-1, 1]).
+Tato vývaženost musí rekurzivně platit pro všechny uzly v AVL stromu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def isBalanced: Boolean = this match {
+      case Leaf() => true
+      case Node(v, l, r, _) => {
+        l.isBalanced &&
+          r.isBalanced &&
+          // Ensure that the balance factor is within [-1, 1]
+          balanceFactor >= -1 &&
+          balanceFactor <= 1
+      }
+    }
+  \end{minted}
+  \caption{Funkce pro zajištění vyváženosti AVL stromu}
+  \label{lst:stainless-avl-balanced}
+\end{listing}
+
+Funkce \texttt{isAVLTree} z výpisu~\ref{lst:stainless-avl-isavl}
+ověřuje, že AVL strom splňuje všechny výše uvedené vlastnosti.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def isAVLTree: Boolean = this match {
+      case Leaf() => true
+      case Node(v, l, r, h) => {
+        l.isAVLTree &&
+          r.isAVLTree &&
+          hasBinarySearchTreeStructure &&
+          hasAVLTreeStructure &&
+          isBalanced
+      }
+    }
+  \end{minted}
+  \caption{Funkce pro zajištění AVL stromu}
+  \label{lst:stainless-avl-isavl}
+\end{listing}
+
+Funkce \texttt{contains} z výpisu~\ref{lst:stainless-avl-contains}
+ověřuje, zdali je daný prvek součástí AVL stromu.
+Předpokladem spuštění této funkce je, že je spuštěna pouze na platném AVL stromu.
+Následek popisující výsledek funkce zajišťuje,
+že výsledek spuštění této funkce je stejný jako kontrola obsahu stromu pomocí množinové operace (\texttt{content.contains(x)}).
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def contains(x: Int): Boolean = {
+      require(isAVLTree)
+      this match {
+        case Leaf() => false
+        case Node(v, l, r, _) => {
+          if (x == v) true
+          else if (x < v) l.contains(x)
+          else r.contains(x)
+        }
+      }
+    }.ensuring(res => res == content.contains(x))
+  \end{minted}
+  \caption{Funkce pro zajištění přítomnosti prvku v AVL stromu}
+  \label{lst:stainless-avl-contains}
+\end{listing}
+
+Funkce \texttt{insert} z výpisu~\ref{lst:stainless-avl-insert}
+provádí vložení prvku do AVL stromu.
+V případě prázdného stromu se vztvoří nový uzel s danou hodnotou a výškou 1.
+Pokud je strom již naplněn,
+je potřeba zjistit, zdali prvek již ve stromu není a pokud není,
+vložit ho na správné místo a v případě potřeby provést opravu vyváženosti pomocí rotací.
+Funkce \texttt{balance} bude ptředstavena později.
+Nicméně je zajištěno, že tato funkce opraví strom s nevývážeností v rozsahu [-2, 2].
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def insert(x: Int): AVLTree = {
+      require(isAVLTree)
+      require(height < Int.MaxValue)
+
+      this match {
+        case Leaf() => Node(x, Leaf(), Leaf(), 1)
+        case Node(v, l, r, _) => {
+          if (x == v) this
+          else if (x < v) {
+            val newLeft = l.insert(x)
+            Node(
+              v,
+              newLeft,
+              r,
+              1 + int_max(newLeft.height, r.height)
+            ).balance
+          } else {
+            val newRight = r.insert(x)
+            Node(
+              v,
+              l,
+              newRight,
+              1 + int_max(l.height, newRight.height)
+            ).balance
+          }
+        }
+      }
+    }.ensuring(res =>
+      res.isAVLTree
+        && (res.height == height || res.height == height + 1)
+        && res.content == content ++ Set(x)
+    )
+  \end{minted}
+  \caption{Funkce pro vložení prvku do AVL stromu}
+  \label{lst:stainless-avl-insert}
+\end{listing}
+
+Funkce \texttt{delete} z výpisu~\ref{lst:stainless-avl-delete}
+provádí odstranění prvku z AVL stromu.
+Jedná se o nejkomplexnejší z představených funkcí.
+Pokud je aktuálně zpracovávaný uzel hledaný prvek na odstranění (\texttt{x == v}),
+je potřeba rozlišit čtyři případy dle jeho podstromů.
+Pokud jsou oba podstromy prázdné, vrátí se instance listu (prázdný strom).
+čímž se efektivně odstranil aktuální uzel (nahrazení prázdným stromem).
+Pokud je pravý nebo levý podstrom prázdný,
+vrátí se ten podstrom, který není prázdný.
+Pokud jsou oba podstromy zaplněné,
+je potřeba najít minimální prvek v pravém podstromu (následník),
+odstranit následníka z pravého podstromu
+a vytvořit nový uzel s hodnotou následníka, stejným levým podstromem
+a novým pravým podstromem (bez následníka).
+V případech kdy je hledaný prvek menší nebo větší než hodnota aktuálního uzlu
+je potřeba rekurzivně zavolat funkci \texttt{delete} na levém nebo pravém podstromu
+a po provedení odstranění nebo ukončení v případě, kdy prvek není ve stromu,
+je potřeba vytvořit nový uzel s novým levým nebo pravým podstromem
+a provést opravu vyváženosti pomocí funkce \texttt{balance}.
+Následky této funkce zajišťují, že tato operace vždy vrátí korektní AVL strom
+a že výška stromu se buď nezmění nebo se sníží o 1.
+Zároveň je zajištěno, že obsah stromu je stejný jako původní strom
+s výjimkou odstraněného prvku.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def delete(x: Int): AVLTree = {
+      require(isAVLTree)
+      this match {
+        case Leaf() => this
+        case Node(v, l, r, _) => {
+          if (x == v) {
+            (l, r) match {
+              case (Leaf(), Leaf()) => Leaf()
+              case (Leaf(), Node(_, _, _, _)) => r
+              case (Node(_, _, _, _), Leaf()) => l
+              case (Node(_, _, _, _), rn: Node) => {
+                val m = rn.min
+                val newRight = r.delete(m)
+                Node(
+                  m,
+                  l,
+                  newRight,
+                  1 + int_max(l.height, newRight.height)
+                ).balance
+              }
+            }
+          } else if (x < v) {
+            val newLeft = l.delete(x)
+            Node(
+              v,
+              newLeft,
+              r,
+              1 + int_max(newLeft.height, r.height)
+            ).balance
+          } else {
+            val newRight = r.delete(x)
+            Node(
+              v,
+              l,
+              newRight,
+              1 + int_max(l.height, newRight.height)
+            ).balance
+          }
+        }
+      }
+    }.ensuring(res =>
+      res.isAVLTree
+        && (res.height == height || res.height == height - 1)
+        && res.content == content -- Set(x)
+    )
+  \end{minted}
+  \caption{Funkce pro odstranění prvku z AVL stromu}
+  \label{lst:stainless-avl-delete}
+\end{listing}
+
+Předchozí funkce \texttt{delete} využívala funkci \texttt{min} z výpisu~\ref{lst:stainless-avl-min-max},
+která vrací minimální prvek v AVL stromu.
+Pro kompletnost je na uzlech definována i funkce \texttt{max},
+která vrací maximální prvek v AVL stromu.
+Obě tyto funkce vracejí minimální či maximální prvek uložený s AVL stromu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def min: Int = {
+      require(isAVLTree)
+      this match {
+        case Node(v, Leaf(), _, _) => v
+        case Node(_, l: Node, _, _) => l.min
+      }
+    }.ensuring(res =>
+      content.contains(res) &&
+        forall((x: Int) => (content.contains(x) && x != res) ==> x > res)
+    )
+
+    def max: Int = {
+      require(isAVLTree)
+      this match {
+        case Node(v, _, Leaf(), _) => v
+        case Node(_, _, r: Node, _) => r.max
+      }
+    }.ensuring(res =>
+      contains(res) &&
+        forall((x: Int) => (contains(x) && x != res) ==> x < res)
+    )
+  \end{minted}
+  \caption{Funkce pro zajištění minimálního a maximálního prvku v AVL stromu}
+  \label{lst:stainless-avl-min-max}
+\end{listing}
+
+Funkce \texttt{rotateLeft} a \texttt{rotateRight}
+z výpisu~\ref{lst:stainless-avl-rotate}
+provádí základní rotace uzlů v AVL stromu.
+Tyto funkce jsou volány v případě, kdy je potřeba opravit vyváženost stromu.
+Tyto funkce zajišťují, že strom zůstane AVL stromem a že jeho obsah se nezmění.
+Vstupní podmínky těchto funkcí nemůže být pouze \texttt{isAVLTree},
+jelikož \texttt{isAVLTree} zajišťuje, že strom je vyvážený,
+což u programu, který volá tyto funkce není zajištěno.
+Následek spuštění těchto funkce ale zaručuje,
+že strom je opět vyvážený a že jeho obsah zůstává stejný.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def rotateLeft: Node = {
+      require(hasBinarySearchTreeStructure)
+      require(hasAVLTreeStructure)
+      require(left.isAVLTree && right.isAVLTree)
+      require(balanceFactor == 2 && right.balanceFactor >= 0)
+
+      right match {
+        case Node(v, rl, rr, _) =>
+          Node(
+            v,
+            Node(value, left, rl, 1 + int_max(left.height, rl.height)),
+            rr,
+            1 + int_max(
+              1 + int_max(left.height, rl.height),
+              rr.height
+            )
+          )
+      }
+    }.ensuring(res => res.content == content && res.isAVLTree)
+
+    def rotateRight: Node = {
+      require(hasBinarySearchTreeStructure)
+      require(hasAVLTreeStructure)
+      require(left.isAVLTree && right.isAVLTree)
+      require(balanceFactor == -2 && left.balanceFactor <= 0)
+
+      left match {
+        case Node(v, ll, lr, _) =>
+          Node(
+            v,
+            ll,
+            Node(value, lr, right, 1 + int_max(lr.height, right.height)),
+            1 + int_max(
+              1 + int_max(lr.height, right.height),
+              ll.height
+            )
+          )
+      }
+    }.ensuring(res => res.content == content && res.isAVLTree)
+  \end{minted}
+  \caption{Funkce pro jednoduché rotace uzlů v AVL stromu}
+  \label{lst:stainless-avl-rotate}
+\end{listing}
+
+Dvojité rotace \texttt{rotateLeftRight} a \texttt{rotateRightLeft}
+z výpisu~\ref{lst:stainless-avl-rotateLeftRight} a~\ref{lst:stainless-avl-rotateRightLeft}
+reprezentují levo-pravou a pravo-levou rotaci uzlů v AVL stromu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def rotateLeftRight: Node = {
+      require(hasBinarySearchTreeStructure)
+      require(hasAVLTreeStructure)
+      require(left.isAVLTree && right.isAVLTree)
+      require(balanceFactor == -2 && left.balanceFactor == 1)
+
+      left match {
+        case Node(v, ll, lr, _) =>
+          lr match {
+            case Node(vlr, lrl, lrr, _) =>
+              Node(
+                vlr,
+                Node(v, ll, lrl, 1 + int_max(ll.height, lrl.height)),
+                Node(
+                  value, lrr, right,
+                  1 + int_max(lrr.height, right.height)
+                ),
+                1 + int_max(
+                  1 + int_max(ll.height, lrl.height),
+                  1 + int_max(lrr.height, right.height)
+                )
+              )
+          }
+      }
+    }.ensuring(res => res.content == content && res.isAVLTree)
+  \end{minted}
+  \caption{Funkce pro levou-pravou rotaci uzlů v AVL stromu}
+  \label{lst:stainless-avl-rotateLeftRight}
+\end{listing}
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def rotateRightLeft: Node = {
+      require(hasBinarySearchTreeStructure)
+      require(hasAVLTreeStructure)
+      require(left.isAVLTree && right.isAVLTree)
+      require(balanceFactor == 2 && right.balanceFactor == -1)
+
+      right match {
+        case Node(v, rl, rr, _) =>
+          rl match {
+            case Node(vrl, rll, rlr, _) =>
+              Node(
+                vrl,
+                Node(
+                  value, left, rll,
+                  1 + int_max(left.height, rll.height)
+                ),
+                Node(v, rlr, rr, 1 + int_max(rlr.height, rr.height)),
+                1 + int_max(
+                  1 + int_max(left.height, rll.height),
+                  1 + int_max(rlr.height, rr.height)
+                )
+              )
+          }
+      }
+    }.ensuring(res => res.content == content && res.isAVLTree)
+  \end{minted}
+  \caption{Funkce pro pravo-levou rotaci uzlů v AVL stromu}
+  \label{lst:stainless-avl-rotateRightLeft}
+\end{listing}
+
+Poslední funkce \texttt{balance} z výpisu~\ref{lst:stainless-avl-balance}
+provádí obecně opravu vyváženosti uzlu.
+Rotace uzlů představené v předchozích výpisech
+jsou striktně povolené pouze v specifických případech rozdělených podle
+balančního faktoru uzlu.
+Obecná funkce \texttt{balance} přijímá k opravě jakýkoli uzel s balančním faktorem
+v intervalu [-2, 2], kde pravý i levý strom jsou ale správně vyvážené.
+
+Tento postup byl zvolen z důvodu usnadnění implementace předchozích funkcí \texttt{insert} a \texttt{delete}.
+Volání jedné funkce ve včech scénářích, kde je potřeba vyvážit uzel stromu,
+je implementačně i důkazově jednodušší než tuto logiku přenášet do daných funkcí,
+ve kterých by bylo nutné provést tuto logiku duplicitně.
+Tento posutp také umožňuje rychlejší dokončení důkazu korektnosti celého programu.
+
+Funkce \texttt{balance} je úmysleně napsaná tak, aby opravila
+jakýkoli uzel s nevývážeností v intervalu [-2, 2] nehledě na to,
+jak jsou vyvážené jeho podstromy.
+Například operace \texttt{insert} nikdy nevygeneruje stav,
+ve kterém by rodičovský uzel měl balanční faktor 2 nebo -2
+a zároveň potomek, ve kterém proběhlo přidání, tohoto uzlu měl balanční faktor 0~\cite{Pruvodce22}.
+Nicméně pro důkazní popis je tato situace, kdy něco nemůže nastat,
+komplikovaně popsatelná.
+Proto byla zvolena implementace této funkce tak,
+aby při případném zavolání na uzlu s balančním faktorem 2 a balančním faktorem pravého syna 0
+zvolila operaci provedla levou rotaci.
+Výsledek rotace bude opět AVL stromem a jeho obsah zůstane stejný.
+Případ balančního faktoru -2 a levém synovi s balančním faktorem 0 je podobný,
+pouze s pravou rotací.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+    def balance: Node = {
+        require(hasBinarySearchTreeStructure)
+        require(hasAVLTreeStructure)
+        require(left.isAVLTree && right.isAVLTree)
+        require(-2 <= balanceFactor && balanceFactor <= 2)
+
+        if (balanceFactor == 2) {
+          if (right.balanceFactor == -1) rotateRightLeft
+          else rotateLeft
+        } else if (balanceFactor == -2) {
+          if (left.balanceFactor == 1) rotateLeftRight
+          else rotateRight
+        } else this
+      }.ensuring(res => res.isAVLTree && res.content == content)
+  \end{minted}
+  \caption{Funkce pro opravu vyváženosti uzlů v AVL stromu}
+  \label{lst:stainless-avl-balance}
+\end{listing}
