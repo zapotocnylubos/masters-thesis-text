@@ -49,6 +49,18 @@ Vlastní předzpracování a použití mezi-interpretace umožňuje Frama\mbox{-
 analyzovat zdrojový kód efektivněji a nainstalované pluginy mohou pracovat
 s touto abstraktní reprezentací, upravovat ji nebo dokonce transformovat~\cite{FCKernelMaroneze2024}.
 
+Základní pluginy Frama\mbox{-}C jsou součástí distribuce a jsou dostupné zdarma.
+Je vhodné zmínit například plugin Frama\mbox{-}Clang, jehož cílem je
+přidat podporu programovacího jazku C\texttt{++} do Frama\mbox{-}C\@.
+Frama\mbox{-}Clang je aktuálně ve vývoji a je dostupný pro experimentování a testování,
+ale není doporučeno jej používat pro produkční nasazení~\cite{framaclang}.
+
+Jiné pluginy mohou být dostupné pod jinými licencemi nebo jako komerční produkty.
+Jedním z proprietárních pluginů je například plugin pro generování protipříkladů
+(counterexamples) pro Frama\mbox{-}C\@.
+Tato funkcionalita je i s tímto pluginem dostupná pouze pro SMT řešič Alt-Ergo,
+což může být nevhodné pro uživatele, kteří preferují jiné SMT řešiče nebo na úlohy,
+které nejsou vhodné pro Alt-Ergo~\cite{framacounterexamples}.
 
 \section{ACSL (ANSI/ISO C Specification Language)}
 \label{sec:acsl}
@@ -462,7 +474,7 @@ což je vlastnost, kterou jsme chtěli ověřit pomocí \texttt{assert n == 0}.
 
 Poslední vlastnost, kterou v programu potřebujeme doplnit a dokázat je podmínka konečnosti cyklu.
 Konečnost cyklů se definuje pomocí variantu cyklu (\texttt{loop variant}),
-a jedná se o výraz, který se musí splňovat následující dvě podmínky:
+a jedná se o výraz (measure), který musí splňovat následující dvě podmínky:
 
 \begin{itemize}
     \item Musí být kladný nebo nulový na začátku každé iterace cyklu.
@@ -722,6 +734,10 @@ TODO základní popis
 \label{sec:frama-c-wp}
 
 TODO je potřeba?
+
+TODO: silnost nasledku, napriklad slaby nasledek, zesilnovani pomoci kontroly obsahu, apod...
+
+TODO: knowledge probing a dalsi metody pro postupny vzvoj dukazu?
 
 
 \section{Paměťové modely}
@@ -2124,11 +2140,3 @@ TODO: přídat příklad serializace binárního stromu do pole? (ne AVL)
 %nat Integer model without bounds (no overflow assumed).
 %float Use floating-point operations.
 %real Use mathematical reals instead of floating point.
-
-
-TODO: zminit frama-clang
-% https://frama-c.com/fc-plugins/frama-clang.html
-
-
-TODO: rozdil mezi FC a Stainless -> counterexamples je prioprietarni plugin v FC a pouze pro alt-ergo
-% https://www.frama-c.com/fc-plugins/counter-examples.html

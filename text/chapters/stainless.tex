@@ -1,36 +1,238 @@
 \chapter{Stainless}
 \label{ch:stainless}
 
-% --genc does not support recursive data types = src/stainless/LinkedList.scala:41:12: Cons and other recursive types are not supported
+Stainless je nástroj pro ověřování korektnosti programů napsaných v jazyce Scala.
+Scala je staticky typovaný jazyk, který je založen na jazyce Java.
+Scala podporuje objektově orientované programování i funkcionální styl programování.
+Nicméně podporovaný je hlavně funkcionální styl programování a některé konstrukce
+imperativního programování jsou podporovány pomocí transformací, které jsou součástí
+předzpracování zdrojového kódu~\cite{StainlessDocs}.
 
-TODO: Inox
-
-TODO: .. Pipeline Stainless -> Inox -> SMT
+Stainless stejně jako Frama\mbox{-}C používá SMT řešiče pro dokazování vlastností programů.
+Místo platformy Why3 ale používá vlastní mezivrstvu nazvanou Inox.
+Inox podporuje generování důkazů pro externí SMT řešiče Z3, CVC4 a CVC5.
+Interní řešič Princess, napsaný v jazyce Scala, je součástí distribuce a je ho tedy možné použít
+i v případě, kdy není k dispozici žádný externí SMT řešič~\cite{InoxSolver}.
 
 \section{Anotace}
 \label{sec:stainless-annotations}
 
-TODO: require
+Stainless podporuje podobný styl anotování kódu jako Frama\mbox{-}C\@.
+Není ale potřeba používát speciální komentáře pro anotace,
+ale je možné použít přímo jazyk Scala.
+Všechny anotace jsou umístěny jako spustitelný Scala kód a nebo jako dekorátory před funkcemi.
 
-TODO: ensuring
+Anotace \texttt{require} zajišťuje, že daná podmínka musí být splněna před spuštěním funkce.
+Příklad použití je zobrazen v ukázce~\ref{lst:stainless-require},
+kde je deklarována funkce \texttt{my\_function} s dvěma celočíselnými parametry.
+Podmínka spuštění této funkce je, že oba parametry musí být ostře větší než 0.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+  def my_function(x: Int, y: Int): Int = {
+    require(x > 0 && y > 0)
+    ...
+  }
+  \end{minted}
+  \caption{Příklad použití anotace \texttt{require}}
+  \label{lst:stainless-require}
+\end{listing}
+
+Anotace \texttt{ensuring} zajišťuje, že po spuštění funkce budou splněné dané vlastnosti.
+Ensuring přijímá jako argument funkci o jednom parametru,
+která vrací hodnotu typu \texttt{Boolean}.
+Parametrem této funkce je výstupní hodnota funkce,
+která je na ukázce~\ref{lst:stainless-ensuring} pojmenována \texttt{res}.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+  def my_function(x: Int, y: Int): Int = {
+    ...
+  }.ensuring(res => res > 0)
+  \end{minted}
+  \caption{Příklad použití anotace \texttt{ensuring}}
+  \label{lst:stainless-ensuring}
+\end{listing}
+
+\subsection{Cykly}
+\label{subsec:stainless-loops}
+
+Cykly v jazyce Scala jsou jedním z imperativních prvků,
+které Stainless musí transformovat na funkcionální styl.
+Stejně jako při použití Frama\mbox{-}C je potřeba použít invarianty cyklu,
+popisující vlastnosti cyklu.
+Také je potřeba definovat variant cyklu,
+pomocí kterého lze rozhodnout o konečnost cyklu.
+Stainless posktytuje možnost definovat invariant pomocí klíčového slova \texttt{invariant}
+umístěného za deklarací cyklu.
+Variant je označen pomocí klíčového slova \texttt{decreases} na začátku těla cyklu.
+Ukázka~\ref{lst:stainless-loop} zobrazuje jednoduchý příklad cyklu s použitím invariantu i variantu.
+Při zápisu invariantu je nutné cyklus obalit do závorek,
+jelikož Stainless používá pro integraci tohoto klíčového slova
+implicitní konverzi z typu \texttt{Unit} na typ \texttt{InvariantFunction}~\cite{StainlessDocs}.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+  def my_loop(x: Int): Int = {
+    var i = x
+
+    (while (i > 0) {
+      decreases(i)
+
+      i -= 1
+    }).invariant(i >= 0)
+
+    i
+  }
+  \end{minted}
+  \caption{Příklad použití cyklu s invariantem a variantem}
+  \label{lst:stainless-loop}
+\end{listing}
+
+\subsection{Pattern matching}
+\label{subsec:stainless-pattern-matching}
+
+Scala podporuje takzvaný pattern matching,
+jehož funkce je podobná konstrukci \texttt{switch} v jazyce~C s několika vylepšeními.
+Pomocí tohoto mechanismu je možné elegantně zpracovávat různé varianty datových typů.
+Dokonce je možné rozpoznávat i složené datové typy pomocí destrukturizace.
+Stainless také podporuje pattern matching a v následující kapitole s jeho pomocí
+popíšeme implementaci AVL stromu~\cite{scalaPatternMatching}.
+
+Scala podporuje koncept algebrických datových typů
+a takzvaných \textit{case classes}.
+Příkladem může být následující ukázka~\ref{lst:stainless-case-class},
+kde je definována abstraktní třída \texttt{AVLTree} a dvě podtřídy \texttt{Node} a \texttt{Leaf},
+které budou detailně popsány v kapitole~\ref{sec:stainless-avl}.
+Přidáním příznaku \texttt{sealed} před definici třídy
+je možné zajistit, že všechny podtřídy budou definované v rámci stejného souboru.
+
+Kombinací pattern matchingu a \texttt{case class} je možné elegantně zpracovávat různé varianty datových typů.
+Například pomocí kódu z ukázky~\ref{lst:stainless-pattern-matching-case-class}
+je možné definovat funkci \texttt{content},
+která pomocí pattern matchingu vypočítá množinu prvků obsažených v AVL stromu.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+  sealed abstract class AVLTree {
+    def content: Set[Int] = this match {
+      case Leaf() => Set.empty
+      case Node(v, l, r, _) => l.content ++ Set(v) ++ r.content
+    }
+  }
+  \end{minted}
+  \caption{Příklad použití pattern matchingu s \texttt{case class}}
+  \label{lst:stainless-pattern-matching-case-class}
+\end{listing}
+
+Pattern matchingu bez Stainless může v některých případech vyvolat
+varování o neúplnosti pattern matchingu, pokud \texttt{match} nezachycuje všechny \texttt{case class}
+a neobsahuje fallback variantu pomocí konstrukce \texttt{case \_},
+Toto varování Stainless vylepšuje a přidává kontext o spouštění funkce.
+Pokud tedy v aktuálním kontextu některé případy nemohou nikdy nastat,
+Stainless potlačí varování o neúplnosti pattern matchingu.
+
+\section{Protipříklady}
+\label{sec:stainless-counterexamples}
+
+Velkou výhodou oproti Frama\mbox{-}C při vývoji důkazů pomocí Stainless je,
+že Stainless v základní instalaci podporuje generování protipříkladů.
+Protipříklad je konkrétní vstupní hodnota nebo nastavení proměnných,
+které vedou k porušení kontraktu funkce.
+
+Následující ukázka~\ref{lst:stainless-incorrect-intmax} zobrazuje
+jednoduchou funkci \texttt{int\_max}, která vrací větší z dvou čísel.
+Tato funkce je záměrně implementovana špatně,
+aby bylo možné ukázat generování protipříkladů.
+Definice kontraktu \texttt{ensuring} zajišťuje,
+že výsledek volání funkce bude hodnota větší nebo rovna oběma vstupním parametrům.
+Žádné vstupní podmínky (předpoklady) nejsou definované,
+Stainless tedy předpokládá, že vstupní hodnoty jsou libovolné celočíselné hodnoty.
+Pomocí příkazu~\ref{lst:stainless-incorrect-intmax-run}
+lze spustit analýzu tohoto programu.
+
+\begin{listing}[H]
+  \begin{minted}{bash}
+  def int_max(x: Int, y: Int): Int = {
+    if (x > y) x else 0
+  }.ensuring(res => res >= x && res >= y)
+  \end{minted}
+  \caption{Nesprávně implementovaná funkce \texttt{int\_max}}
+  \label{lst:stainless-incorrect-intmax}
+\end{listing}
+
+\begin{listing}[H]
+  \begin{minted}{console}
+  stainless snippets/counterexample.scala
+  \end{minted}
+  \caption{Příkaz pro spuštění analýzy protipříkladů}
+  \label{lst:stainless-incorrect-intmax-run}
+\end{listing}
+
+Výsledek analýzy z výpisu~\ref{lst:stainless-incorrect-intmax-result} ukazuje,
+že pro vstupní hodnoty $x = -2147483648$ a $y = 2147483646$
+je výstupní hodnota $0$, což je v rozporu s kontraktem funkce.
+Stainless tyto protipříklady generuje automaticky,
+ale již neprovádí jejich minimalizaci.
+
+\begin{listing}[H]
+  \begin{minted}{console}
+  ...
+  [Warning ] snippets/counterexample.scala:6:23:  => INVALID
+               if (x > y) x else 0
+                                 ^
+  [Warning ] Found counter-example:
+  [Warning ]   x: Int -> -2147483648
+  [Warning ]   y: Int -> 2147483646
+  ...
+  \end{minted}
+  \caption{Výstup analýzy s protipříkladem pro funkci \texttt{int\_max}}
+  \label{lst:stainless-incorrect-intmax-result}
+\end{listing}
+
+Velmi užitečná je podpora protipříkladů i pro složitější datové struktury
+jako například algebrické datové typy.
+Například pro AVL strom, který bude popsán později v této kapitole,
+byl v průběhu tvorby důkazu vygenerován protipříklad podobný jako z výpisu~\ref{lst:stainless-avl-counterexample},
+ve kterém Stainless přesně popisuje protipříklad s kombinací datových typů \texttt{Node} a \texttt{Leaf}.
+Zároveň je správně dodržena podmínka na výšku uzlu, která musí být ostře větší než 0.
+
+\begin{listing}[H]
+  \begin{minted}{console}
+  [Warning ] Found counter-example:
+  [Warning ]   thiss: AVLTree -> Node(0, Leaf(), Leaf(), 1)
+  \end{minted}
+  \caption{Výstup analýzy s protipříkladem pro AVL strom}
+  \label{lst:stainless-avl-counterexample}
+\end{listing}
+
+% https://epfl-lara.github.io/stainless/genc.html
+% The support for classes is restricted to non-recursive ones so that instances of such data-types live on the stack.
+% ---
+% Currently the memory model is limited to stack allocation and global state.
+% Hence, no dynamic allocation is done using malloc function family.
+
+% --genc does not support recursive data types = src/stainless/LinkedList.scala:41:12: Cons and other recursive types are not supported
 
 \section{Ověřená implementace AVL stromu}
 \label{sec:stainless-avl}
 
-Datová struktura AVL strom je rozšířením binárního vyhledávacího stromu,
-který zajišťuje, že rozdíl výšek levého a pravého podstromu je maximálně 1.
+Datová struktura AVL stromu je rozšířením binárního vyhledávacího stromu,
+který ale zajišťuje, že rozdíl výšek levého a pravého podstromu je maximálně 1.
+Jedná se tedy o relaxovanou podmínku pro vyváženost stromu.
+Tato datová struktura je velmi efektivní pro vyhledávání, vkládání a mazání prvků,
+které mají pouze logaritickou složitost~\cite{Pruvodce22}.
 
-\cite{Pruvodce22}.
-
-Následující výpis~\ref{lst:stainless-avl-interface} zobrazuje rozhraní AVL stromu.
-Tato datová struktura obsahuje základní operace jako je vkládání, mazání a hledání prvku.
+Následující výpis~\ref{lst:stainless-avl-interface} zobrazuje rozhraní AVL stromu,
+které je implementováno v jazyce Scala a následně ověřeno pomocí Stainless.
+Datová struktura obsahuje základní operace pro vkládání, mazání a hledání prvku.
 Jednotlivé funkce jsou korektně implementované a pomocí Stainless je možné ověřit jejich korektnost.
 Třída \texttt{AVLTree} je abstraktní třída, která definuje základní vlastnosti AVL stromu
 a podtřídy \texttt{Node} a \texttt{Leaf} implementují konkrétní chování stromu.
 Zároveň je v kódu často používán pattern matching,
-který umožňuje elegantně zpracovávat různé varianty stromu.
-List (Leaf) je prázdný uzel, který nemá žádné hodnoty a výšku 0.
-Jedná se o prázdný prvek, podobně jako by v jazyce C byl použit \texttt{NULL} ukazatel.
+který umožňuje elegantně zpracovávat různé varianty situací, které mohou nastat.
+List (Leaf) je prázdný uzel, který nemá žádné hodnoty a má výšku 0.
+Jedná se o prázdný prvek, podobně jako by v jazyce C byl použit ukazatel \texttt{NULL}.
 Nejedná se tedy o poslední platný uzel stromu, ale o zvláštní prvek, který nemá žádnou hodnotu.
 
 \begin{listing}[H]
@@ -82,13 +284,15 @@ Tato kapitola postupně popíše jednotlivé funkce a popíše důkazy jejich ko
 
 Na začátku kódu je jednoduchá funkce \texttt{int\_max}, která vrací větší z dvou čísel.
 Jedná se o pomocnou funkci na celých číslech, která se používá v dalších funkcích.
+Stainless nepodporuje funkci \texttt{x max y} ze standardní knihovny,
+proto je potřeba použít vlastní implementaci.
 
 Ukázka~\ref{lst:stainless-avl-helper} zobrazuje pomocné funkce pro AVL strom.
 První z nich je \texttt{content}, která vrací množinu prvků v AVL stromu.
 Pomocí pattern matchingu se zjistí, zdali aktuálně zpracovávaný uzel je list nebo uzel.
 Pokud je to list, vrátí se prázdná množina.
 V případě uzlu se rekurzivně zavolá funkce \texttt{content} na levém a pravém podstromu
-a spojí se do množiny s hodnotou uloženou v aktuálním uzlu.
+a spojí se dohromady do množiny s hodnotou uloženou v aktuálním uzlu.
 Druhá funkce \texttt{height} vrací výšku stromu.
 Listy stromu mají výšku 0 a uzly mají výšku uloženou v proměnné \texttt{\_height} (čtvrtý argument konstruktoru).
 Třetí funkce \texttt{balanceFactor} vrací vyváženost stromu.
@@ -121,14 +325,13 @@ V důkazech je použita tato vlastnost pro kontrolu vyváženosti stromu.
 Jelikož je AVL strom nadstavbou binárního vyhledávacího stromu,
 je potřeba zajistit, že splňuje všechny vlastnosti binárního vyhledávacího stromu.
 K tomu slouží funkce \texttt{hasBinarySearchTreeStructure} zobrazená ve výpisu~\ref{lst:stainless-avl-bst},
-která kontroluje obsahu stromu.
+která kontroluje hodnoty v uzlech a podmínky pro binární vyhledávací stromy.
 Konkrétně, že levý podstrom obsahuje pouze hodnoty menší než hodnota aktuálního uzlu
 a pravý podstrom pouze hodnoty větší než hodnota aktuálního uzlu.
 Listy jsou automaticky označeny jako binární vyhledávací stromy (prázdný strom).
 U uzlů se rekurzivně je nutné rekurzivně ověřit platnost pravidel pro
 binární vyhledávací stromy na levém a pravém podstromu
-a následně porovnat, že hodnoty v levém podstromu jsou menší než hodnota aktuálního uzlu
-a hodnoty v pravém podstromu jsou větší než hodnota aktuálního uzlu.
+a poté kontrolovat pravidlo pro binární vyhledávací stromy.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -148,15 +351,15 @@ a hodnoty v pravém podstromu jsou větší než hodnota aktuálního uzlu.
     }
   }
   \end{minted}
-  \caption{Funkce pro zajištění binárního vyhledávacího stromu}
+  \caption{Funkce pro kontrolu struktury binárního vyhledávacího stromu}
   \label{lst:stainless-avl-bst}
 \end{listing}
 
 Funkce \texttt{hasAVLTreeStructure} z výpisu~\ref{lst:stainless-avl-avl}
 popisuje strukturu AVL stromu.
-Tato funkce zajišťuje, že prvky v AVL stromu jsou správně uspořádány,
-konkrétně je omezena hloubka stromu na maximálně \texttt{Int.MaxValue}
-a výška stromu musí být správně vypočítaná.
+Tato funkce kontroluje, že prvky v AVL stromu jsou správně uspořádány.
+Konkrétně je omezena hloubka stromu na maximálně \texttt{Int.MaxValue}
+a výška stromu musí být správně vypočítaná (o jedna větší než maximální výška z podstromů).
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -177,15 +380,14 @@ a výška stromu musí být správně vypočítaná.
     }
   }
   \end{minted}
-  \caption{Funkce pro zajištění AVL stromu}
+  \caption{Funkce pro kontrolu struktury AVL stromu}
   \label{lst:stainless-avl-avl}
 \end{listing}
 
-
 Funkce \texttt{isBalanced} z výpisu~\ref{lst:stainless-avl-balanced}
-ověřuje, že AVL strom je vyvážený.
-Tato funkce kontroluje, že rozdíl výšek pravého a levého podstromu
-je maximálně 1 (tedy, že je v intervalu [-1, 1]).
+ověřuje, zdali je AVL strom vyvážený.
+Kontroluje, zdali je rozdíl výšek pravého a levého podstromu
+v rozsahu $[-1, 1]$.
 Tato vývaženost musí rekurzivně platit pro všechny uzly v AVL stromu.
 
 \begin{listing}[H]
@@ -202,12 +404,12 @@ Tato vývaženost musí rekurzivně platit pro všechny uzly v AVL stromu.
     }
   }
   \end{minted}
-  \caption{Funkce pro zajištění vyváženosti AVL stromu}
+  \caption{Funkce pro ověření vyváženosti AVL stromu}
   \label{lst:stainless-avl-balanced}
 \end{listing}
 
 Funkce \texttt{isAVLTree} z výpisu~\ref{lst:stainless-avl-isavl}
-ověřuje, že AVL strom splňuje všechny výše uvedené vlastnosti.
+ověřuje, že AVL strom splňuje všechny výše uvedené vlastnosti dohromady.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -222,7 +424,7 @@ ověřuje, že AVL strom splňuje všechny výše uvedené vlastnosti.
     }
   }
   \end{minted}
-  \caption{Funkce pro zajištění AVL stromu}
+  \caption{Funkce pro ověření struktury AVL stromu}
   \label{lst:stainless-avl-isavl}
 \end{listing}
 
@@ -246,18 +448,20 @@ Následek popisující výsledek funkce zajišťuje,
     }
   }.ensuring(res => res == content.contains(x))
   \end{minted}
-  \caption{Funkce pro zajištění přítomnosti prvku v AVL stromu}
+  \caption{Funkce pro kontrolu přítomnosti prvku v AVL stromu}
   \label{lst:stainless-avl-contains}
 \end{listing}
 
 Funkce \texttt{insert} z výpisu~\ref{lst:stainless-avl-insert}
 provádí vložení prvku do AVL stromu.
-V případě prázdného stromu se vztvoří nový uzel s danou hodnotou a výškou 1.
+V případě prázdného stromu se vytvoří nový uzel s danou hodnotou a výškou 1.
 Pokud je strom již naplněn,
-je potřeba zjistit, zdali prvek již ve stromu není a pokud není,
-vložit ho na správné místo a v případě potřeby provést opravu vyváženosti pomocí rotací.
-Funkce \texttt{balance} bude ptředstavena později.
-Nicméně je zajištěno, že tato funkce opraví strom s nevývážeností v rozsahu [-2, 2].
+je potřeba zjistit, zdali prvek již ve stromu není.
+Pokud není, je potřeba ho vložit na správné místo a případně provést opravu vyváženosti pomocí rotací.
+Funkce \texttt{balance} bude představena později.
+Prozatím stačí říci, že se jedná o funkci,
+která dokáže opravit AVL strom i v případě,
+kdy je balanční faktor aktuálního vrcholu v rozsahu $[-2, 2]$.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -298,24 +502,24 @@ Funkce \texttt{delete} z výpisu~\ref{lst:stainless-avl-delete}
 provádí odstranění prvku z AVL stromu.
 Jedná se o nejkomplexnejší z představených funkcí.
 Pokud je aktuálně zpracovávaný uzel hledaný prvek na odstranění (\texttt{x == v}),
-je potřeba rozlišit čtyři případy dle jeho podstromů.
+je potřeba rozlišit čtyři případy dle podstromů daného uzlu.
 Pokud jsou oba podstromy prázdné, vrátí se instance listu (prázdný strom).
-čímž se efektivně odstranil aktuální uzel (nahrazení prázdným stromem).
-Pokud je pravý nebo levý podstrom prázdný,
+Vrácení prázdného listu je vlastně nahrazení daného vrcholu prázdným stromem.
+Pokud pravý nebo levý podstrom zaplněný (ale ne oba),
 vrátí se ten podstrom, který není prázdný.
 Pokud jsou oba podstromy zaplněné,
 je potřeba najít minimální prvek v pravém podstromu (následník),
-odstranit následníka z pravého podstromu
+odstranit ho z pravého podstromu
 a vytvořit nový uzel s hodnotou následníka, stejným levým podstromem
-a novým pravým podstromem (bez následníka).
+a novým pravým podstromem, kde byl následník odstraněn.
 V případech kdy je hledaný prvek menší nebo větší než hodnota aktuálního uzlu
 je potřeba rekurzivně zavolat funkci \texttt{delete} na levém nebo pravém podstromu
 a po provedení odstranění nebo ukončení v případě, kdy prvek není ve stromu,
 je potřeba vytvořit nový uzel s novým levým nebo pravým podstromem
 a provést opravu vyváženosti pomocí funkce \texttt{balance}.
-Následky této funkce zajišťují, že tato operace vždy vrátí korektní AVL strom
-a že výška stromu se buď nezmění nebo se sníží o 1.
-Zároveň je zajištěno, že obsah stromu je stejný jako původní strom
+Následky této funkce zajišťují, že se vždy vrátí korektní AVL strom
+a že výška stromu se buď nezmění nebo se sníží maximálně o 1.
+Zároveň je zajištěno, že obsah stromu je stejný jako v původním stromu,
 s výjimkou odstraněného prvku.
 
 \begin{listing}[H]
@@ -368,7 +572,6 @@ Předchozí funkce \texttt{delete} využívala funkci \texttt{min} z výpisu~\re
 která vrací minimální prvek v AVL stromu.
 Pro kompletnost je na uzlech definována i funkce \texttt{max},
 která vrací maximální prvek v AVL stromu.
-Obě tyto funkce vracejí minimální či maximální prvek uložený s AVL stromu.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -398,20 +601,20 @@ Obě tyto funkce vracejí minimální či maximální prvek uložený s AVL stro
       )
   )
   \end{minted}
-  \caption{Funkce pro zajištění minimálního a maximálního prvku v AVL stromu}
+  \caption{Funkce pro zjištění minimálního a maximálního prvku v AVL stromu}
   \label{lst:stainless-avl-min-max}
 \end{listing}
 
 Funkce \texttt{rotateLeft} a \texttt{rotateRight}
 z výpisu~\ref{lst:stainless-avl-rotate}
-provádí základní rotace uzlů v AVL stromu.
-Tyto funkce jsou volány v případě, kdy je potřeba opravit vyváženost stromu.
-Tyto funkce zajišťují, že strom zůstane AVL stromem a že jeho obsah se nezmění.
-Vstupní podmínky těchto funkcí nemůže být pouze \texttt{isAVLTree},
+provádějí základní rotace uzlů v AVL stromu.
+Tyto funkce jsou volány v případě, kdy je potřeba opravit vyváženost stromu
+a zajišťují, že strom zůstane AVL stromem a jeho obsah se nezmění.
+Vstupní podmínka těchto funkcí nemůže být pouze \texttt{isAVLTree},
 jelikož \texttt{isAVLTree} zajišťuje, že strom je vyvážený,
-což u programu, který volá tyto funkce není zajištěno.
-Následek spuštění těchto funkce ale zaručuje,
-že strom je opět vyvážený a že jeho obsah zůstává stejný.
+což na místech v programu, kde se tyto funkce volají není zaručeno.
+Následky spuštění těchto funkcí zaručují,
+že strom bude správně vyvážen a obsah zůstane nezměněn.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -542,16 +745,16 @@ reprezentují levo-pravou a pravo-levou rotaci uzlů v AVL stromu.
 Poslední funkce \texttt{balance} z výpisu~\ref{lst:stainless-avl-balance}
 provádí obecně opravu vyváženosti uzlu.
 Rotace uzlů představené v předchozích výpisech
-jsou striktně povolené pouze v specifických případech rozdělených podle
+jsou striktně povolené pouze ve specifických případech rozdělených podle
 balančního faktoru uzlu.
 Obecná funkce \texttt{balance} přijímá k opravě jakýkoli uzel s balančním faktorem
-v intervalu [-2, 2], kde pravý i levý strom jsou ale správně vyvážené.
+v intervalu [-2, 2], kde pravý i levý strom jsou ale správně vyvážené AVL stromy.
 
 Tento postup byl zvolen z důvodu usnadnění implementace předchozích funkcí \texttt{insert} a \texttt{delete}.
 Volání jedné funkce ve včech scénářích, kde je potřeba vyvážit uzel stromu,
-je implementačně i důkazově jednodušší než tuto logiku přenášet do daných funkcí,
+je implementačně i důkazově jednodušší než tuto logiku přenášet do zmíněných funkcí,
 ve kterých by bylo nutné provést tuto logiku duplicitně.
-Tento posutp také umožňuje rychlejší dokončení důkazu korektnosti celého programu.
+Tento postup také umožňuje rychlejší dokončení důkazu korektnosti celého programu.
 
 Funkce \texttt{balance} je úmysleně napsaná tak, aby opravila
 jakýkoli uzel s nevývážeností v intervalu $[-2, 2]$ nehledě na to,
@@ -559,12 +762,12 @@ jak jsou vyvážené jeho podstromy.
 Například operace \texttt{insert} nikdy nevygeneruje stav,
 ve kterém by rodičovský uzel měl balanční faktor $2$ nebo $-2$
 a zároveň potomek, ve kterém proběhlo přidání, tohoto uzlu měl balanční faktor $0$~\cite{Pruvodce22}.
-Nicméně pro důkazní popis je tato situace, kdy něco nemůže nastat,
-komplikovaně popsatelná.
+Nicméně pro důkazní popis je tato situace,
+kdy něco nemůže nastat, komplikovaně popsatelná.
 Proto byla zvolena implementace této funkce tak,
 aby se při zavolání \texttt{balance} na uzlu s balančním faktorem $2$ a balančním faktorem pravého syna $0$
 zvolila levá rotace.
-Výsledek rotace bude totiž AVL stromem a jeho obsah zůstane stejný.
+Výsledek rotace bude totiž AVL strom a jeho obsah zůstane stejný.
 Případ balančního faktoru $-2$ a levém synovi s balančním faktorem $0$ je podobný,
 pouze s pravou rotací.
 
