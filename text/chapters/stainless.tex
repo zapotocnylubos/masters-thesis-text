@@ -170,7 +170,8 @@ lze spustit analýzu tohoto programu.
 \end{listing}
 
 Výsledek analýzy z výpisu~\ref{lst:stainless-incorrect-intmax-result} ukazuje,
-že pro vstupní hodnoty $x = -2147483648$ a $y = 2147483646$
+že pro vstupní hodnoty parametrů
+$x = -2147483648$ a $y = 2147483646$
 je výstupní hodnota $0$, což je v rozporu s kontraktem funkce.
 Stainless tyto protipříklady generuje automaticky,
 ale již neprovádí jejich minimalizaci.
@@ -324,7 +325,7 @@ V důkazech je použita tato vlastnost pro kontrolu vyváženosti stromu.
 
 Jelikož je AVL strom nadstavbou binárního vyhledávacího stromu,
 je potřeba zajistit, že splňuje všechny vlastnosti binárního vyhledávacího stromu.
-K tomu slouží funkce \texttt{hasBinarySearchTreeStructure} zobrazená ve výpisu~\ref{lst:stainless-avl-bst},
+K~tomu slouží funkce \texttt{hasBinarySearchTreeStructure} zobrazená ve výpisu~\ref{lst:stainless-avl-bst},
 která kontroluje hodnoty v uzlech a podmínky pro binární vyhledávací stromy.
 Konkrétně, že levý podstrom obsahuje pouze hodnoty menší než hodnota aktuálního uzlu
 a pravý podstrom pouze hodnoty větší než hodnota aktuálního uzlu.
