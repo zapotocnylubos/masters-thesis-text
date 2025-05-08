@@ -13,13 +13,11 @@ Metoda nejslabšího předpokladu se snaží najít nejslabší předpoklad $WP$
 \begin{equation*}
     \{ WP \} \ Q \ \{ R \}
 \end{equation*}
-
 a zároveň pro každý jiný předpoklad $P$, pro který by platilo, že
 
 \begin{equation*}
     \{ P \} \ Q \ \{ R \}
 \end{equation*}
-
 musí také platit, že
 
 \begin{equation*}
@@ -38,7 +36,6 @@ poté z definice platí, že
 \begin{equation*}
     WP' \implies WP
 \end{equation*}
-
 a také, že
 
 \begin{equation*}
@@ -91,13 +88,11 @@ Máme-li dva příkazy $Q_1$ a $Q_2$, které splňují následující tvrzení
 \begin{equation*}
     \{ P_1 \} \  Q_1 \  \{ R_1 \}
 \end{equation*}
-
 a
 
 \begin{equation*}
     \{ R_1 \} \  Q_2 \  \{ R_2 \}
 \end{equation*}
-
 můžeme říci, že nejslabší předpoklad pro sekvenci příkazů $Q_1; Q_2$ je
 
 \begin{equation*}
@@ -150,7 +145,8 @@ a následek $y > 0$ dostáváme:
 
 \begin{align*}
     \operatorname{wp}(\textbf{if} & \ x > 0 \ \textbf{then} \ y \coloneqq x + 3 \ \textbf{else} \ y \coloneqq x - 3, y > 0) = \\
-          & = (x > 0 \implies \operatorname{wp}(y \coloneqq x + 3, y > 0)) \land (\neg (x > 0) \implies \operatorname{wp}(y \coloneqq x - 3, y > 0)) \\
+          & = (x > 0 \implies \operatorname{wp}(y \coloneqq x + 3, y > 0)) \\
+          & \ \ \ \ \land (\neg (x > 0) \implies \operatorname{wp}(y \coloneqq x - 3, y > 0)) \\
           & = (x > 0 \implies x + 3 > 0) \land (\neg (x > 0) \implies x - 3 > 0) \\
           & = (x > 0 \implies x > -3) \land (\neg (x > 0) \implies x > 3)
 \end{align*}
@@ -160,7 +156,6 @@ Použitím pravidla implikace
 \begin{align*}
     (P \implies A) \land (\neg P \implies B) & \iff (P \land A) \lor (\neg P \land B)
 \end{align*}
-
 můžeme původní výraz zjednodušit následovně:
 
 \begin{align*}
