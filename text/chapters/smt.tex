@@ -1,18 +1,53 @@
 \chapter{SMT}
 \label{ch:smt}
 
-Satisfiability Modulo Theories (SMT) je rozšířením SAT (Satisfiability) problému.
-SMT rozšiřuje SAT o takzvané teorie jako například celočíselná aritmetika, reálná čísla, bitové vektory a další.
-Jméno je odvozeno od toho, že splnitelnost se zkoumá v rámci (modulo) dané teorie.
-SMT se používá v různých oblastech formální verifikace softwaru a automatizovaného dokazování~\cite{SMT}.
+Satisfiability Modulo Theories (SMT) představuje rozšíření klasického problému splnitelnosti booleovských formulí (SAT).
+Podstatou SMT je obohacení výrokové logiky o specializované teorie,
+mezi něž patří celočíselná aritmetika, aritmetika reálných čísel, teorie bitových vektorů a další.
+Označení \uv{modulo theories} vyjadřuje, že splnitelnost se posuzuje vzhledem (modulo) k dané teorii.
+SMT nachází uplatnění především v oblasti formální verifikace softwaru a v automatizovaném dokazování~\cite{SMT}.
 
-SMT řešiče integrují hlavní algoritmus pro řešení SAT problémů a poté knihovnu porporovaných teorií.
-Kontrétně SMT řešič Z3, jehož architektura je znázorněna na obrázku~\ref{fig:z3-block-diagram},
-používá DPLL(T) algoritmus pro SAT\@.
+Jedny z nejvíce používaných SMT řešičů jsou Alt-Ergo, CVC a Z3.
+Tyto řešiče jsou open-source a integrované do obou nástrojů Frama\mbox{-}C i~Stainless.
+Přestože mají stejný cíl, liší se v implementaci a algoritmech, které používají.
+Každý SMT řešič lze používat individuálně,
+ale výhodné je kombinovat několik SMT řešičů najednou, porovnat výsledky a využít silné stránky každého z nich.
+Některé úlohy mohou být pro jeden SMT řešič snadno vyřešitelné,
+ale pro jiný mohou být složité nebo dokonce neřešitelné,
+protože pro daný typ úlohy není řešič naprogramovaný.
+Tabulka~\ref{tab:smt-resice} zobrazuje informace o jednotlivých SMT řešičích.
+Sloupec programovací jazyk obsahuje jazyk, ve kterém je daný SMT řešič napsaný.
+Většina SMT řešičů ale obsahuje API (Application Programming Interface),
+pomocí kterého je možné používat daný SMT řešič i v jiných programovacích jazycích.
+Všechny SMT řešiče také podporují vstup ve standardním formátu SMT-LIB,
+který bude představen v následující kapitole~\ref{sec:smt-lib}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textbf{Název} & \textbf{Rok vydání}  & \textbf{Programovací jazyk} \\
+        \hline
+        Alt-Ergo       & 2006                 & OCaml                       \\
+        CVC4           & 2012                 & C++                         \\
+        CVC5           & 2021                 & C++                         \\
+        Z3             & 2007                 & C++                         \\
+        \hline
+    \end{tabular}
+    \caption{Základní informace o SMT řešičích}
+    \label{tab:smt-resice}
+\end{table}
+
+Řešiče SMT zpravidla kombinují hlavní algoritmus pro řešení SAT společně
+s~knihovnou podporovaných teorií.
+Konkrétně řešič Z3, jehož architektura je znázorněna na obrázku~\ref{fig:z3-block-diagram}, využívá algoritmus DPLL(T)~\cite{Z3Intro},
+který bude představen v následující části.
+Stejný princip algoritmu DPLL(T) využívají i řešiče CVC4~\cite{cvc4_website} a CVC5~\cite{cvc5_website}.
+Alt-Ergo používá algoritmus CC(X) (Congruence Closure parametrized by a theory X)~\cite{AltErgo}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.85\linewidth]{images/smt-structure}
+    \includegraphics[width=\linewidth]{images/smt-structure}
     \caption{
         Blokový diagram SMT řešiče Z3. \\
         Převzato z článku Z3: An Eﬃcient SMT Solver~\cite{Z3}.
@@ -28,7 +63,7 @@ a rozhodování o ohodnocení proměnných v případě složitějších klauzul
 
 Rozšířený algoritmus DPLL(T) zahrnuje teorii T, podporovanou SMT řešičem.
 Tento algoritmus se skládá ze dvou částí.
-První část je algoritmus DPLL pro SAT, který se stará o splnitelnost booleovských proměnných.
+První část je algoritmus DPLL pro SAT, který se stará o generování kandidátních ohodnocení proměnných.
 SMT řešič kóduje vlastnosti z teorie T do booleovských proměnných a klauzulí.
 Druhá část je SMT řešič dané teorie, který dostává kandidátní ohodnocení proměnných od SAT řešiče a kontroluje logickou konzistenci
 v rámci dané teorie.
@@ -37,15 +72,84 @@ tak SMT řešič informuje SAT řešič o dané neslužitelnosti pomocí konflik
 Tato klauzule je poté přidána do původní formule a DPLL algoritmus pokračuje v hledání dalšího ohodnocení proměnných
 v rozšířené formuli~\cite{DPLLT}.
 
+Následující příklad demonstruje, jakým způsobem SMT řešiče fungují.
+Teorie pro tento příklad je lineární celočíselná aritmetika (LIA, Linear Integer Arithmetic).
+Vstupní formule pro SMT řešič popisuje tento problém:
 
+\begin{equation*}
+    (x \geq 0) \land (x \geq 1 \lor x \leq -1)
+\end{equation*}
 
+Tento vstup je nejdříve zakódován do booleovských proměnných a klauzulí.
+Konkrétně u tohoto příkladu si SMT řešič zapamatuje mapování
+
+\begin{align*}
+    A &= \{ x \geq 0 \} \\
+    B &= \{ x \geq 1 \} \\
+    C &= \{ x \leq -1 \}
+\end{align*}
+a vygeneruje formuli pro SAT řešič
+
+\begin{equation*}
+    A \land (B \lor C)
+\end{equation*}
+
+Tato formule je poté předána SAT řešiči, který se pokusí najít ohodnocení proměnných.
+Pomocí jednotkové propagace SAT řešič zjistí, že $A$ musí být pravdivé.
+V druhé klauzuli $B \lor C$ se SAT řešič náhodně rozhodne a nastaví $C$ na pravdivé ohodnocení.
+Tímto způsobem SAT řešič zjistí, že ohodnocení
+
+\begin{align*}
+    A &= \texttt{true} \\
+    C &= \texttt{true}
+\end{align*}
+splňuje danou formuli a přepošle toto kandidátní ohodnocení SMT řešiči.
+
+Pro SMT toto ohodnocení znamená, že musí platit $x \geq 0$ a zároveň $x \leq -1$.
+Toto ohodnocení je v rámci teorie LIA neslučitelné, protože $x$ nemůže být zároveň větší než 0 a menší než -1.
+SMT řešič tedy informuje SAT řešič o této neslučitelnosti pomocí konfliktní klauzule
+
+\begin{equation*}
+    \neg (A \land C) = \neg A \lor \neg C
+\end{equation*}
+a celá formule pro SAT řešič se tedy změní na
+
+\begin{equation*}
+    A \land (B \lor C) \land (\neg A \lor \neg C)
+\end{equation*}
+
+Rekurzivním prohledáváním SAT řešič nyní nastaví ohodnocení $B$ na pravdivé,
+jelikož by jinak nebylo možné splnit klauzuli $B \lor C$.
+Zároveň nastaví $C$ na nepravdivé,
+protože je stále $A$ pravdivé a poslední klauzule je splnitelná
+pouze pokud je $C$ nastaveno na nepravdu.
+A tedy nové kandidátní ohodnocení
+
+\begin{align*}
+    A &= \texttt{true} \\
+    B &= \texttt{true} \\
+    C &= \texttt{false}
+\end{align*}
+je odesláno pro kontrolu SMT řešiči.
+
+SMT řešic kontroluje pouze pravidivě ohodnocené proměnné $A$ a $B$.
+Kombinace těchto proměnných reprezentuje podmínku $x \geq 0$ a $x \geq 1$,
+což je v rámci teorie LIA slučitelné.
+Jelikož SAT řešič našel ohodnocení proměnných, které splňuje celou formuli
+a SMT řešič potvrdil, že toto ohodnocení je slučitelné v rámci dané teorie,
+tak lze prohlásit vstupní formuli za splnitelnou v rámci dané teorie.
 
 \section{Standard SMT-LIB}
 \label{sec:smt-lib}
 
 SMT-LIB je standardizovaný jazyk pro SMT, který definuje syntaxi a sémantiku pro zápis SMT problémů.
 Tento standard byl vyvinut pro usnadnění výzkumu, vývoje a porovnávání různých SMT řešičů.
-Ukázka~\ref{lst:smt-lib-example} ukazuje příklad SMT-LIB kódu pro booleovskou formuli
+
+Od roku 2005 se pravidelně pořádá soutěž SMT-COMP (SMT Competition),
+ve které se porovnávají různé SMT řešiče na základě jejich výkonu na různých typech problémů.
+Problémy jsou definovány ve formátu SMT-LIB~\cite{SMTCOMP}.
+
+Ukázka~\ref{lst:smt-lib-example} zobrazuje příklad SMT-LIB kódu pro booleovskou formuli
 
 \begin{equation*}
     p \land (p \lor \neg q)
@@ -72,7 +176,7 @@ Pomocí volání funkce \texttt{check-sat} lze zjistit, zdali existuje řešení
 Pokud ano, SMT-LIB vrátí \texttt{sat}, jinak vrátí \texttt{unsat}.
 Pokud je výsledek \texttt{sat}, lze pomocí funkce \texttt{get-model} získat konkrétní hodnoty proměnných, které splňují danou formuli.
 Pro tuto formuli byl nalezen model s ohodnocením $p = \texttt{true}$ a $q = \texttt{false}$.
-Zvolená logika je \texttt{QF\_UF} (Quantifier-Free Uninterpreted Functions),
+Zvolená teorie je \texttt{QF\_UF} (Quantifier-Free Uninterpreted Functions),
 což znamená, že se jedná o logiku bez kvantifikátorů nad neinterpretovanými funkcemi.
 Neinterpretované funkce jsou funkce, které nemají žádnou konkrétní interpretaci a jejich význam je dán pouze jejich syntaktickým zápisem.
 Konstanty reprezentující proměnné jsou deklarovány pomocí funkce \texttt{declare-const},
@@ -83,7 +187,7 @@ Konkrétně se jedná o příklad se soustavou dvou rovnic o dvou neznámých.
 
 \begin{align*}
     x + y &= 5 \\
-    2x − y &= 4
+    2x - y &= 4
 \end{align*}
 kde $x$ a $y$ jsou celočíselné proměnné.
 
@@ -143,30 +247,5 @@ by vypadalo stejně, jako v následujícím příkladu~\ref{lst:smt-lib-example-
     \label{lst:smt-lib-example-sqrt}
 \end{listing}
 
-Tímto postupem nám SMT řešič postupně oznám dvakrát výsledek \texttt{sat} s modelem pro proměnnou $x$ s hodnotou $2$ a $-2$.
-Nakonec oznámi výsledek \texttt{unsat}, což znamená, že neexistuje další řešení a program by měl skončit.
-
-
-% https://smt-lib.org/language.shtml
-
-%\section{Standard SyGuS}
-%% https://sygus-org.github.io/language/
-
-\section{SMT řešiče}
-\label{sec:smt-resice}
-
-SMT řešiče jsou nástroje pro automatické dokazování splnitelnosti SMT formulí.
-Každá řešič podporuje různé teorie, ale většina moderních řešičů podporuje stejný vstupní formát SMT-LIB verze~2.
-
-\subsection{Eager přístup}
-
-\subsection{Lazy přístup}
-
-\subsection{Alt-Ergo}
-\label{subsec:alt-ergo}
-
-\subsection{CVC}
-\label{subsec:cvc}
-
-\subsection{Z3}
-\label{subsec:z3}
+Tímto postupem nám SMT řešič postupně oznámí dvakrát výsledek \texttt{sat} s modelem pro proměnnou $x$ s hodnotami $2$ a $-2$.
+Nakonec oznámí výsledek \texttt{unsat}, což znamená, že neexistuje další řešení a program by měl skončit.

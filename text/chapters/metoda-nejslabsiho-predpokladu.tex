@@ -208,7 +208,9 @@ Funkci $\operatorname{wlp}$ lze definovat následovně:
 kde $y_1, \ldots, y_n$ reprezentují stavy proměnných $x_1, \ldots, x_n$, které se v cyklu mohou měnit~\cite{arusoaie2024wp}.
 Operace $[x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n]$ reprezentuje substituci proměnných $x_1, \ldots, x_n$ hodnotami $y_1, \ldots, y_n$.
 První část konjunkce zajišťuje, že invariant $I$ je pravdivý před vstupem do cyklu,
-druhá část zajištuje
+druhá část zajištuje pravdivost invariantu $I$ na konci každé iterace cyklu
+a třetí část zajišťuje, že pokud je invariant platný a cyklus skončil (podmínka $B$ je nepravdivá),
+tak musí být pravdivý i následek $R$.
 
 Například pro cyklus
 
@@ -221,11 +223,11 @@ s následkem $R = i = n$ a invariantem $I = i \leq n$ dostáváme následující
     \operatorname{wlp}&(\textbf{while} \ i < n \ \textbf{do} \ i \coloneqq i + 1, i = n) = \\
         & = (i \leq n) \land \forall y_1 \left( (i \leq n) \land (i < n) \implies \operatorname{wlp}(i \coloneqq i + 1, i \leq n) \right)[i \leftarrow y_1] \\
         & \ \ \ \ \land \forall y_1 \left( (i \leq n) \land \neg (i < n) \implies i = n \right)[i \leftarrow y_1] \\
-        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies \operatorname{wlp}(i \coloneqq i + 1, i \leq n) \right) \\
+        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies \operatorname{wlp}(y_1 \coloneqq y_1 + 1, y_1 \leq n) \right) \\
         & \ \ \ \ \land \forall y_1 \left( (y_1 \leq n) \land \neg (y_1 < n) \implies y_1 = n \right) \\
-        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies (y_1 + 1 \leq n) \right) \\
+        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies y_1 + 1 \leq n \right) \\
         & \ \ \ \ \land \forall y_1 \left( (y_1 \leq n) \land (y_1 \geq n) \implies y_1 = n \right) \\
-        & = (i \leq n) \land \forall y_1 \left( y_1 < n \implies (y_1 + 1 \leq n) \right) \\
+        & = (i \leq n) \land \forall y_1 \left( y_1 < n \implies y_1 + 1 \leq n \right) \\
         & \ \ \ \ \land \forall y_1 \left( y_1 = n \implies y_1 = n \right) \\
         & = (i \leq n) \land \top \land \top \\
         & = i \leq n \\
@@ -249,6 +251,10 @@ Zavedení variantu $V$ a jeho aktuální hodnoty $v$ do výpočtu nejslabšího 
 \end{align*}
 povšimněme si, že již nepoužíváme funkci $\operatorname{wlp}$, ale místo ní používáme funkci $\operatorname{wp}$,
 protože již provádíme výpočet nejslabšího předpokladu pro cyklus pomocí úplné korektnosti.
+Na začátku je hodnota variantu $V$ uložena do proměnné $v$.
+Po provedení těla cyklu jsou zkontrolovány dvě podmínky.
+První podmínka zajišťuje, že nová hodnota variantu po provedení iterace je stále kladná ($V \geq 0$)
+a druhá podmínka zajišťuje, že hodnota variantu se po provedení iterace snížila ($V < v$, kde $v$ je hodnota variantu před provedením iterace).
 
 % TODO: navazat treba na Frama-c, ze pokud dokazeme takovyto priklad, tak vsechny
 % TODO: i nelogicke priklady po tom jsou podminene pravdive, nehlede na to, ze
