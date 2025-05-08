@@ -173,7 +173,7 @@ můžeme původní výraz zjednodušit následovně:
 \end{align*}
 
 Nejslabší předpoklad pro původní příkaz,
-který zaručuje, že následek $y > 0$ bude pravdivý, je tedy $x > -3$.
+který zaručuje, že následek $y~>~0$ bude pravdivý, je tedy $x > -3$.
 Poslední zjednodušení je možné provést, protože $x > 0$ je silnější předpoklad než $x > -3$,
 platí že $x > 0 \implies x > -3$.
 
@@ -189,7 +189,71 @@ Pravidlo cyklu popisuje výpočet nejslabšího předpokladu pro cyklus ve tvaru
     \textbf{while} \ B \ \textbf{do} \ Q
 \end{equation*}
 
-TODO
+Provést výpočet nejslabšího předpokladu pro cyklus je složitější než u ostatních příkazů,
+jelikož není definované kolik iterací cyklus provede a nebo jestli vůbec cyklus někdy skončí.
+Výpočet nejslabšího předpokladu pro cyklus lze rozdělit do dvou částí.
+První část se zabývá výpočtem nejslabšího předpokladu bez ohledu na konečnost cyklu
+a nazývá se částečná korektnost cyklu (partial correctness).
+Druhá část se zabývá dokazováním konečnosti cyklu.
+Pokud jsou o cyklu dokázány obě dvě části,
+můžeme říci, že cyklus je plně korektní (total correctness)~\cite{arusoaie2024wp}.
+
+Výpočet nejslabšího předpokladu při částečné korektnosti cyklu
+definujeme pomocí funkce $\operatorname{wlp}$ (weakest liberal precondition).
+Stejně jako u Hoareovy logiky je pro cykly nutné definovat invariant $I$.
+Invariant je logický výraz, který musí být pravdivý před vstupem do cyklu (invariant establishment),
+po ukončení každé iterace cyklu (invariant preservation) a tedy i po ukončení celého cyklu.
+Funkci $\operatorname{wlp}$ lze definovat následovně:
+
+\begin{align*}
+    \operatorname{wlp}(\textbf{while} & \ B \ \textbf{do} \ Q, R) = \\
+        & = I \land \forall y_1,\ldots,y_n \left( I \land B \implies \operatorname{wlp}(Q, I) \right)[x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n] \\
+        & \ \ \ \  \land \forall y_1,\ldots,y_n \left( I \land \neg B \implies R \right)[x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n]
+\end{align*}
+kde $y_1, \ldots, y_n$ reprezentují stavy proměnných $x_1, \ldots, x_n$, které se v cyklu mohou měnit~\cite{arusoaie2024wp}.
+Operace $[x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n]$ reprezentuje substituci proměnných $x_1, \ldots, x_n$ hodnotami $y_1, \ldots, y_n$.
+První část konjunkce zajišťuje, že invariant $I$ je pravdivý před vstupem do cyklu,
+druhá část zajištuje
+
+Například pro cyklus
+
+\begin{equation*}
+    \textbf{while} \ i < n \ \textbf{do} \ i \coloneqq i + 1
+\end{equation*}
+s následkem $R = i = n$ a invariantem $I = i \leq n$ dostáváme následující postup pro výpočet nejslabšího předpokladu:
+
+\begin{align*}
+    \operatorname{wlp}&(\textbf{while} \ i < n \ \textbf{do} \ i \coloneqq i + 1, i = n) = \\
+        & = (i \leq n) \land \forall y_1 \left( (i \leq n) \land (i < n) \implies \operatorname{wlp}(i \coloneqq i + 1, i \leq n) \right)[i \leftarrow y_1] \\
+        & \ \ \ \ \land \forall y_1 \left( (i \leq n) \land \neg (i < n) \implies i = n \right)[i \leftarrow y_1] \\
+        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies \operatorname{wlp}(i \coloneqq i + 1, i \leq n) \right) \\
+        & \ \ \ \ \land \forall y_1 \left( (y_1 \leq n) \land \neg (y_1 < n) \implies y_1 = n \right) \\
+        & = (i \leq n) \land \forall y_1 \left( (y_1 \leq n) \land (y_1 < n) \implies (y_1 + 1 \leq n) \right) \\
+        & \ \ \ \ \land \forall y_1 \left( (y_1 \leq n) \land (y_1 \geq n) \implies y_1 = n \right) \\
+        & = (i \leq n) \land \forall y_1 \left( y_1 < n \implies (y_1 + 1 \leq n) \right) \\
+        & \ \ \ \ \land \forall y_1 \left( y_1 = n \implies y_1 = n \right) \\
+        & = (i \leq n) \land \top \land \top \\
+        & = i \leq n \\
+\end{align*}
+a tedy nejslabší předpoklad, který zaručuje, že následek $i = n$ spuštění cyklu bude pravdivý, je $i \leq n$.
+
+Pokud bychom chtěli dokázat, že cyklus skončí, musíme cyklu přidat takzvaný variant.
+Variant je celočíselný výraz, který se při každé iteraci cyklu snižuje.
+Variant musí nabývat pouze kladných hodnot v průběhu cyklu.
+Po ukončení cyklu může být variant i záporný.
+Důležité na variantu je, že sleduje průběh iterací cyklu a pokud
+je dokázáno, že se s každou iterací snižuje, můžeme říci, že cyklus je konečný.
+
+Zavedení variantu $V$ a jeho aktuální hodnoty $v$ do výpočtu nejslabšího předpokladu by vypadalo následovně:
+
+\begin{align*}
+    \operatorname{wp}&(\textbf{while} \ B \ \textbf{do} \ Q, R) = \\
+        & = I \land \forall y_1,\ldots,y_n,v \left( I \land B \land v = V \implies \operatorname{wp}(Q, I \land V \geq 0 \land V < v) \right) \\
+        & \ \ \ \ [x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n] \\
+        & \ \ \ \ \land \forall y_1,\ldots,y_n \left( I \land \neg B \implies R \right)[x_1 \leftarrow y_1, \ldots, x_n \leftarrow y_n] \\
+\end{align*}
+povšimněme si, že již nepoužíváme funkci $\operatorname{wlp}$, ale místo ní používáme funkci $\operatorname{wp}$,
+protože již provádíme výpočet nejslabšího předpokladu pro cyklus pomocí úplné korektnosti.
 
 % TODO: navazat treba na Frama-c, ze pokud dokazeme takovyto priklad, tak vsechny
 % TODO: i nelogicke priklady po tom jsou podminene pravdive, nehlede na to, ze

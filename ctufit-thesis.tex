@@ -53,10 +53,18 @@
 \ctufityear{2025} % replace with the year of your defence
 \ctufitdeclarationplace{Praze} % replace with the place where you sign the declaration
 \ctufitdeclarationdate{\today} % replace with the date of signature of the declaration
-\ctufitabstractCZE{Fill in the abstract of this thesis in Czech. Lorem ipsum dolor sit amet. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue.}
-\ctufitabstractENG{Fill in the abstract of this thesis in English. Lorem ipsum dolor sit amet. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue.}
-\ctufitkeywordsCZE{enter, comma, separated, list, of, keywords, in, CZECH}
-\ctufitkeywordsENG{enter, comma, separated, list, of, keywords, in, ENGLISH}
+\ctufitabstractCZE{
+Formální verifikace se zabývá dokazováním správnosti programů na základě matematických metod a logiky. Ověřené programy díky tomu poskytují záruku, že pracují v souladu s předem definovanou specifikací za všech okolností, a výrazně tak snižují riziko kritických chyb, které by tradiční testování mohlo přehlédnout.
+
+Tato diplomová práce se věnuje teoretickým aspektům formální verifikace a studiu dostupných nástrojů pro automatizované dokazování (SMT řešičů), jako jsou Alt-Ergo, CVC4/5 a Z3, a jejich integraci v prostředích Frama-C (pro jazyk C) a Stainless (pro jazyk Scala). Zároveň porovnává přístupy obou nástrojů na praktickém příkladu formálně verifikované implementace datové struktury AVL stromu, přičemž zvláštní důraz klade na rozbor rozdílů v dokazování pomocí těchto dvou frameworků.
+}
+\ctufitabstractENG{
+Formal verification focuses on proving program correctness using mathematical methods and logic. Verified programs therefore guarantee that they behave according to a predefined specification under all circumstances, markedly reducing the risk of critical errors that traditional testing could overlook.
+
+This thesis explores the theoretical aspects of formal verification and investigates the available automated-proving tools (SMT solvers) such as Alt-Ergo, CVC4/5, and Z3, along with their integration within the Frama-C environment (for the C language) and Stainless (for Scala). It also compares the approaches of these two toolchains through a practical case study: a formally verified implementation of the AVL-tree data structure, with special emphasis on analysing the differences in proof development across the two frameworks.
+}
+\ctufitkeywordsCZE{formalní verifikace, SMT, Frama-C, Stainless}
+\ctufitkeywordsENG{formal verification, SMT, Frama-C, Stainless}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END FILL IN
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,7 +249,6 @@ W3C & World Wide Web Consortium
 \include{text/chapters/uvod}
 \setcounter{page}{1}
 
-\include{text/chapters/sat}
 \include{text/chapters/smt}
 
 \include{text/chapters/hoareova-logika}

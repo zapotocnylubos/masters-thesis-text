@@ -105,12 +105,25 @@ Příkladem může být následující ukázka~\ref{lst:stainless-case-class},
 kde je definována abstraktní třída \texttt{AVLTree} a dvě podtřídy \texttt{Node} a \texttt{Leaf},
 které budou detailně popsány v kapitole~\ref{sec:stainless-avl}.
 Přidáním příznaku \texttt{sealed} před definici třídy
-je možné zajistit, že všechny podtřídy budou definované v rámci stejného souboru.
+je možné zajistit, že všechny podtřídy budou definované v rámci jednoho souboru.
+
+\begin{listing}[H]
+  \begin{minted}{scala}
+  sealed abstract class AVLTree { ... }
+
+  case class Leaf() extends AVLTree
+  case class Node(...) extends AVLTree { ... }
+  \end{minted}
+  \caption{Příklad použití \texttt{case class}}
+  \label{lst:stainless-case-class}
+\end{listing}
 
 Kombinací pattern matchingu a \texttt{case class} je možné elegantně zpracovávat různé varianty datových typů.
 Například pomocí kódu z ukázky~\ref{lst:stainless-pattern-matching-case-class}
 je možné definovat funkci \texttt{content},
-která pomocí pattern matchingu vypočítá množinu prvků obsažených v AVL stromu.
+která pomocí generuje množinu prvků obsažených v AVL stromu.
+Pattern matching se složitějšími podmínkami je ukázán v následující kapitole~\ref{sec:stainless-avl},
+ve které je popsána implementace celé datové struktury AVL stromu.
 
 \begin{listing}[H]
   \begin{minted}{scala}
@@ -127,7 +140,7 @@ která pomocí pattern matchingu vypočítá množinu prvků obsažených v AVL 
 
 Pattern matchingu bez Stainless může v některých případech vyvolat
 varování o neúplnosti pattern matchingu, pokud \texttt{match} nezachycuje všechny \texttt{case class}
-a neobsahuje fallback variantu pomocí konstrukce \texttt{case \_},
+a neobsahuje fallback variantu pomocí konstrukce \texttt{case \_}.
 Toto varování Stainless vylepšuje a přidává kontext o spouštění funkce.
 Pokud tedy v aktuálním kontextu některé případy nemohou nikdy nastat,
 Stainless potlačí varování o neúplnosti pattern matchingu.
@@ -285,7 +298,7 @@ Tato kapitola postupně popíše jednotlivé funkce a popíše důkazy jejich ko
 
 Na začátku kódu je jednoduchá funkce \texttt{int\_max}, která vrací větší z dvou čísel.
 Jedná se o pomocnou funkci na celých číslech, která se používá v dalších funkcích.
-Stainless nepodporuje funkci \texttt{x max y} ze standardní knihovny,
+Stainless nepodporuje infixovou funkci ve tvaru \texttt{x max y} ze standardní knihovny,
 proto je potřeba použít vlastní implementaci.
 
 Ukázka~\ref{lst:stainless-avl-helper} zobrazuje pomocné funkce pro AVL strom.
