@@ -1540,8 +1540,8 @@ musí být také dosažitelný i z uzlu \texttt{root} (přes prostředníka \tex
         case next_reachable:
           \forall List *root, *node;
             \valid(root)
-            && reachable(root->next, node) ==>
-              reachable(root, node);
+            && reachable(root->next, node)
+                ==> reachable(root, node);
       }
     */
     \end{minted}
@@ -1583,8 +1583,6 @@ což zjednodušuje důkazní postupy pro některé SMT řešiče.
 Následujících kapitoly budou pomocí této logické funkce
 omezovat vstupní předpoklady, například,
 že délka seznamu nebude větší než definovaná mez.
-
-% TODO: odstranit vsude zbytecne {L}?
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1697,7 +1695,11 @@ Axiomatický přístup lze tedy považovat za potenciálně nebezpečný,
 jelikož se spoléhá na korektní a plnohodnotnou definici axiomů,
 jejichž platnost musí být dokázána mimo Frama\mbox{-}C a tedy i mimo SMT řešiče.
 
-TODO: plně axiomatický je špatný, ale částečný by mohl být vhodný na věci, které ještě nejsou implementované nebo težce řešitelné
+Axiomatický přístup jako částečné řešení pomocí anotace \texttt{admit} například na vlastnosti,
+které ještě nejsou dostatečně dobře implementované v Frama\mbox{-}C\@.
+Nebo je jejich korektnost dokazatelná pouze na malých vstupech,
+ale na velkých vstupech již SMT řešiče nedokáží prokázat jejich korektnost
+z časových nebo paměťových důvodů.
 
 \subsection{Oddělená paměť}
 \label{subsec:oddelena-pamet}
@@ -1969,8 +1971,8 @@ pro velikost seznamu do 4 prvků (\texttt{<= (L\_length a1) 4}).
     \label{list:linked-list-separated-generated-proof}
 \end{listing}
 
-Proměnná \texttt{t} (původně \texttt{Init\_x}) je paměťová mapa,
-je mapující struktura, která podle adresy proměnné určuje, zdali je daná proměnná inicializovaná nebo ne.
+Proměnná \texttt{t} (původně \texttt{Init\_x}) reprezentuje paměťovovou mapu,
+která podle adresy proměnné určuje, zdali byla proměnná inicializovaná nebo ne.
 Proměnná \texttt{t1} (původně \texttt{Malloc\_x}).
 Proměnná \texttt{t2} je paměťová mapa z typového paměťového modelu nazývaná \texttt{Mptr\_x}.
 Proměnné \texttt{a1} reprezentuje adresu prvku \texttt{head} a \texttt{a2} adresu prvku \texttt{new\_node}.
@@ -1981,10 +1983,11 @@ Proměnné \texttt{a1} reprezentuje adresu prvku \texttt{head} a \texttt{a2} adr
 
 Zajímavostí na tomto důkazu je,
 že celá formule je negovaná (\texttt{(not (forall ...))}),
-což je způsobeno tím, že SMT řešiče jsou navrženy tak,
-aby dokazovaly splnitelnost a né platnost.
-Důvod této konstrukce je více popsán v kapitole~\ref{ch:smt}.
-
+což je způsobeno tím, že SMT řešiče jsou efektivní při dokazování splnitelnosti, né platnosti.
+Hledáním splnitelnosti negované formule je tedy stejné
+jako nalezení protipříkladu pro původní formuli.
+Pokud SMT řešič najde protipříklad, pro který platí negace původní formule,
+znamená to, že původní formule nemůže platit pro všechny (forall) vstupy.
 
 Oddělelnost paměti by bylo v tomto případě možné definovat
 i pomocí samotného predikátu \texttt{reachable},
@@ -2044,7 +2047,76 @@ jak demonstruje tabulka~\ref{tab:prepend-smt-success-reachable}.
     \label{tab:prepend-smt-success-reachable}
 \end{table}
 
-TODO závěr k separační metodě
+Metoda oddělené paměti je sama o sobě velmi zajímavá,
+ale v případě nekompletní specifikace Frama\mbox{-}C pro dynamickou alokaci
+vznikají problémy při tvorbě důkazů, které používají funkce pro alokaci paměti
+jako například \texttt{malloc}.
+Weakest precondition plugin pro Frama\mbox{-}C totiž nerozumí následkům této alokační funkce.
+Konkrétně by pro některé důkazy bylo vhodné zajistit,
+že nově alokovaný blok paměti bude oddělený od všech ostatních bloků paměti,
+což teď není zajištěno.
+
+Zde vzniká unikátní možnost aplikovat částečný axiomaitcký přístup
+a některé tyto vlastnosti alokační funkce přidat pomocí malého axiomu ve formě anotace \texttt{admit}.
+Výpis~\ref{list:linked-list-prepend-admit} zobrazuje příklad takového postupu
+při dokončování důkazu pro přidání prvku do spojového seznamu.
+Tento důkaz aplikuje princip oddělené paměti a zároveň
+používá malé axiomy na místech,
+kde není možné prokázat vlastnosti predikátů pomocí automatických důkazních metod.
+Konkrétně přidává axiom o platnosti ukazatele \texttt{new\_node}, za předpokladu, že alokační funkce \texttt{malloc} nevrátila \texttt{NULL}.
+Přidává také axiom o oddělenosti paměti mezi novým uzlem (čerstvě alokovaným blokem paměti)
+a všemi ostatními uzly v seznamu.
+Poslední axiom popisuje platnost predikátu \texttt{finite} pro všechny již uložené uzly v seznamu,
+které jsou paměťové oddělené od nového uzlu.
+Platnot predikátu \texttt{finite} jinak nelze potvrdit pro větší seznamy,
+jelikož by SMT řešiče musely procházet velký vstupní prostor a dokazovat oddělenost
+pomocí univerzálního kvantifikátoru, podobně jako v předchozím příkladu~\ref{tab:prepend-smt-success}.
+Těmito axiomy je zajištěna platnost nového uzlu a zároveň je zaručena neporušenost konečnosti seznamu,
+pokud nový uzel připoojíme na začátek seznamu.
+Pomocí těchto axiomů je již pro SMT řešiče jednoduché prokázat,
+že seznam začínající nově vytvořeným uzlem je také konečný.
+
+\begin{listing}[H]
+    \begin{minted}{C}
+    /*@
+      requires \valid(head);
+      requires finite(head);
+
+      ensures finite(\result);
+    */
+    List *prepend(List *head, int value) {
+      List *new_node = (List *) malloc(sizeof(List));
+      if (!new_node) {
+        return NULL; // Handle memory allocation failure
+      }
+      //@ admit \valid(new_node);
+      /*@
+        admit \forall List *node;
+          reachable(head, node)
+            ==> \separated(new_node, node);
+      */
+
+      new_node->value = value;
+      L0:
+      new_node->next = head;
+      /*@
+        admit \forall List *node;
+          reachable{L0}(head, node)
+          && finite{L0}(node)
+          && \separated(new_node, node)
+            ==> finite(node);
+      */
+
+      return new_node;
+    }
+    \end{minted}
+    \caption{Dokončení důkazu pomocí pomocí kombinace axiomatického přístupu a oddělené paměti}
+    \label{list:linked-list-prepend-admit}
+\end{listing}
+
+Podobný přístup s kombinací axiomatického přístupu a oddělené paměti
+by bylo možné aplikovat i na jiné dynamické rekurzivní datové struktury,
+jako například binární vyhledávací stromy, AVL stromy nebo dokonce i grafy.
 
 \subsection{Serializační přístup}
 \label{subsec:serializacni-pristup}
@@ -2121,12 +2193,10 @@ V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsa
 by serializované pole reprezentující tento strom mělo velikost $2^n~-~1$ s~$2^n~-~n$ neplatnými uzly.
 Další nevýhoda serializace stromových struktu spočívá v složitosi
 tvořených predikátů a vlastností stromu.
-Serializací ztrácíme lokalitu problému a musíme lokálnost převést na práci s indexy v poli.
-
-
-TODO: přidat více myšlenek o ztrátě lokálnosti
-
-TODO: přídat příklad serializace binárního stromu do pole? (ne AVL)
+Serializací přicházíme o lokální pohled na problém a musíme jej nahradit prací s indexy v poli.
+Lokálností rozumíme situaci, kdy je strom reprezentován ukazateli ve kterém lze snadno dokazovat vlastnosti konkrétního uzlu, jeho potomků či rodiče.
+Převedením dynamické struktury do serializovaného pole zesložiťuje hledání vhodnýho invariant cyklu,
+který se stromem v této podobě správně pracuje.
 
 % TODO: pridat nedelitelnou mezeru tak, aby nebyly jedno-znaky na konci radku samy
 
