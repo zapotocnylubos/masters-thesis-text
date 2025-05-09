@@ -18,7 +18,7 @@ i v případě, kdy není k dispozici žádný externí SMT řešič~\cite{InoxS
 \label{sec:stainless-annotations}
 
 Stainless podporuje podobný styl anotování kódu jako Frama\mbox{-}C\@.
-Není ale potřeba používát speciální komentáře pro anotace,
+Není ale potřeba používat speciální komentáře pro anotace,
 protože je možné použít přímo jazyk Scala
 Všechny anotace jsou umístěny jako spustitelný Scala kód a nebo jako dekorátory před funkcemi.
 
@@ -121,7 +121,7 @@ je možné zajistit, že všechny podtřídy budou definované v rámci jednoho 
 Kombinací pattern matchingu a \texttt{case class} je možné elegantně zpracovávat různé varianty datových typů.
 Například pomocí kódu z ukázky~\ref{lst:stainless-pattern-matching-case-class}
 je možné definovat funkci \texttt{content},
-která pomocí generuje množinu prvků obsažených v AVL stromu.
+která generuje množinu prvků obsažených v AVL stromu.
 Pattern matching se složitějšími podmínkami je ukázán v následující kapitole~\ref{sec:stainless-avl},
 ve které je popsána implementace celé datové struktury AVL stromu.
 
@@ -154,9 +154,9 @@ Protipříklad je konkrétní vstupní hodnota nebo nastavení proměnných,
 které vedou k porušení kontraktu funkce.
 
 Následující ukázka~\ref{lst:stainless-incorrect-intmax} zobrazuje
-jednoduchou funkci \texttt{int\_max}, která vrací větší z dvou čísel.
+jednoduchou funkci \texttt{int\_max}, která vrací větší ze dvou čísel.
 Tato funkce je záměrně implementovana špatně,
-aby bylo možné ukázat generování protipříkladů.
+aby bylo možné demonstrovat generování protipříkladů.
 Definice kontraktu \texttt{ensuring} zajišťuje,
 že výsledek volání funkce bude hodnota větší nebo rovna oběma vstupním parametrům.
 Žádné vstupní podmínky (předpoklady) nejsou definované,
@@ -296,7 +296,7 @@ Nejedná se tedy o poslední platný uzel stromu, ale o zvláštní prvek, kter�
 
 Tato kapitola postupně popíše jednotlivé funkce a popíše důkazy jejich korektnosti.
 
-Na začátku kódu je jednoduchá funkce \texttt{int\_max}, která vrací větší z dvou čísel.
+Na začátku kódu je jednoduchá funkce \texttt{int\_max}, která vrací větší ze dvou čísel.
 Jedná se o pomocnou funkci na celých číslech, která se používá v dalších funkcích.
 Stainless nepodporuje infixovou funkci ve tvaru \texttt{x max y} ze standardní knihovny,
 proto je potřeba použít vlastní implementaci.

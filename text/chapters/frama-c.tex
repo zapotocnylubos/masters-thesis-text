@@ -1037,7 +1037,7 @@ Analýzu programu provedeme pomocí příkazu~\ref{list:typed-pointer-valid-exam
 
 Výstup analýzy~\ref{list:typed-pointer-valid-example-result} ukazuje,
 že typový paměťový model správně reprezentuje chování programu,
-tedy, že správně rozhoduje o platnosti (valid) dotazu na hodnotu proměnné $x$.
+tedy že správně rozhoduje o platnosti (valid) dotazu na hodnotu proměnné $x$.
 Zároveň zde vidíme popis lokálních proměnných ve tvaru \texttt{global(L\_<name>\_<vid>)},
 kde \texttt{<name>} je název proměnné a \texttt{<vid>} je unikátní identifikátor proměnné
 generovaný CIL překladačem z interní struktury \texttt{varinfo}~\cite{FCPluginDevSignoles2024}.
@@ -1074,7 +1074,7 @@ který by mohl v budoucnosti řešit problémy s paměťovými ukazateli, aliaso
 Tento model by měl reprezentovat paměť jako sekvenci bytů
 a jednotlivé adresy uložené v ukazatelích by následně byly mapovány do tohoto pole bez rozlišování typů.
 Kontrola práce s pamětí by pak probíhala na úrovni jednotlivých bytů.
-Tento model by také měl také přinést jednoduší definici oddělených bloků paměti o které se více dozvíme v kapitole~\ref{subsec:oddelena-pamet}.
+Tento model by měl také přinést jednoduší definici oddělených bloků paměti o které se více dozvíme v kapitole~\ref{subsec:oddelena-pamet}.
 
 Základní integrace je již hotová a i když v grafickém prostředí ještě není dostupný přepínač pro tento paměťový model,
 je možné jej použít pomocí příkazu~\ref{list:bytes-model}.
@@ -1230,7 +1230,7 @@ Paměťové bloky se zápornou základní adresou (\texttt{p.base < 0}) jsou rez
 Kladné základní adresy paměťových bloků (\texttt{p.base > 0}) jsou použity pro
 všechny ostatní alokované paměťové bloky.
 Dále definujeme jako platné ukazatele pouze ukazatele, které mají kladný offset (\texttt{p.offset >= 0}).
-Poslední pravidlo, který musí pro platný ukazatel platit je,
+Poslední pravidlo, které musí pro platný ukazatel platit je,
 že čtením \texttt{n} bytů z paměti od tohoto ukazatele stále zůstaneme v rámci stejného paměťového bloku,
 do které daný ukazatel ukazuje (\texttt{p.offset + n <= m[p.base]}),
 kde \texttt{m[p.base]} je délka bloku paměti do kterého daný ukazatel ukazuje.
@@ -1298,7 +1298,7 @@ ve výpisu~\ref{list:typed-pointer-valid-example-result}, kde pomocí
 ve které je alokována lokální proměnná $x$,
 do které se pomocí ukazatele $p$ zapisuje hodnota~1.
 
-Frama\mbox{-}C a ACSL mají pouze limitovanou podporu pro alokaci paměti pomocí standardní knihovny jazyka C.
+Frama\mbox{-}C a ACSL mají omezenou podporu pro alokaci paměti pomocí standardní knihovny jazyka C.
 Například použitím funkce pro alokaci paměti \texttt{malloc} nezískáme platný ukazatel pro čtení nebo zápis do paměti,
 jak demonstruje ukázka~\ref{list:malloc-invalid-pointer}.
 
@@ -1345,7 +1345,7 @@ Tento fundamentální problém zamezuje plnohodnotnému využití dynamické alo
 při důkazech správnosti programů pomocí Frama\mbox{-}C\@.
 
 Jednou z cest, jak tento problém obejít,
-je částečné aplikovat axiomatický přístupu k alokaci paměti.
+je částečně aplikovat axiomatický přístupu k alokaci paměti.
 V několika důkazech jsme již viděli použití funkce \texttt{assert},
 která vždy zasahuje do probíhajícího důkazu a na daném místě kontroluje platnost předané vlastnosti.
 Existují ještě přidružené funkce \texttt{check} a \texttt{admit},
@@ -1415,7 +1415,7 @@ pole a nebo struktury.
 
 Například implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu,
 jehož definice je zobrazená v ukázce~\ref{list:linked-list},
-pomocí volání funkce \texttt{malloc} z ukázky~\ref{list:prepend-malloc} je nevhodné.
+pomocí volání funkce \texttt{malloc} z ukázky~\ref{list:prepend-malloc} je nevhodná.
 Následující predikáty totiž budou požadovat platnost ukazatele \texttt{new\_node},
 což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \texttt{prepend} nebude úspěšný.
 
@@ -1464,7 +1464,7 @@ a zápisem do dané paměti platnost ukazatele nebude zpochybňena.
     \label{list:prepend}
 \end{listing}
 
-S tímto principem přichází ale několik problematických částí pro důkazy korektnosti programu.
+Tento princip však přináší několik problematických částí při dokazování korektnosti programu.
 Například situace, kdy přidávaný uzel (ukazatel na něj) je již obsažen v seznamu.
 Provedením funkce \texttt{prepend} na tomto uzlu
 by vytvořilo cyklickou strukturu spojového seznamu,
@@ -2151,7 +2151,7 @@ Indexace prvků v poli by tímto přístupem byla zachována,
 pouze důkazy používající tuto strukturu by musely při každém přístupu na prvek stromu
 zkontrolovat, zdali je prvek platný nebo ne.
 Na takto serializovaných stromech by bylo jednoduché provádět důkazy,
-jelikož všechny prvky v poli jsou oddělené, a tedy splňují podmínku oddělené paměti.
+jelikož všechny prvky v poli jsou odděleny, a tedy splňují podmínku oddělenosti paměti.
 Predikáty popisující vlastnosti stromu by musely ale obsahovat kontrolu,
 zdali je daný prvek v poli platný nebo ne.
 
