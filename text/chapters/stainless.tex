@@ -805,3 +805,21 @@ pouze s pravou rotací.
   \caption{Funkce pro opravu vyváženosti uzlů v AVL stromu}
   \label{lst:stainless-avl-balance}
 \end{listing}
+
+Kompletní analýza a ověření korektnosti AVL stromu pomocí Stainless
+obsahuje celkem 250 podmínek, které je potřeba splnit.
+Všechny podmínky lze ověřit pomocí SMT řešiče Z3, který je součástí distribuce Stainless.
+Výstup analýzy je zobrazen ve výpisu~\ref{lst:stainless-avl-success} a zobrazuje,
+že všechny podmínky byly úspěšně ověřeny za 113 sekund.
+
+\begin{listing}[H]
+  \begin{minted}{text}
+  total: 250
+     valid:   250 (38 from cache, 7 trivial)
+     invalid: 0
+     unknown: 0
+  time:  113,34
+  \end{minted}
+  \caption{Úspěšná analýza AVL stromu pomocí Stainless}
+  \label{lst:stainless-avl-success}
+\end{listing}
