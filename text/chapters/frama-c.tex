@@ -39,8 +39,6 @@ Na tento VNC server se lze připojit pomocí webového prohlížeče
 a lze tedy používat GUI například i na macOS nebo jiných operačních systémech
 bez nutnosti speciálního nastavení nebo instalace~\cite{FCDockerGUIMaroneze2021}.
 
-% TODO: převádí -> převede? jaký čas/rod? (spíš převádí)
-
 Frama\mbox{-}C před spuštěním analýzy převádí zdrojový kód do mezi-interpretace (intermediate representation)
 nazývané \texttt{CIL} (C Intermediate Language)~\cite{BlanchardACSL2024}.
 Frama\mbox{-}C používá vlastní verzi \texttt{CIL}, která je založena na původní verzi, kterou vytvořil George Necula~\cite{Necula2002CIL}.
@@ -146,25 +144,17 @@ zobrazuje podporované verze SMT řešičů v platformě Why3 společně s jejic
     \label{tab:why3-smt-verze}
 \end{table}
 
-% TODO: jsou ..použity.. -> používá?
-
 Frama\mbox{-}C definuje několik základních axiomů, lemmat, predikátů, funkcí a typů,
 které jsou použity v rámci generování WhyML kódu~\cite{FCGitWhy} a
 některé ukázky v následujících kapitolách budou pro úplnost doplněny o tyto definice jazyce WhyML\@.
 
-% TODO: je to v teto sekci?
-
 \subsection{Obecný a existenční kvantifikátor}
 \label{subsec:anotace-kvantifikatory}
-
-% TODO: uživatelům/programátorům?
 
 Obecný kvantifikátor \texttt{\textbackslash forall} a existenční kvantifikátor \texttt{\textbackslash exists}
 umožňují uživatelům vyjadřovat vlastnosti proměnných a paměťových oblastí.
 Jejich použití nejčastěji nalezneme v kontraktech funkcí,
 kde kvantifikátory pomáhají vyjádřit vlastnosti o parametrech funkcí nebo návratových hodnotách.
-
-% TODO: říká -> specifikuje...?
 
 Příklad~\ref{list:acsl-forall} zobrazuje použití obecného kvantifikátoru,
 který se používá k vyjádření vlastnosti, která musí být splněna pro všechny hodnoty.
@@ -195,8 +185,6 @@ Platnost ukazatelů popisuje kapitola~\ref{sec:ukazatele-a-pametove-bloky}.
     \label{list:acsl-forall}
 \end{listing}
 
-% TODO: ukazuje -> zobrazuje
-
 Použití existenčního kvantifikátoru \texttt{\textbackslash exists} je podobné,
 ale místo toho, aby vyžadoval splnění vlastnosti pro všechny hodnoty,
 umožňuje vyjádřit, že existuje alespoň jeden prvek, pro který je daná vlastnost splněna.
@@ -225,10 +213,7 @@ Tato anotace by byla splnitelná i jednoduchým kódem, který vrací první prv
 Jelikož je zajištěno, že $n$ je alespoň 1 (\texttt{requires~n~>~0}),
 tak je tento program korektní a splňuje kontrakt funkce.
 
-% TODO: je zobrazeno -> zobrazuje?
 % TODO: trpný rod/prítomný
-
-% TODO: je zobrazeno -> zobrazuje
 
 Kontrakt je tedy nedostatečný, protože nespecifikuje vlastnost,
 že by tento prvek byl doopravdy minimální.
@@ -387,8 +372,6 @@ Druhá vlastnost je naše očekávaná vlastnost (\texttt{assert n == 0}),
 kterou nemohl zádný z použitých SMT řešičů dokázat.
 Jediná informace, kterou SMT řešiče o proměnné \texttt{n} mají,
 je, že je menší nebo rovna nule (\texttt{n\_1 <= 0}) a platí, že \texttt{n == n\_1}.
-
-% TODO: dokázat -> prokázat?
 
 Přidáním správného invariantu cyklu do kódu~\ref{list:loop-with-invariant}
 popisující změny v proměnné \texttt{n} během iterací cyklu
@@ -703,9 +686,6 @@ je možné použít například anotaci \texttt{assert P\{L0, L1\}(x)},
 kde \texttt{L0} a \texttt{L1} jsou dvě návěští.
 Použití dvou časových bodů uvidíme v kapitole~\ref{subsec:axiomaticky-pristup}.
 
-% TODO: uživatelům -> programátorům?
-
-
 %\section{RTE (Run-Time Error)}
 %\label{sec:frama-c-rte}
 %
@@ -718,14 +698,14 @@ Použití dvou časových bodů uvidíme v kapitole~\ref{subsec:axiomaticky-pris
 %TODO základní popis
 
 
-\section{WP (Weakest Precondition)}
-\label{sec:frama-c-wp}
-
-TODO je potřeba?
-
-TODO: silnost nasledku, napriklad slaby nasledek, zesilnovani pomoci kontroly obsahu, apod...
-
-TODO: knowledge probing a dalsi metody pro postupny vzvoj dukazu?
+%\section{WP (Weakest Precondition)}
+%\label{sec:frama-c-wp}
+%
+%TODO je potřeba?
+%
+%TODO: silnost nasledku, napriklad slaby nasledek, zesilnovani pomoci kontroly obsahu, apod...
+%
+%TODO: knowledge probing a dalsi metody pro postupny vzvoj dukazu?
 
 
 \section{Paměťové modely}
@@ -816,8 +796,6 @@ tedy na začátku funkce a jedná se o hodnotu proměnné $x$, kterou získává
     \label{list:ssa-frama-c}
 \end{listing}
 
-% TODO: ukázat IF-Then-Else SSA
-
 Hoareův paměťový model je velmi jednoduchý a efektivní na základní práci s proměnnými, ale má také své nevýhody.
 Hlavní nevýhodu popsal sám Hoare v roce 1969, který ve svém článku~\cite{Hoare1969} uvádí,
 že tento model je nevhodný na analýzu kódu, který pracuje s ukazateli, dynamickou pamětí a možným aliasingem.
@@ -826,7 +804,7 @@ kdy paměťové místo (například proměnná) může být modifikováno z víc
 Tento problém je způsoben tím, že Hoareův paměťový model modeluje každou proměnnou odděleně.
 Tedy proměnná typu \texttt{int} $x$, je reprezentována jako jedno paměťové místo,
 a proměnná typu \texttt{int*} $px$, jako jiné paměťové místo a nepředpokládá se,
-že by program prováděl nepřímou úpravu paměťi (například proměnné $x$) pomocí paměťové adresy
+že by program prováděl nepřímou úpravu paměti (například proměnné $x$) pomocí paměťové adresy
 uložené v jiné proměnné (například ukazatelem $px$).
 
 Pokud použijeme Hoareův paměťový model na programy, které pracují s ukazateli,
@@ -921,8 +899,6 @@ Typový paměťový model je rozšířením zjednodušeného paměťového model
 a je navržen tak, že pro každý primitivní typ v jazyce C existuje odpovídající paměťová mapa.
 Například ukazatel typu \texttt{int*} bude zapisovat a číst hodnoty z paměťové mapy $Mint$,
 ukazatel typu \texttt{char*} bude zapisovat a číst hodnoty z paměťové mapy $Mchar$ a tak dále.
-
-% TODO: bajt/byte?
 
 Takto navržený typový paměťový model explicitně odděluje paměťová místa rozdílných typů,
 což nemusí vždy odpovídat skutečnému chování programu,
@@ -1068,14 +1044,12 @@ generovaný CIL překladačem z interní struktury \texttt{varinfo}~\cite{FCPlug
 Funkce \texttt{global} je funkce pro získání adresy proměnné v paměti~\cite{BlanchardWP2024}
 a více bude popsána v následující kapitole~\ref{sec:ukazatele-a-pametove-bloky}.
 
-TODO: read-after-write problematika?
-
-TODO: nejake ukonceni pam. modelu?
+%TODO: read-after-write problematika?
+%TODO: nejake ukonceni pam. modelu?
 
 %\subsection{Referenční paměťový model}
 %\label{subsec:referencni-pametovy-model}
 
-% TODO: jo?
 % -wp-model <model+...>  Memory model selection. Available selectors:
 % * 'Hoare' logic variables only
 % * 'Typed' typed pointers only
@@ -1097,9 +1071,9 @@ Frama\mbox{-}C aktuálně pracuje na novém paměťovém modelu
 s názvem \texttt{Bytes} (bytový paměťový model),
 který by mohl v budoucnosti řešit problémy s paměťovými ukazateli, aliasováním a separací paměti.
 
-Tento model by měl reprezentovat paměť jako sekvenci bajtů
+Tento model by měl reprezentovat paměť jako sekvenci bytů
 a jednotlivé adresy uložené v ukazatelích by následně byly mapovány do tohoto pole bez rozlišování typů.
-Kontrola práce s pamětí by pak probíhala na úrovni jednotlivých bajtů.
+Kontrola práce s pamětí by pak probíhala na úrovni jednotlivých bytů.
 Tento model by také měl také přinést jednoduší definici oddělených bloků paměti o které se více dozvíme v kapitole~\ref{subsec:oddelena-pamet}.
 
 Základní integrace je již hotová a i když v grafickém prostředí ještě není dostupný přepínač pro tento paměťový model,
@@ -1119,7 +1093,7 @@ Jedná se stále o experimentální funkci a je pouze pro testovací účely.
 Tento model ale nejspíše nebude použit jako výchozí paměťový model,
 protože důkazy korektnosti generované tímto modelem
 by byly mnohem složitější a časově náročnější pro SMT řešiče.
-Důkazy by musely být ověřeny manálně pomocí interaktiního důkazového asistenta jako je například Coq~\cite{WPManual}.
+Důkazy by musely být ověřeny manuálně pomocí interaktiního důkazového asistenta jako je například Coq~\cite{WPManual}.
 
 \section{Ukazatele a paměťové bloky}
 \label{sec:ukazatele-a-pametove-bloky}
@@ -1221,8 +1195,6 @@ a offsetu přidaného pomocí parametru konstruktoru \texttt{k}.
 Nejčastěji používaný je ale konstruktor \texttt{mk\_addr} zobrazený ve výpisu~\ref{list:why-pointer-constructors},
 který kombinuje vlastnosti konstruktoru \texttt{global} pro aplikaci prostého mapovaní
 základní paměťové adresy a konstruktoru \texttt{shift} pro přidání offsetu.
-
-%TODO: rict, ze v poli maji vsechny prvky stejnou base, ale jiny offset
 
 \begin{listing}[H]
     \begin{minted}{text}
@@ -1475,7 +1447,7 @@ což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \te
 \end{listing}
 
 Částečně tento problém lze řešit přepsáním funkce \texttt{prepend} tak,
-aby alokace paměťi proběhla mimo funkci \texttt{prepend}
+aby alokace paměti proběhla mimo funkci \texttt{prepend}
 a ukazatel na paměť byl pouze předán jako parametr,
 jak zobrazuje ukázka~\ref{list:prepend}.
 Platnost ukazatele \texttt{new\_node} bude zajištěna pomocí předpokladu
@@ -1523,9 +1495,9 @@ Pro účely důkazů se spojovým seznamem je vhodné vytvořit predikát \textt
 zobrazený v ukázce~\ref{list:linked-list-reachabibility},
 který určuje, zdali je uzel \texttt{node} dosažitelný z uzlu \texttt{root}.
 Jedná se o induktivní definici,
-kde základní pravidlo říká,
+kde základní pravidlo specifikuje,
 že každý uzel je dosažitelný sám ze sebe (\texttt{reachable(root, root)}).
-Druhé pravidlo (indukční krok) říká,
+Druhé pravidlo (indukční krok) popisuje,
 že pokud je nějaký uzel \texttt{node} dosažitelný z uzlu \texttt{root->next},
 musí být také dosažitelný i z uzlu \texttt{root} (přes prostředníka \texttt{root->next}).
 
@@ -1615,18 +1587,15 @@ jak lze psát kód a specifikace pro důkaz korektnosti programů pracujících
 s dynamickými rekurzivními datovými strukturami.
 Každý postup má své výhody a nevýhody.
 Demonstrace důkazů proběhne na jednoduché operaci přidání prvku na začátek spojového seznamu,
-ale princip těchto postupů je použitelný i na složitější operace.
-
-TODO: vice uvodu a proc jsou tyto postupy potreba
-
-TODO: pridat info o zaveru, kde bude debata o stromech/AVL stromech
+ale princip těchto postupů je použitelný i na složitější operace a nebo jiné datové struktury,
+jako například stromy a grafy.
 
 \subsection{Axiomatický přístup}
 \label{subsec:axiomaticky-pristup}
 
 Axiomatický přístup je jedním z možných způsobů,
 jak prokázat korektnost programů pracujících s dynamickými rekurzivními datovými strukturami.
-Vlastnosti programů a nebo datových struktu jsou definovány pomocí axiomů,
+Vlastnosti programů a nebo datových struktur jsou definovány pomocí axiomů,
 které popisují některé vlastnosti a účelem Frama\mbox{-}C je prokázat,
 že daný zdrojový kód provadí operace popsané v těchto axiomech.
 
@@ -1746,14 +1715,14 @@ Platí totiž, že
     \forall x, y : region(x) \neq region(y) \implies x \neq y
 \end{equation*}
 
-TODO Predikát \texttt{framed} + ukazka, heap assumptions
-
-TODO Predikát \texttt{linked}
-
-TODO Predikát \texttt{cinits}
+%TODO Predikát \texttt{framed} + ukazka, heap assumptions
+%
+%TODO Predikát \texttt{linked}
+%
+%TODO Predikát \texttt{cinits}
 
 Pokud ukazatel reprezentuje pole,
-je zaručeno, že všechny prvky jsou od sebe oddělené.
+je zaručeno, že všechny prvky tohoto pole jsou od sebe oddělené.
 Důkazy pracující pouze s jedním polem tedy nemusejí řešit aliasing
 a tedy ani zajišťovat oddělenost paměti.
 
@@ -1971,18 +1940,18 @@ pro velikost seznamu do 4 prvků (\texttt{<= (L\_length a1) 4}).
     \label{list:linked-list-separated-generated-proof}
 \end{listing}
 
-Proměnná \texttt{t} (původně \texttt{Init\_x}) reprezentuje paměťovovou mapu,
+Proměnná \texttt{t} (\texttt{Init\_x}) reprezentuje paměťovovou mapu,
 která podle adresy proměnné určuje, zdali byla proměnná inicializovaná nebo ne.
-Proměnná \texttt{t1} (původně \texttt{Malloc\_x}).
+Proměnná \texttt{t1} (\texttt{Malloc\_x}) reprezentuje tabulku globálně alokovaných proměnných.
 Proměnná \texttt{t2} je paměťová mapa z typového paměťového modelu nazývaná \texttt{Mptr\_x}.
-Proměnné \texttt{a1} reprezentuje adresu prvku \texttt{head} a \texttt{a2} adresu prvku \texttt{new\_node}.
+Proměnná \texttt{a1} reprezentuje adresu prvku \texttt{head} a \texttt{a2} adresu prvku \texttt{new\_node}.
 
 % TODO:  je paměťová mapa, je mapující struktura -> fix
 
 % TODO: toto ucesat?
 
 Zajímavostí na tomto důkazu je,
-že celá formule je negovaná (\texttt{(not (forall ...))}),
+že celá formule je negovaná \texttt{(not (forall ...))},
 což je způsobeno tím, že SMT řešiče jsou efektivní při dokazování splnitelnosti, né platnosti.
 Hledáním splnitelnosti negované formule je tedy stejné
 jako nalezení protipříkladu pro původní formuli.
@@ -2002,14 +1971,14 @@ jak je zobrazeno v ukázce~\ref{list:linked-list-separated-reachable}.
       ...
     */
     \end{minted}
-    \caption{Specifikace oddělené paměťi pomocí predikátu \texttt{reachable}}
+    \caption{Specifikace oddělené paměti pomocí predikátu \texttt{reachable}}
     \label{list:linked-list-separated-reachable}
 \end{listing}
 
 Tento posup zajišťuje logické oddělení proměnných podobně jako předchozí příklad.
 Zmeněná část vygenerovaného důkazu je zobrazená v ukázce~\ref{list:linked-list-separated-reachable-proof}.
-Tento postup je ale stejně výpočetně neefektivní, dokonce o něco více než předchozí příklad,
-jak demonstruje tabulka~\ref{tab:prepend-smt-success-reachable}.
+Tento postup je ale stejně výpočetně neefektivní,
+dokonce o něco více než předchozí příklad, jak ukazuje tabulka~\ref{tab:prepend-smt-success-reachable}.
 
 \begin{listing}[H]
     \begin{minted}{text}
@@ -2160,7 +2129,7 @@ ale údržba serializovaného pole je lineární operace.
     \centering
     \includegraphics[width=\linewidth]{images/list-serialized}
     \caption{
-        Vizualize serializace spojového seznamu. \\
+        Vizualizace serializace spojového seznamu. \\
         Převzato z článku Ghosts for Lists: A Critical Module of Contiki Verified in Frama\mbox{-}C~\cite{FCGhostsForLists}.
     }
     \label{fig:linked-list-serialization}
@@ -2174,7 +2143,7 @@ V binární haldě nemůže nastat situace s prázdným nepoužitým uzlem a pol
 od nejnižšího indexu po nejvyšší.
 Obecné stromy by s tímto principem nemohly být serializovány,
 protože je možné, že některé uzly budou prázdné a nebudou mít žádného potomka.
-Řešení, může být například nepoužívat jednoduchou serializaci prvků stromu do pole,
+Řešením může být například nepoužívat jednoduchou serializaci prvků stromu do pole,
 ale používat rozšířenou strukturu v serializovaném poli, která bude určovat,
 zdali je daný prvek platný nebo ne.
 Indexace prvků v poli by tímto přístupem byla zachována,
@@ -2182,20 +2151,20 @@ pouze důkazy používající tuto strukturu by musely při každém přístupu 
 zkontrolovat, zdali je prvek platný nebo ne.
 Na takto serializovaných stromech by bylo jednoduché provádět důkazy,
 jelikož všechny prvky v poli jsou oddělené a tedy splňují podmínku oddělené paměti.
-Predikáty popisující vlastnosti stromu by museli ale obsahovat kontrolu,
+Predikáty popisující vlastnosti stromu by musely ale obsahovat kontrolu,
 zdali je daný prvek v poli platný nebo ne.
 
 % TODO: nebo ne -> a nebo ne?
 
-Nevýhoda serializace obecných stormů do pole je ta, že řídké stromy budou zabírat
+Nevýhoda serializace obecných stromů do pole je ta, že řídké stromy budou zabírat
 násobně více paměti, než je potřeba.
 V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsahující řetězec \texttt{n} pravých uzlů,
 by serializované pole reprezentující tento strom mělo velikost $2^n~-~1$ s~$2^n~-~n$ neplatnými uzly.
-Další nevýhoda serializace stromových struktu spočívá v složitosi
+Další nevýhoda serializace stromových struktur spočívá v složitosti
 tvořených predikátů a vlastností stromu.
 Serializací přicházíme o lokální pohled na problém a musíme jej nahradit prací s indexy v poli.
 Lokálností rozumíme situaci, kdy je strom reprezentován ukazateli ve kterém lze snadno dokazovat vlastnosti konkrétního uzlu, jeho potomků či rodiče.
-Převedením dynamické struktury do serializovaného pole zesložiťuje hledání vhodnýho invariant cyklu,
+Převedením dynamické struktury do serializovaného pole zesložiťuje hledání vhodného invariant cyklu,
 který se stromem v této podobě správně pracuje.
 
 % TODO: pridat nedelitelnou mezeru tak, aby nebyly jedno-znaky na konci radku samy

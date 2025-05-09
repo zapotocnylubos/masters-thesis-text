@@ -2,5 +2,30 @@
 \addcontentsline{toc}{chapter}{Závěr}
 \markboth{Závěr}{Závěr}
 
-Tohle je můj závěr práce.
+Tato práce se zaměřila na důkladný popis nástrojů pro formální verifikaci programů,
+které se zaměřují na různé programovací jazyky a programovací paradigmata.
+Byl popsán základní princip fungování SMT řešičů společně se standardizovaným jazykem SMT-LIB\@.
+Poté byl představen teoretický základ ve formě Hoareovy logiky a metody nejslabšího předpokladu,
+které jsou základem pro deduktivní verifikaci programů.
 
+Jedním z cílů bylo představit metody pro verifikaci dynamických rekurzivních datových struktur,
+reprezentované na příkladu AVL stromu.
+Pro vysvětlení problematiky důkazů těchto datových struktur
+bylo prostředí Frama\mbox{-}C prozkoumáno do větší hloubky,
+včetně architektury paměťových modelů a způsobu reprezentace oddělené paměti.
+Bylo možné představit problematické oblasti,
+které v současnosti zamezují jednoduchému popisu těchto datových struktur.
+Zároveň byla popsána metoda kombinující axiomatický přístup a princip oddělené paměti,
+které dohromady při správném použití umožňují verifikaci těchto struktur
+bez zavedení velkých a složitých axiomů.
+Tato kombinovaná metoda také umožňila začlenění a používání alokačních funkcí (například \texttt{malloc}),
+což je velmi málo popisovaný problém v literatuře zabývající se Frama\mbox{-}C\@.
+
+Stainless a jeho přístup k verifikaci dynamických datových struktur
+byl bezproblémový a umožnil vcelku jednoduchou verifikaci AVL stromu.
+Použité principy v důkazu této datové struktury jsou převoditelné
+i na jiné datové struktury.
+
+Závěřem je také vhodné zmínit, že dostupná literatura popisující prostředí Frama\mbox{-}C
+je v současnosti bohatší než literatura popisující Stainless.
+I přesto byla práce se Stainless příjemná a dokumentace dostačující.

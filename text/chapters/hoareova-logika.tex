@@ -39,9 +39,6 @@ Takový program může vypadat následovně:
     \{ true \} \  x \coloneqq 10 \  \{ x > 0 \}
 \end{equation*}
 
-% TODO: zminit, ze toto je validni program, ale casto nam tento vysledek nic nerika a je potreba
-% TODO: jeste pridat podminky na hodnoty promennych v ruznem case atd...
-
 \section{Axiom přiřazení}
 \label{sec:hoare-axiom-prirazeni}
 
@@ -69,11 +66,6 @@ je výskyt proměnné $x$ nahrazen výrazem $f$, pak po provedení přiřazení
 je tvrzení $T$ pravdivé také pro proměnnou $x$.
 Jedná se tedy o šablonu (schéma) axiomu,
 kterou lze použít pro libovolné tvrzení $T$, proměnnou $x$ a výraz $f$.
-
-% TODO: The assignment axiom proposed by Hoare does not apply when more than one name may refer to the same stored value. For example,
-% TODO: end of https://en.wikipedia.org/wiki/Hoare_logic#Assignment_axiom_schema
-% TODO: toto ma mozna konsekvence do Frama-C pri volne pametoveho modelu a proc
-% TODO: nektere tvrzeni neprojdou na pointerech a rekurzivnich strukturach
 
 \section{Pravidlo důsledku}
 \label{sec:hoare-pravidlo-dusledku}

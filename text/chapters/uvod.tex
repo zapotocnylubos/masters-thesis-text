@@ -9,7 +9,7 @@ formální verifikace usiluje o úplné pokrytí všech možných běhových sta
 Využití formální verifikace je zásadní zejména v oblastech,
 kde selhání softwaru může vést k závažným důsledkům.
 Například v systémech řízení letového provozu,
-medicínských přístrojích nebo například při verifikaci překladačů a kompilovaných jazyků.
+zdravotnických zařízeních nebo například při verifikaci překladačů a kompilovaných jazyků.
 
 Předmětem této diplomové práce je porovnání dvou nástrojů určených pro formální verifikaci programů,
 které vycházejí z různých paradigmat programování a podporují různé programovací jazyky.
@@ -21,6 +21,7 @@ konkrétně Hoareově logice a metodě nejslabšího předpokladu.
 
 \hyperref[ch:smt]{První kapitola} se věnuje SMT (Satisfiability Modulo Theories) řešičům,
 principům jejich fungování a představení standardizovaného jazyka SMT-LIB\@.
+SMT řešiče jsou základní součástí obou nástrojů a slouží k automatizaci procesu dokazování vlastností programů.
 \hyperref[ch:hoareova-logika]{Druhá kapitola} představuje Hoareovu logiku,
 ze které vychází principy pro deduktivní verifikaci softwaru.
 Na základě Hoareovy logiky je ve \hyperref[ch:metoda-nejslabsiho-predpokladu]{třetí kapitole}
@@ -33,15 +34,14 @@ Obsahuje také přehled možných metod pro řešení
 problematiky s důkazy na dynamických datových strukturách,
 jako jsou například spojové seznamy nebo stromy.
 Kapitola~\ref{ch:stainless} se zaměřuje na nástroj Stainless,
-který je v mnoha aspektech podobný Frama\mbox{-}C,
-ale specializuje se na verifikaci programů napsaných v jazyce Scala.
+který je v mnoha aspektech podobný Frama\mbox{-}C\@.
 Stainless přistupuje k verifikaci dynamických datových struktur
 odlišně a tato kapitola také obsahuje plnohodnotný důkaz
 korektnosti implementace AVL stromu.
 
 \newpage
 
-Text této práce je dostupný také ve veřejném represitáři na GitHubu autora
+Text této práce je dostupný také ve veřejném repozitáři na GitHubu autora
 \url{https://github.com/zapotocnylubos/masters-thesis-text}.
-Ukázky kódu z společně se zdrojovým kódem oveřeného AVL stromu
+Ukázky kódu společně se zdrojovým kódem ověřeného AVL stromu
 jsou dostupné v repozitáři \url{https://github.com/zapotocnylubos/masters-thesis-code}.
