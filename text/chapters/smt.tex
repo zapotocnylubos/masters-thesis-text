@@ -7,10 +7,10 @@ mezi něž patří celočíselná aritmetika, aritmetika reálných čísel, teo
 Označení \uv{modulo theories} vyjadřuje, že splnitelnost se posuzuje vzhledem (modulo) k dané teorii.
 SMT nachází uplatnění především v oblasti formální verifikace softwaru a v automatizovaném dokazování~\cite{SMT}.
 
-Jedny z nejvíce používaných SMT řešičů jsou Alt-Ergo, CVC a Z3.
+Mezi nejpoužívanější SMT řešiče patří Alt-Ergo, CVC a Z3.
 Tyto řešiče jsou open-source a integrované do obou nástrojů Frama\mbox{-}C i~Stainless.
 Přestože mají stejný cíl, liší se v implementaci a algoritmech, které používají.
-Každý SMT řešič lze používat individuálně,
+Každý SMT řešič lze používat samostatně,
 ale výhodné je kombinovat několik SMT řešičů najednou, porovnat výsledky a využít silné stránky každého z nich.
 Některé úlohy mohou být pro jeden SMT řešič snadno vyřešitelné,
 ale pro jiný mohou být složité nebo dokonce neřešitelné,
@@ -68,7 +68,7 @@ SMT řešič kóduje vlastnosti z teorie T do booleovských proměnných a klauz
 Druhá část je SMT řešič dané teorie, který dostává kandidátní ohodnocení proměnných od SAT řešiče a kontroluje logickou konzistenci
 v rámci dané teorie.
 Tento proces se opakovaně provádí a pokud je nalezena neslučitelnost v SMT teorii,
-tak SMT řešič informuje SAT řešič o dané neslužitelnosti pomocí konfliktní klauzule.
+tak SMT řešič informuje SAT řešič o dané neslučitelnosti pomocí konfliktní klauzule.
 Tato klauzule je poté přidána do původní formule a DPLL algoritmus pokračuje v hledání dalšího ohodnocení proměnných
 v rozšířené formuli~\cite{DPLLT}.
 
@@ -132,7 +132,7 @@ A tedy nové kandidátní ohodnocení
 \end{align*}
 je odesláno pro kontrolu SMT řešiči.
 
-SMT řešič kontroluje pouze pravidivě ohodnocené proměnné $A$ a $B$.
+SMT řešič kontroluje pouze pravdivě ohodnocené proměnné $A$ a $B$.
 Kombinace těchto proměnných reprezentuje podmínku $x \geq 0$ a $x \geq 1$,
 což je v rámci teorie LIA slučitelné.
 Jelikož SAT řešič našel ohodnocení proměnných, které splňuje celou formuli

@@ -19,7 +19,7 @@ i v případě, kdy není k dispozici žádný externí SMT řešič~\cite{InoxS
 
 Stainless podporuje podobný styl anotování kódu jako Frama\mbox{-}C\@.
 Není ale potřeba používát speciální komentáře pro anotace,
-ale je možné použít přímo jazyk Scala.
+protože je možné použít přímo jazyk Scala
 Všechny anotace jsou umístěny jako spustitelný Scala kód a nebo jako dekorátory před funkcemi.
 
 Anotace \texttt{require} zajišťuje, že daná podmínka musí být splněna před spuštěním funkce.
@@ -138,8 +138,8 @@ ve které je popsána implementace celé datové struktury AVL stromu.
   \label{lst:stainless-pattern-matching-case-class}
 \end{listing}
 
-Pattern matchingu bez Stainless může v některých případech vyvolat
-varování o neúplnosti pattern matchingu, pokud \texttt{match} nezachycuje všechny \texttt{case class}
+Použití pattern matchingu bez Stainless může v některých případech \mbox{vyvolat}
+varování o neúplnosti, pokud \texttt{match} nezachycuje všechny \texttt{case class}
 a neobsahuje fallback variantu pomocí konstrukce \texttt{case \_}.
 Toto varování Stainless vylepšuje a přidává kontext o spouštění funkce.
 Pokud tedy v aktuálním kontextu některé případy nemohou nikdy nastat,

@@ -30,7 +30,7 @@ a po provedení programu $Q$ bude zajištěno, že hodnota proměnné $x$ bude k
 \end{equation*}
 
 Předpoklad může být také prázdný, což znamená, že program nevyžaduje žádné speciální podmínky pro spuštění
-a formálně tuto situci lze zapsat jako $\{ true \} \  Q \  \{ R \}$.
+a formálně tuto situaci lze zapsat jako $\{ true \} \  Q \  \{ R \}$.
 Pokud je předpoklad prázdný, předpokládáme, že program může být spuštěn
 v libovolném stavu systému nebo s libovolnými hodnotami proměnných.
 Takový program může vypadat následovně:
@@ -73,7 +73,7 @@ kterou lze použít pro libovolné tvrzení $T$, proměnnou $x$ a výraz $f$.
 Pravidlo důsledku (rule of consequence) je metoda umožnující
 tvorbu nových logických tvrzení z již existujících a dokázaných tvrzení.
 Základní aplikací této metody je pravidlo \textbf{rozšíření předpokladu}
-a pravidlo \textbf{zůžení následku}.
+a pravidlo \textbf{zúžení následku}.
 Předpokládejme platnosti $\{ P \} \  Q \  \{ R \}$.
 
 Máme-li rozšířený předpoklad $P'$, pro který platí
@@ -99,7 +99,7 @@ můžeme říci, že $\{ P \} \  Q \  \{ R' \}$ je také platné tvrzení.
 \label{sec:hoare-pravidlo-skladani}
 
 Pravidlo skládání (rule of composition) je pravidlo, které umožňuje
-skládat více příkazů do jednoho složeného příkazu a používat jeje v Hoareově logice.
+skládat více příkazů do jednoho složeného příkazu a používat je v Hoareově logice.
 
 Máme-li dva příkazy $Q_1$ a $Q_2$, které splňují následující tvrzení
 
@@ -171,7 +171,7 @@ Zároveň platí, že cyklus se neprovedl, protože podmínka $B$ byla nepravdiv
 Pokud cyklus provedl alespoň jednu iteraci a zároveň máme zaručeno,
 že invariant cyklu $I$ je pravdivý po ukončení těla cyklu $Q$,
 znamená to, že invariant cyklu $I$ je pravdivý i po ukončení poslední iterace cyklu.
-Zároven platí, že podmínka $B$ je po ukončení cyklu nepravdivá, jinak by cyklus pokračoval v provádění další iterace.
+Zároveň platí, že podmínka $B$ je po ukončení cyklu nepravdivá, jinak by cyklus pokračoval v provádění další iterace.
 
 Formálně lze tedy konstrukci $while$ cyklu pomocí Hoareovy logiky zapsat jako
 

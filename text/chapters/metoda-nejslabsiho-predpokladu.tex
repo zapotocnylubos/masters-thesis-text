@@ -8,10 +8,10 @@ Formálně tuto metodu popsal E. W. Dijkstra v roce 1975 a navazuje na práci Ho
 Připomeneme, že Hoareova trojice je trojice $ \{ P \} \ Q \ \{ R \} $,
 kde $P$ je předpoklad, $Q$ je příkaz a $R$ je následek.
 Předpoklad $P$ je logický výraz, který musí být pravdivý před provedením příkazu $Q$.
-Metoda nejslabšího předpokladu se snaží najít nejslabší předpoklad $WP$, pro který platí
+Metoda nejslabšího předpokladu se snaží najít nejslabší předpoklad $\mathit{WP}$, pro který platí
 
 \begin{equation*}
-    \{ WP \} \ Q \ \{ R \}
+    \{ \mathit{WP} \} \ Q \ \{ R \}
 \end{equation*}
 a zároveň pro každý jiný předpoklad $P$, pro který by platilo, že
 
@@ -21,40 +21,40 @@ a zároveň pro každý jiný předpoklad $P$, pro který by platilo, že
 musí také platit, že
 
 \begin{equation*}
-    P \implies WP.
+    P \implies \mathit{WP}.
 \end{equation*}
 
-Tedy, že $WP$ je nejslabší předpoklad pro příkaz $Q$ a následek $R$.
+Tedy, že $\mathit{WP}$ je nejslabší předpoklad pro příkaz $Q$ a následek $R$.
 
 \begin{remark}
-    Nejslabší předpoklad $WP$ je (logicky) unikátní pro daný příkaz $Q$ a následek $R$.
+    Nejslabší předpoklad $\mathit{WP}$ je (logicky) unikátní pro daný příkaz $Q$ a následek $R$.
 \end{remark}
 
-Pokud by existoval jiný kandidát $WP'$ pro nejslabší předpoklad,
+Pokud by existoval jiný kandidát $\mathit{WP}'$ pro nejslabší předpoklad,
 poté z definice platí, že
 
 \begin{equation*}
-    WP' \implies WP
+    \mathit{WP}' \implies \mathit{WP}
 \end{equation*}
 a také, že
 
 \begin{equation*}
-    WP \implies WP'
+    \mathit{WP} \implies \mathit{WP}'
 \end{equation*}
 
-Tedy musí platit, že $WP$ a $WP'$ jsou (logicky) ekvivalentní.
+Tedy musí platit, že $\mathit{WP}$ a $\mathit{WP}'$ jsou (logicky) ekvivalentní.
 
-Nejslabší předpoklad $WP$ definujeme pomocí transformační funkce $\operatorname{wp}$,
+Nejslabší předpoklad $\mathit{WP}$ definujeme pomocí transformační funkce $\operatorname{wp}$,
 s parametry $Q$ a $R$ následovně:
 
 \begin{equation*}
-    WP = \operatorname{wp}(Q, R)
+    \mathit{WP} = \operatorname{wp}(Q, R)
 \end{equation*}
 
 Následující kapitoly představují základní pravidla pro algoritmický výpočet nejslabšího předpokladu.
 Výpočet začíná vždy od následku $R$ a postupně (od konce k začátku)
 analyzuje příkazy $Q_n, Q_{n-1}, \ldots, Q_1$ a aplikuje na ně specifická pravidla.
-Výsledkem je nejslabší předpoklad $WP$ pro sekvenci příkazů $Q_1; Q_2; \ldots; Q_n$,
+Výsledkem je nejslabší předpoklad $\mathit{WP}$ pro sekvenci příkazů $Q_1; Q_2; \ldots; Q_n$,
 který následně použijeme pro formální důkaz správnosti programu.
 
 \section{Pravidlo přiřazení}
@@ -185,7 +185,7 @@ Pravidlo cyklu popisuje výpočet nejslabšího předpokladu pro cyklus ve tvaru
 \end{equation*}
 
 Provést výpočet nejslabšího předpokladu pro cyklus je složitější než u ostatních příkazů,
-jelikož není definované kolik iterací cyklus provede a nebo jestli vůbec cyklus někdy skončí.
+jelikož není definováno, kolik iterací cyklus provede, a zda vůbec někdy skončí.
 Výpočet nejslabšího předpokladu pro cyklus lze rozdělit do dvou částí.
 První část se zabývá výpočtem nejslabšího předpokladu bez ohledu na konečnost cyklu
 a nazývá se částečná korektnost cyklu (partial correctness).

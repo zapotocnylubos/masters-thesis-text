@@ -49,7 +49,7 @@ s touto abstraktní reprezentací, upravovat ji nebo dokonce transformovat~\cite
 
 Základní pluginy Frama\mbox{-}C jsou součástí distribuce a jsou dostupné zdarma.
 Je vhodné zmínit například plugin Frama\mbox{-}Clang, jehož cílem je
-přidat podporu programovacího jazku C\texttt{++} do Frama\mbox{-}C\@.
+přidat podporu programovacího jazyka C\texttt{++} do Frama\mbox{-}C\@.
 Frama\mbox{-}Clang je aktuálně ve vývoji a je dostupný pro experimentování a testování,
 ale není doporučeno jej používat pro produkční nasazení~\cite{framaclang}.
 
@@ -120,7 +120,7 @@ Cílem Why3 je poskytnout jednotné rozhraní pro specifikaci a verifikaci progr
 a náslédně automaticky generovat formální důkazy pomocí různých SMT řešičů bez nutnosti přepisovat kód pro každý SMT řešič zvlášť.
 Why3 je zakomponován do několika nástrojů pro formální verifikaci,
 jako je například Frama\mbox{-}C pro jazyk C~\cite{BlanchardACSL2024},
-Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo například projekt Easycrypt,
+Krakatoa pro jazyk Java~\cite{KrakatoaWhy} nebo projekt Easycrypt,
 který se zaměřuje na formální verifikaci kryptografických protokolů~\cite{why3web}.
 
 Jednou nevýhodou platformy Why3 je,
@@ -181,7 +181,7 @@ Platnost ukazatelů popisuje kapitola~\ref{sec:ukazatele-a-pametove-bloky}.
     int find_min(int *arr, int n) {
     }
     \end{minted}
-    \caption{Ukázka obecného kvantifikátorů v ACSL}
+    \caption{Ukázka obecného kvantifikátoru v ACSL}
     \label{list:acsl-forall}
 \end{listing}
 
@@ -256,7 +256,7 @@ Cykly v jazyce C jsou reprezentovány pomocí konstrukcí \texttt{for}, \texttt{
 Frama\mbox{-}C v rámci předzpracování kódu převádí tyto konstrukce pouze na konstrukci \texttt{while}.
 Následující ukázky~\ref{list:for-transform-while} a~\ref{list:do-while-transform-while}
 ukazují ekvivalentní zápis cyklu \texttt{for} a \texttt{do-while} pomocí cyklu \texttt{while}.
-Stejnou transformace cyklů provádí Frama\mbox{-}C automaticky během předzpracování zdrojového kódu.
+Stejnou transformaci cyklů provádí Frama\mbox{-}C automaticky během předzpracování zdrojového kódu.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -322,7 +322,7 @@ poté pomocí metody nejslabšího předpokladu nelze prokázat,
     frama-c -wp -wp-prover alt-ergo,cvc4,z3 \
       -wp-no-let -wp-print no-loop-invariant.c
     \end{minted}
-    \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
+    \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí tří SMT řešičů}
     \label{list:loop-no-invariant-command}
 \end{listing}
 
@@ -728,7 +728,7 @@ protože každý model má své výhody i nevýhody.
 Nejjednodušší paměťový model je Hoareův paměťový model,
 ve kterém se operace s pamětí provádějí pomocí přiřazení do logických proměnných.
 Jedná se o aplikaci metody Single Static Assignment (SSA),
-která zajišťuje, že každá logická proměnná má přiřazenou hodnotu pouze jednou.
+která zajišťuje, že každé logické proměnné je hodnota přiřazena pouze jednou.
 
 Hoareův paměťový model reprezentuje proměnné a jejich hodnoty v různých časech
 pomocí několika různých logických proměnných, na které lze odkazovat pomocí
@@ -802,7 +802,7 @@ Hlavní nevýhodu popsal sám Hoare v roce 1969, který ve svém článku~\cite{
 Problém při modelování ukazatelů nastává v okamžiku,
 kdy paměťové místo (například proměnná) může být modifikováno z více než jednoho místa v programu (aliasing).
 Tento problém je způsoben tím, že Hoareův paměťový model modeluje každou proměnnou odděleně.
-Tedy proměnná typu \texttt{int} $x$, je reprezentována jako jedno paměťové místo,
+Tedy proměnná typu \texttt{int} $x$ je reprezentována jako jedno paměťové místo,
 a proměnná typu \texttt{int*} $px$, jako jiné paměťové místo a nepředpokládá se,
 že by program prováděl nepřímou úpravu paměti (například proměnné $x$) pomocí paměťové adresy
 uložené v jiné proměnné (například ukazatelem $px$).
@@ -1257,7 +1257,7 @@ který podporuje jak čtení tak zápis do paměti.
 Skládá se témeř ze stejných podmínek jako predikát pro platnost paměťového ukazatele pro čtení.
 Jediný rozdíl je v první podmínce, která kontroluje,
 že základní adresa ukazatele odkazuje do paměťového bloku s kladnou adresou (\texttt{p.base > 0}).
-Nelze tedy zapisovat například do řetězcových literálů,
+Není tedy možné zapisovat například do řetězcových literálů,
 které mají zápornou základní adresu (\texttt{p.base < 0}).
 
 \begin{listing}[H]
@@ -1290,9 +1290,9 @@ Tuto skutečnost popisuje následující lemma z výpisu~\ref{list:why-string-li
     \label{list:why-string-literal}
 \end{listing}
 
-Predikát \texttt{linked} slouží pro označení pamětové mapy,
+Predikát \texttt{linked} slouží pro označení paměťové mapy,
 ve které jsou alokovány proměnné.
-Využítí jsme viděli v předchozí kapitole~\ref{subsec:typovy-pametovy-model}
+Využití jsme viděli v předchozí kapitole~\ref{subsec:typovy-pametovy-model}
 ve výpisu~\ref{list:typed-pointer-valid-example-result}, kde pomocí
 \texttt{linked(Malloc\_0)} je označena paměťová mapa,
 ve které je alokována lokální proměnná $x$,
@@ -1350,7 +1350,7 @@ V několika důkazech jsme již viděli použití funkce \texttt{assert},
 která vždy zasahuje do probíhajícího důkazu a na daném místě kontroluje platnost předané vlastnosti.
 Existují ještě přidružené funkce \texttt{check} a \texttt{admit},
 kde \texttt{check} funguje na stejném principu jako \texttt{assert},
-ale neblokuje průběh důkazu.
+ale neblokuje \mbox{průběh} důkazu.
 Funkce \texttt{admit} se naopak vůbec nesnaží dokázat danou vlastnost,
 ale axiomaticky této vlastnosti věří, přidává ji do kontextu pro další kroky důkazu
 a pokračuje v důkazu dále~\cite{ACSLSpec}.
@@ -1415,7 +1415,7 @@ pole a nebo struktury.
 
 Například implementace funkce \texttt{prepend} pro přidání prvku na začátek spojového seznamu,
 jehož definice je zobrazená v ukázce~\ref{list:linked-list},
-za pomocí volání funkce \texttt{malloc} z ukázky~\ref{list:prepend-malloc} je nevhodné.
+pomocí volání funkce \texttt{malloc} z ukázky~\ref{list:prepend-malloc} je nevhodné.
 Následující predikáty totiž budou požadovat platnost ukazatele \texttt{new\_node},
 což Frama\mbox{-}C nedokáže prokázat a pokus o důkaz správnosti funkce \texttt{prepend} nebude úspěšný.
 
@@ -1604,7 +1604,7 @@ popisuje vlastnost programu pro přidání prvku na začátek spojového seznamu
 Axiom pracuje s dvěma časovými body \texttt{L1} a \texttt{L2},
 kde \texttt{L1} je časový bod před provedením operace
 a \texttt{L2} je časový bod po provedení operace.
-Axiom popisuje relaci mezi prvním prvekm seznamu \texttt{head} a nově přidávaným prvkem \texttt{new\_node}.
+Axiom \mbox{popisuje} relaci mezi prvním prvekm seznamu \texttt{head} a nově přidávaným prvkem \texttt{new\_node}.
 Za předpokladu, že \texttt{head} a \texttt{new\_node} jsou platné ukazatele
 a \texttt{head} odkazuje na konečný spojový seznam,
 tak pokud po provedení operace \texttt{prepend} bude \texttt{new\_node->next} ukazovat na \texttt{head},
@@ -1656,7 +1656,7 @@ konkrétně jeho negaci \texttt{!reachable(head, new\_node)}.
       }
     */
     \end{minted}
-    \caption{Opravená axiomatická definice pro zachování konečnosti spojového seznamu při přidání prvku}
+    \caption{Opravená axiomatická definice pro zachování konečnosti \mbox{spojového} seznamu při přidání prvku}
     \label{list:linked-list-axiom-prepend-fixed}
 \end{listing}
 
@@ -1664,7 +1664,8 @@ Axiomatický přístup lze tedy považovat za potenciálně nebezpečný,
 jelikož se spoléhá na korektní a plnohodnotnou definici axiomů,
 jejichž platnost musí být dokázána mimo Frama\mbox{-}C a tedy i mimo SMT řešiče.
 
-Axiomatický přístup jako částečné řešení pomocí anotace \texttt{admit} například na vlastnosti,
+Axiomatický přístup může sloužit jako částečné řešení,
+například pomocí anotace \texttt{admit} pro vlastnosti,
 které ještě nejsou dostatečně dobře implementované v Frama\mbox{-}C\@.
 Nebo je jejich korektnost dokazatelná pouze na malých vstupech,
 ale na velkých vstupech již SMT řešiče nedokáží prokázat jejich korektnost
@@ -1685,7 +1686,7 @@ za pomoci porovnávání paměťových bloků výpočtem takzvané paměťové s
 Paměťová stopa datové struktury je množina paměťových bloků (jejich základních adres),
 které se v dané datové struktuře nacházejí.
 Například pro spojový seznam je jeho paměťová stopa množina
-obsahující všechny základní pamětové adresy všech uzlů v daném seznamu.
+obsahující všechny základní paměťové adresy všech uzlů v daném seznamu.
 
 Analýzou průniku dvou paměťových stop je možné určit,
 zdali dané struktury sdílejí některé prvky nebo ne.
@@ -1804,7 +1805,7 @@ které jsou dosažitelné z uzlu \texttt{head}.
 \end{listing}
 
 Kompletní kód pro přidání prvku na začátek spojového seznamu
-s využítím přístupu s oddělenou pamětí je zobrazen v ukázce~\ref{list:linked-list-separated-prepend}.
+s využitím přístupu s oddělenou pamětí je zobrazen v ukázce~\ref{list:linked-list-separated-prepend}.
 
 \begin{listing}[H]
     \begin{minted}{C}
@@ -1859,7 +1860,7 @@ který spouští analýzu pomocí čtyřech SMT řešičů Alt-Ergo, CVC4, CVC5 
             -wp-print \
             benchmark.c
     \end{minted}
-    \caption{Příkaz pro spuštění analýzy cyklu bez invariantu pomocí třech SMT řešičů}
+    \caption{Příkaz pro spuštění benchmarku pomocí čtyřech SMT řešičů}
     \label{list:run-linked-list-benchmark}
 \end{listing}
 
@@ -1975,7 +1976,7 @@ jak je zobrazeno v ukázce~\ref{list:linked-list-separated-reachable}.
     \label{list:linked-list-separated-reachable}
 \end{listing}
 
-Tento posup zajišťuje logické oddělení proměnných podobně jako předchozí příklad.
+Tento postup zajišťuje logické oddělení proměnných podobně jako předchozí příklad.
 Zmeněná část vygenerovaného důkazu je zobrazená v ukázce~\ref{list:linked-list-separated-reachable-proof}.
 Tento postup je ale stejně výpočetně neefektivní,
 dokonce o něco více než předchozí příklad, jak ukazuje tabulka~\ref{tab:prepend-smt-success-reachable}.
@@ -1995,7 +1996,7 @@ dokonce o něco více než předchozí příklad, jak ukazuje tabulka~\ref{tab:p
       )
     ...
     \end{minted}
-    \caption{Důkaz odělené paměti pomocí predikátu \texttt{reachable}}
+    \caption{Důkaz oddělené paměti pomocí predikátu \texttt{reachable}}
     \label{list:linked-list-separated-reachable-proof}
 \end{listing}
 
@@ -2037,11 +2038,11 @@ Přidává také axiom o oddělenosti paměti mezi novým uzlem (čerstvě aloko
 a všemi ostatními uzly v seznamu.
 Poslední axiom popisuje platnost predikátu \texttt{finite} pro všechny již uložené uzly v seznamu,
 které jsou paměťové oddělené od nového uzlu.
-Platnot predikátu \texttt{finite} jinak nelze potvrdit pro větší seznamy,
+Platnost predikátu \texttt{finite} jinak nelze potvrdit pro větší seznamy,
 jelikož by SMT řešiče musely procházet velký vstupní prostor a dokazovat oddělenost
 pomocí univerzálního kvantifikátoru, podobně jako v předchozím příkladu~\ref{tab:prepend-smt-success}.
 Těmito axiomy je zajištěna platnost nového uzlu a zároveň je zaručena neporušenost konečnosti seznamu,
-pokud nový uzel připoojíme na začátek seznamu.
+pokud nový uzel připojíme na začátek seznamu.
 Pomocí těchto axiomů je již pro SMT řešiče jednoduché prokázat,
 že seznam začínající nově vytvořeným uzlem je také konečný.
 
@@ -2079,7 +2080,7 @@ Pomocí těchto axiomů je již pro SMT řešiče jednoduché prokázat,
       return new_node;
     }
     \end{minted}
-    \caption{Dokončení důkazu pomocí pomocí kombinace axiomatického přístupu a oddělené paměti}
+    \caption{Dokončení důkazu pomocí kombinace axiomatického přístupu a oddělené paměti}
     \label{list:linked-list-prepend-admit}
 \end{listing}
 
@@ -2150,7 +2151,7 @@ Indexace prvků v poli by tímto přístupem byla zachována,
 pouze důkazy používající tuto strukturu by musely při každém přístupu na prvek stromu
 zkontrolovat, zdali je prvek platný nebo ne.
 Na takto serializovaných stromech by bylo jednoduché provádět důkazy,
-jelikož všechny prvky v poli jsou oddělené a tedy splňují podmínku oddělené paměti.
+jelikož všechny prvky v poli jsou oddělené, a tedy splňují podmínku oddělené paměti.
 Predikáty popisující vlastnosti stromu by musely ale obsahovat kontrolu,
 zdali je daný prvek v poli platný nebo ne.
 
@@ -2162,9 +2163,9 @@ V nejhorším případě, kdy by pomocí této metody byl zakódován strom obsa
 by serializované pole reprezentující tento strom mělo velikost $2^n~-~1$ s~$2^n~-~n$ neplatnými uzly.
 Další nevýhoda serializace stromových struktur spočívá v složitosti
 tvořených predikátů a vlastností stromu.
-Serializací přicházíme o lokální pohled na problém a musíme jej nahradit prací s indexy v poli.
+Serializací ztrácíme lokální pohled na problém, který musíme nahradit prací s indexy v poli.
 Lokálností rozumíme situaci, kdy je strom reprezentován ukazateli ve kterém lze snadno dokazovat vlastnosti konkrétního uzlu, jeho potomků či rodiče.
-Převedením dynamické struktury do serializovaného pole se zesložiťuje hledání vhodného invariantu cyklu,
+Převedením dynamické struktury do serializovaného pole se komplikuje hledání vhodného invariantu cyklu,
 který se stromem v této podobě správně pracuje.
 
 % TODO: pridat nedelitelnou mezeru tak, aby nebyly jedno-znaky na konci radku samy
