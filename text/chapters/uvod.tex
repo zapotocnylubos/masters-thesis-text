@@ -2,6 +2,46 @@
 \addcontentsline{toc}{chapter}{Úvod}
 \markboth{Úvod}{Úvod}
 
-Tohle je můj úvod práce.
+Formální verifikace softwaru je disciplína zabývající se dokazováním korektnosti programů
+vzhledem k jejich specifikaci pomocí matematických metod a logických důkazů.
+Na rozdíl od klasického testování, které se omezuje na ověřování konečného množství konkrétních vstupů,
+formální verifikace usiluje o úplné pokrytí všech možných běhových stavů programu.
+Využití formální verifikace je zásadní zejména v oblastech,
+kde selhání softwaru může vést k závažným důsledkům.
+Například v systémech řízení letového provozu,
+medicínských přístrojích nebo například při verifikaci překladačů a kompilovaných jazyků.
 
-TODO: zmínit linky na GitHubu, kde je kód práce a ukázek?
+Předmětem této diplomové práce je porovnání dvou nástrojů určených pro formální verifikaci programů,
+které vycházejí z různých paradigmat programování a podporují různé programovací jazyky.
+Prvním z nich je prostředí Frama\mbox{-}C pro jazyk C,
+které umožňuje zápis formálních specifikací pomocí anotačního jazyka ACSL\@.
+Druhým nástrojem je Stainless pro jazyk Scala.
+Oba nástroje jsou založeny na podobných principech,
+konkrétně Hoareově logice a metodě nejslabšího předpokladu.
+
+\hyperref[ch:smt]{První kapitola} se věnuje SMT (Satisfiability Modulo Theories) řešičům,
+principům jejich fungování a představení standardizovaného jazyka SMT-LIB\@.
+\hyperref[ch:hoareova-logika]{Druhá kapitola} představuje Hoareovu logiku,
+ze které vychází principy pro deduktivní verifikaci softwaru.
+Na základě Hoareovy logiky je ve \hyperref[ch:metoda-nejslabsiho-predpokladu]{třetí kapitole}
+představena metoda nejslabšího předpokladu,
+která je jednou z nejběžnějších metod pro automatické generování důkazních postupů
+a deduktivní verifikaci programů.
+Kapitola~\ref{ch:frama-c} se věnuje nástroji Frama\mbox{-}C,
+architektuře paměťových modelů a způsobu reprezentace paměti.
+Obsahuje také přehled možných metod pro řešení
+problematiky s důkazy na dynamických datových strukturách,
+jako jsou například spojové seznamy nebo stromy.
+Kapitola~\ref{ch:stainless} se zaměřuje na nástroj Stainless,
+který je v mnoha aspektech podobný Frama\mbox{-}C,
+ale specializuje se na verifikaci programů napsaných v jazyce Scala.
+Stainless přistupuje k verifikaci dynamických datových struktur
+odlišně a tato kapitola také obsahuje plnohodnotný důkaz
+korektnosti implementace AVL stromu.
+
+\newpage
+
+Text této práce je dostupný také ve veřejném represitáři na GitHubu autora
+\url{https://github.com/zapotocnylubos/masters-thesis-text}.
+Ukázky kódu z společně se zdrojovým kódem oveřeného AVL stromu
+jsou dostupné v repozitáři \url{https://github.com/zapotocnylubos/masters-thesis-code}.
