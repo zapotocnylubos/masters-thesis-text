@@ -75,7 +75,6 @@ Ukázka~\ref{list:acsl-example} zobrazuje příklad zdrojového kódu ve kterém
     \begin{minted}{C}
     /*@
       requires x > 0;
-      assigns \result;
       ensures \result == x + 2;
     */
     int increment(int x) {
@@ -626,16 +625,6 @@ Přidané invarianty cyklu popisují následující vlastnosti:
     \label{list:find-min-complete}
 \end{listing}
 
-\subsection{Anotace \texttt{\textbackslash assigns}}
-\label{subsec:acsl-anotace-assigns}
-
-Anotace \texttt{\textbackslash assigns} se používá k určení paměťových oblastí,
-které mohou být změněny během vykonávání funkce.
-Tato anotace je součástí následku spuštění funkce
-a indikuje volajícímu, které paměťové oblasti mohly být změněny.
-
-TODO: dodelat?
-
 \subsection{Anotace \texttt{\textbackslash at} a časové body}
 \label{subsec:acsl-anotace-at-a-casove-body}
 
@@ -704,30 +693,29 @@ Konrkrétně jsou k dispozici tato implicitní návěští~\cite{ACSLSpec}:
 \end{description}
 
 Časové body lze využívat i v některých predikátech a logických funkcích.
-
-\subsection{Ghost konstrukty}
-\label{subsec:acsl-ghost-konstrukty}
-
-TODO: ghost konstrukty?
-
-\subsection{Predikáty a logické funkce}
-\label{subsec:acsl-predikaty-a-logicke-funkce}
-
-TODO: kvantifikátory, predikáty, logické funkce?
+Implicitně lze vždy použít jeden časový bod u predikátů nebo logických funkcí.
+Kontrola predikátu nebo výpočet logické funkce v daném časovém bodě
+lze provést například pomocí anotace \texttt{assert P\{L0\}(x)},
+kde \texttt{P} je nějaký predikát, \texttt{x} je proměnná a parametr predikátu
+a \texttt{L0} je návěští, které určuje časový bod.
+Pokud predikát závisí na dvou časových bodech,
+je možné použít například anotaci \texttt{assert P\{L0, L1\}(x)},
+kde \texttt{L0} a \texttt{L1} jsou dvě návěští.
+Použití dvou časových bodů uvidíme v kapitole~\ref{subsec:axiomaticky-pristup}.
 
 % TODO: uživatelům -> programátorům?
 
 
-\section{RTE (Run-Time Error)}
-\label{sec:frama-c-rte}
-
-TODO základní popis
-
-
-\section{Kouřové testy (Smoke tests)}
-\label{sec:frama-c-smoke-tests}
-
-TODO základní popis
+%\section{RTE (Run-Time Error)}
+%\label{sec:frama-c-rte}
+%
+%TODO základní popis
+%
+%
+%\section{Kouřové testy (Smoke tests)}
+%\label{sec:frama-c-smoke-tests}
+%
+%TODO základní popis
 
 
 \section{WP (Weakest Precondition)}
@@ -745,11 +733,14 @@ TODO: knowledge probing a dalsi metody pro postupny vzvoj dukazu?
 
 % TODO: objasnit co znamená ...chovají vzhledem k paměti...
 
-Paměťové modely jsou důležitou součástí analýzy programů,
-protože umožňují definovat, jakým způsobem se programy chovají
-vzhledem k paměti a jakým způsobem manipulují s daty.
+Paměťové modely jsou důležitou součástí formální analýzy,
+protože umožňují definovat,
+jakým způsobem bude verifikační prostředí reprezentovat proměnné
+a operace s pamětí pomocí ukazatelů.
 
-TODO kompletnejsi uvod
+Frama\mbox{-}C nabízí několik paměťových modelů s různou mírou abstrakce a různými vlastnostmi.
+Volba vhodného paměťového modelu je klíčová pro úspěšnou verifikaci programu,
+protože každý model má své výhody i nevýhody.
 
 \subsection{Hoareův paměťový model}
 \label{subsec:hoareuv-pametovy-model}
@@ -1102,11 +1093,33 @@ TODO: nejake ukonceni pam. modelu?
 \subsection{Bytový paměťový model}
 \label{subsec:bytovy-pametovy-model}
 
-TODO: základní zmínka o připravovaném bytovém paměťovém modelu
+Frama\mbox{-}C aktuálně pracuje na novém paměťovém modelu
+s názvem \texttt{Bytes} (bytový paměťový model),
+který by mohl v budoucnosti řešit problémy s paměťovými ukazateli, aliasováním a separací paměti.
 
-TODO: a co bude resit atd...
+Tento model by měl reprezentovat paměť jako sekvenci bajtů
+a jednotlivé adresy uložené v ukazatelích by následně byly mapovány do tohoto pole bez rozlišování typů.
+Kontrola práce s pamětí by pak probíhala na úrovni jednotlivých bajtů.
+Tento model by také měl také přinést jednoduší definici oddělených bloků paměti o které se více dozvíme v kapitole~\ref{subsec:oddelena-pamet}.
 
-TODO: ze ho lze spustit jiz dnes, ale nefunguje moc dobre i na zakladnich ukazkach
+Základní integrace je již hotová a i když v grafickém prostředí ještě není dostupný přepínač pro tento paměťový model,
+je možné jej použít pomocí příkazu~\ref{list:bytes-model}.
+Jedná se stále o experimentální funkci a je pouze pro testovací účely.
+
+\begin{listing}[H]
+    \begin{minted}{console}
+    frama-c -wp-model Bytes ...
+
+    frama-c-gui -wp-model Bytes ...
+    \end{minted}
+    \caption{Příkaz pro spuštění analýzy pomocí bytového paměťového modelu}
+    \label{list:bytes-model}
+\end{listing}
+
+Tento model ale nejspíše nebude použit jako výchozí paměťový model,
+protože důkazy korektnosti generované tímto modelem
+by byly mnohem složitější a časově náročnější pro SMT řešiče.
+Důkazy by musely být ověřeny manálně pomocí interaktiního důkazového asistenta jako je například Coq~\cite{WPManual}.
 
 \section{Ukazatele a paměťové bloky}
 \label{sec:ukazatele-a-pametove-bloky}
